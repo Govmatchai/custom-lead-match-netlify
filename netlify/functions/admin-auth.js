@@ -1,3 +1,6 @@
+import dotenv from 'dotenv'
+dotenv.config({ path: '../../.env' })
+
 export const handler = async (event, context) => {
   if (event.httpMethod === 'OPTIONS') {
     return {

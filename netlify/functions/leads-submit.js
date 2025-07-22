@@ -1,6 +1,9 @@
 import { createClient } from '@supabase/supabase-js'
 import twilio from 'twilio'
 import { randomBytes } from 'crypto'
+import dotenv from 'dotenv'
+
+dotenv.config({ path: '../../.env' })
 
 const supabase = createClient(
   process.env.SUPABASE_URL,

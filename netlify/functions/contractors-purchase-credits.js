@@ -1,5 +1,8 @@
 import { createClient } from '@supabase/supabase-js'
 import Stripe from 'stripe'
+import dotenv from 'dotenv'
+
+dotenv.config({ path: '../../.env' })
 
 const supabase = createClient(
   process.env.SUPABASE_URL,
