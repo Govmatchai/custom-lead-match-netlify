@@ -207,19 +207,22 @@ const ContractorSignup = () => {
             No monthly fees, no contracts — just real customers ready to hire.
           </p>
           
-          <div className="mb-6">
-            <Button 
-              onClick={handleTestSms}
-              disabled={testSmsLoading}
-              className="bg-green-600 hover:bg-green-700 text-white px-6 py-2 text-sm font-medium"
-            >
-              {testSmsLoading ? 'Sending...' : 'Send Test SMS'}
-            </Button>
-            {testSmsMessage && (
-              <div className="mt-3 p-3 bg-gray-100 rounded-lg max-w-2xl mx-auto">
-                <p className="text-sm text-gray-700">{testSmsMessage}</p>
-              </div>
-            )}
+          <div className="mb-8 p-4 bg-blue-50 border-2 border-blue-200 rounded-lg max-w-md mx-auto">
+            <div className="text-center">
+              <p className="text-sm text-blue-600 font-medium mb-3">Development Testing</p>
+              <Button 
+                onClick={handleTestSms}
+                disabled={testSmsLoading}
+                className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 text-sm font-medium"
+              >
+                {testSmsLoading ? 'Sending...' : 'Send Test SMS'}
+              </Button>
+              {testSmsMessage && (
+                <div className="mt-3 p-3 bg-white border border-blue-200 rounded-lg">
+                  <p className="text-sm text-gray-700">{testSmsMessage}</p>
+                </div>
+              )}
+            </div>
           </div>
         </div>
 
