@@ -34,6 +34,8 @@ const ContractorSignup = () => {
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [successMessage, setSuccessMessage] = useState('')
   const [errorMessage, setErrorMessage] = useState('')
+  const [testSmsLoading, setTestSmsLoading] = useState(false)
+  const [testSmsMessage, setTestSmsMessage] = useState('')
 
   useEffect(() => {
     fetchIndustries()
@@ -113,6 +115,38 @@ const ContractorSignup = () => {
     }
   }
 
+  const handleTestSms = async () => {
+    setTestSmsLoading(true)
+    setTestSmsMessage('')
+
+    try {
+      const response = await fetch('/.netlify/functions/send-lead-alert', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          industry: 'HVAC',
+          location: 'Jacksonville',
+          leadType: 'Install',
+          link: 'https://customleadmatch.netlify.app/claim/test-lead'
+        })
+      })
+
+      const data = await response.json()
+
+      if (response.ok) {
+        setTestSmsMessage(`✅ Test SMS sent successfully! Message: "${data.smsContent}" sent to ${data.sentTo}`)
+      } else {
+        setTestSmsMessage(`❌ Failed to send test SMS: ${data.message}`)
+      }
+    } catch (error) {
+      setTestSmsMessage('❌ Network error while sending test SMS')
+    } finally {
+      setTestSmsLoading(false)
+    }
+  }
+
   const howItWorksSteps = [
     {
       icon: Edit,
@@ -168,10 +202,25 @@ const ContractorSignup = () => {
           <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
             Get 3 Free Leads — Instantly Connect with High-Intent Customers in Your Industry
           </h2>
-          <p className="text-xl text-gray-600 max-w-2xl mx-auto">
+          <p className="text-xl text-gray-600 max-w-2xl mx-auto mb-6">
             Join thousands of contractors who get exclusive leads delivered directly to their phone. 
             No monthly fees, no contracts — just real customers ready to hire.
           </p>
+          
+          <div className="mb-6">
+            <Button 
+              onClick={handleTestSms}
+              disabled={testSmsLoading}
+              className="bg-green-600 hover:bg-green-700 text-white px-6 py-2 text-sm font-medium"
+            >
+              {testSmsLoading ? 'Sending...' : 'Send Test SMS'}
+            </Button>
+            {testSmsMessage && (
+              <div className="mt-3 p-3 bg-gray-100 rounded-lg max-w-2xl mx-auto">
+                <p className="text-sm text-gray-700">{testSmsMessage}</p>
+              </div>
+            )}
+          </div>
         </div>
 
         <div className="mb-12">
