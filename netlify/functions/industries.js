@@ -1,6 +1,3 @@
-import dotenv from 'dotenv'
-dotenv.config({ path: '../../.env' })
-
 export const handler = async (event, context) => {
   const industries = [
     { value: 'home_services', label: 'Home Services' },
