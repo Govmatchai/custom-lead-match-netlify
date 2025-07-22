@@ -99,7 +99,7 @@ export const handler = async (event, context) => {
       for (const contractor of matchingContractors) {
         try {
           await twilioClient.messages.create({
-            body: `New ${service_category} lead in ${zip_code} - ${sub_service}. Click to claim: ${claimUrl}`,
+            body: `🔥 New ${service_category} Lead: ${zip_code} - ${sub_service}. Click to claim: ${claimUrl}`,
             from: process.env.TWILIO_PHONE_NUMBER,
             to: contractor.phone
           })
