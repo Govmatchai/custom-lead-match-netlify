@@ -1,7 +1,9 @@
-const twilio = require('twilio')
-require('dotenv').config({ path: '../../.env' })
+import twilio from 'twilio'
+import dotenv from 'dotenv'
 
-exports.handler = async (event, context) => {
+dotenv.config({ path: '../../.env' })
+
+export const handler = async (event, context) => {
   if (event.httpMethod === 'OPTIONS') {
     return {
       statusCode: 200,
