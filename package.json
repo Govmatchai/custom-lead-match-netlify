@@ -23,7 +23,11 @@
     "react-dom": "^18.2.0",
     "react-router-dom": "^6.21.3",
     "tailwind-merge": "^2.2.1",
-    "tailwindcss-animate": "^1.0.7"
+    "tailwindcss-animate": "^1.0.7",
+    "@sendgrid/mail": "^8.1.5",
+    "dotenv": "^16.4.7",
+    "stripe": "^14.25.0",
+    "twilio": "^5.3.4"
   },
   "devDependencies": {
     "@types/react": "^18.2.55",
