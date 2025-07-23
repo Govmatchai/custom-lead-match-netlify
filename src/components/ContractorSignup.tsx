@@ -34,8 +34,6 @@ const ContractorSignup = () => {
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [successMessage, setSuccessMessage] = useState('')
   const [errorMessage, setErrorMessage] = useState('')
-  const [testSmsLoading, setTestSmsLoading] = useState(false)
-  const [testSmsMessage, setTestSmsMessage] = useState('')
 
   useEffect(() => {
     fetchIndustries()
@@ -115,37 +113,6 @@ const ContractorSignup = () => {
     }
   }
 
-  const handleTestSms = async () => {
-    setTestSmsLoading(true)
-    setTestSmsMessage('')
-
-    try {
-      const response = await fetch('/.netlify/functions/send-lead-alert', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          industry: 'HVAC',
-          location: 'Jacksonville',
-          leadType: 'Install',
-          link: 'https://customleadmatch.netlify.app/claim/test-lead'
-        })
-      })
-
-      const data = await response.json()
-
-      if (response.ok) {
-        setTestSmsMessage(`✅ Test SMS sent successfully! Message: "${data.smsContent}" sent to ${data.sentTo}`)
-      } else {
-        setTestSmsMessage(`❌ Failed to send test SMS: ${data.message}`)
-      }
-    } catch (error) {
-      setTestSmsMessage('❌ Network error while sending test SMS')
-    } finally {
-      setTestSmsLoading(false)
-    }
-  }
 
   const howItWorksSteps = [
     {
@@ -170,7 +137,8 @@ const ContractorSignup = () => {
     "Exclusive Leads (Only One Contractor Can Claim)",
     "SMS Notifications for Instant Alerts",
     "Industry & Service-Type Matching",
-    "First-Come, First-Serve Claim System"
+    "First-Come, First-Serve Claim System",
+    "Pre-Screened & Validated Leads Only — No Spam or Junk"
   ]
 
   if (successMessage) {
@@ -207,21 +175,17 @@ const ContractorSignup = () => {
             No monthly fees, no contracts — just real customers ready to hire.
           </p>
           
-          <div className="mb-8 p-4 bg-blue-50 border-2 border-blue-200 rounded-lg max-w-md mx-auto">
-            <div className="text-center">
-              <p className="text-sm text-blue-600 font-medium mb-3">Development Testing</p>
-              <Button 
-                onClick={handleTestSms}
-                disabled={testSmsLoading}
-                className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 text-sm font-medium"
-              >
-                {testSmsLoading ? 'Sending...' : 'Send Test SMS'}
-              </Button>
-              {testSmsMessage && (
-                <div className="mt-3 p-3 bg-white border border-blue-200 rounded-lg">
-                  <p className="text-sm text-gray-700">{testSmsMessage}</p>
-                </div>
-              )}
+          <div className="mb-8 p-4 bg-green-50 border-2 border-green-200 rounded-lg max-w-2xl mx-auto">
+            <h3 className="text-lg font-semibold text-green-800 mb-2 text-center">🔥 Lead Quality Guarantee</h3>
+            <p className="text-green-700 text-center mb-3">
+              Every lead is pre-screened and validated before being sent to you. We reject spam, invalid numbers, duplicates, and junk leads—so you only get high-quality opportunities.
+            </p>
+            <div className="text-sm text-green-600 space-y-1">
+              <div>✅ Phone number verification via Twilio</div>
+              <div>✅ Email format validation</div>
+              <div>✅ Duplicate detection (30-day window)</div>
+              <div>✅ Content filtering for spam and junk</div>
+              <div>✅ IP rate limiting to prevent abuse</div>
             </div>
           </div>
         </div>

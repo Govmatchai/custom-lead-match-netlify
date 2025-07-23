@@ -23,10 +23,15 @@ CREATE TABLE leads (
     sub_service VARCHAR(100) NOT NULL,
     zip_code VARCHAR(10) NOT NULL,
     phone VARCHAR(20) NOT NULL,
+    email VARCHAR(255),
     description TEXT NOT NULL,
+    ip_address INET,
+    status VARCHAR(50) DEFAULT 'pending_review' CHECK (status IN ('pending_review', 'valid', 'duplicate', 'invalid', 'claimed')),
+    validation_flags JSONB DEFAULT '{}',
     claimed BOOLEAN DEFAULT false,
     claimed_by UUID REFERENCES contractors(id),
     claimed_at TIMESTAMP WITH TIME ZONE,
+    is_archived BOOLEAN DEFAULT false,
     created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
 
@@ -61,6 +66,10 @@ CREATE INDEX idx_leads_service_category ON leads(service_category);
 CREATE INDEX idx_leads_zip_code ON leads(zip_code);
 CREATE INDEX idx_leads_claimed ON leads(claimed);
 CREATE INDEX idx_leads_created_at ON leads(created_at);
+CREATE INDEX idx_leads_status ON leads(status);
+CREATE INDEX idx_leads_ip_address ON leads(ip_address);
+CREATE INDEX idx_leads_is_archived ON leads(is_archived);
+CREATE INDEX idx_leads_email ON leads(email);
 CREATE INDEX idx_claim_tokens_token ON claim_tokens(token);
 CREATE INDEX idx_claim_tokens_expires_at ON claim_tokens(expires_at);
 CREATE INDEX idx_industries_name ON industries(name);
@@ -85,7 +94,23 @@ INSERT INTO contractors (business_name, contact_name, email, phone, industry, su
 ('Smith Legal', 'Jane Smith', 'jane@smithlegal.com', '555-0102', 'Legal', 'Personal Injury', ARRAY['12345', '12347'], true, 3),
 ('Quick HVAC', 'Bob Johnson', 'bob@quickhvac.com', '555-0103', 'Home Services', 'HVAC', ARRAY['12346', '12348'], true, 8);
 
-INSERT INTO leads (customer_name, service_category, sub_service, zip_code, phone, description) VALUES
-('Alice Brown', 'Home Services', 'Plumbing', '12345', '555-0201', 'Kitchen sink is leaking and needs immediate repair'),
-('Mike Davis', 'Legal', 'Personal Injury', '12345', '555-0202', 'Car accident case, need legal representation'),
-('Sarah Wilson', 'Home Services', 'HVAC', '12346', '555-0203', 'Air conditioning not working, need repair ASAP');
+CREATE TABLE dynamic_pages (
+    id UUID DEFAULT uuid_generate_v4() PRIMARY KEY,
+    slug VARCHAR(255) UNIQUE NOT NULL,
+    title VARCHAR(255) NOT NULL,
+    industry VARCHAR(100) NOT NULL,
+    sub_industry VARCHAR(100) NOT NULL,
+    contractor_id UUID REFERENCES contractors(id),
+    template_data JSONB NOT NULL,
+    is_active BOOLEAN DEFAULT true,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
+CREATE INDEX idx_dynamic_pages_slug ON dynamic_pages(slug);
+CREATE INDEX idx_dynamic_pages_industry ON dynamic_pages(industry);
+CREATE INDEX idx_dynamic_pages_contractor_id ON dynamic_pages(contractor_id);
+
+INSERT INTO leads (customer_name, service_category, sub_service, zip_code, phone, email, description, status) VALUES
+('Alice Brown', 'Home Services', 'Plumbing', '12345', '555-0201', 'alice@example.com', 'Kitchen sink is leaking and needs immediate repair', 'valid'),
+('Mike Davis', 'Legal', 'Personal Injury', '12345', '555-0202', 'mike@example.com', 'Car accident case, need legal representation', 'valid'),
+('Sarah Wilson', 'Home Services', 'HVAC', '12346', '555-0203', 'sarah@example.com', 'Air conditioning not working, need repair ASAP', 'valid');

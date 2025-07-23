@@ -2,6 +2,7 @@ import React, { useState } from 'react'
 import { Users, FileText, CheckCircle, Clock, Eye, EyeOff } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Alert, AlertDescription } from '@/components/ui/alert'
 
@@ -32,9 +33,13 @@ interface Lead {
   sub_service: string
   zip_code: string
   phone: string
+  email?: string
   description: string
+  status: string
+  validation_flags: any
   claimed: boolean
   claimed_by: string | null
+  is_archived: boolean
   created_at: string
 }
 
@@ -47,7 +52,9 @@ const AdminDashboard = () => {
   const [contractors, setContractors] = useState<Contractor[]>([])
   const [leads, setLeads] = useState<Lead[]>([])
   const [loading, setLoading] = useState(false)
-  const [activeTab, setActiveTab] = useState<'stats' | 'contractors' | 'leads'>('stats')
+  const [activeTab, setActiveTab] = useState<'stats' | 'contractors' | 'leads' | 'lead-management'>('stats')
+  const [statusFilter, setStatusFilter] = useState('all')
+  const [industryFilter, setIndustryFilter] = useState('all')
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -208,6 +215,16 @@ const AdminDashboard = () => {
                 }`}
               >
                 Leads
+              </button>
+              <button
+                onClick={() => setActiveTab('lead-management')}
+                className={`py-2 px-1 border-b-2 font-medium text-sm ${
+                  activeTab === 'lead-management'
+                    ? 'border-blue-500 text-blue-600'
+                    : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                }`}
+              >
+                Lead Management
               </button>
             </nav>
           </div>
@@ -371,6 +388,134 @@ const AdminDashboard = () => {
                           </span>
                         </div>
                       </div>
+                      <div className="mb-3">
+                        <span className="font-medium">Description:</span>
+                        <p className="mt-1 text-gray-700">{lead.description}</p>
+                      </div>
+                      <div className="flex justify-between items-center text-sm text-gray-500">
+                        <span>Submitted: {new Date(lead.created_at).toLocaleDateString()}</span>
+                        {lead.claimed && lead.claimed_by && (
+                          <span>Claimed by: {lead.claimed_by}</span>
+                        )}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </CardContent>
+          </Card>
+        )}
+
+        {activeTab === 'lead-management' && (
+          <Card>
+            <CardHeader>
+              <CardTitle>Lead Management & Validation</CardTitle>
+              <CardDescription>View leads with validation status and manage quality</CardDescription>
+              <div className="flex gap-4 mt-4">
+                <Select value={statusFilter} onValueChange={setStatusFilter}>
+                  <SelectTrigger className="w-48">
+                    <SelectValue placeholder="Filter by status" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">All Statuses</SelectItem>
+                    <SelectItem value="pending_review">Pending Review</SelectItem>
+                    <SelectItem value="valid">Valid</SelectItem>
+                    <SelectItem value="duplicate">Duplicate</SelectItem>
+                    <SelectItem value="invalid">Invalid</SelectItem>
+                    <SelectItem value="claimed">Claimed</SelectItem>
+                  </SelectContent>
+                </Select>
+                <Select value={industryFilter} onValueChange={setIndustryFilter}>
+                  <SelectTrigger className="w-48">
+                    <SelectValue placeholder="Filter by industry" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">All Industries</SelectItem>
+                    <SelectItem value="Legal">Legal</SelectItem>
+                    <SelectItem value="Home Services">Home Services</SelectItem>
+                    <SelectItem value="Real Estate">Real Estate</SelectItem>
+                    <SelectItem value="Finance">Finance</SelectItem>
+                    <SelectItem value="Insurance">Insurance</SelectItem>
+                    <SelectItem value="Healthcare">Healthcare</SelectItem>
+                    <SelectItem value="Auto">Auto</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            </CardHeader>
+            <CardContent>
+              {leads.length === 0 ? (
+                <p className="text-gray-500 text-center py-8">No leads found.</p>
+              ) : (
+                <div className="space-y-4">
+                  {leads
+                    .filter(lead => statusFilter === 'all' || lead.status === statusFilter)
+                    .filter(lead => industryFilter === 'all' || lead.service_category === industryFilter)
+                    .map((lead) => (
+                    <div key={lead.id} className="border rounded-lg p-4">
+                      <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-3">
+                        <div>
+                          <span className="font-medium">Customer:</span>
+                          <p>{lead.customer_name}</p>
+                        </div>
+                        <div>
+                          <span className="font-medium">Phone:</span>
+                          <p>{lead.phone}</p>
+                        </div>
+                        <div>
+                          <span className="font-medium">Email:</span>
+                          <p>{lead.email || 'Not provided'}</p>
+                        </div>
+                        <div>
+                          <span className="font-medium">Location:</span>
+                          <p>{lead.zip_code}</p>
+                        </div>
+                      </div>
+                      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-3">
+                        <div>
+                          <span className="font-medium">Service:</span>
+                          <p>{lead.service_category} - {lead.sub_service}</p>
+                        </div>
+                        <div>
+                          <span className="font-medium">Status:</span>
+                          <span className={`inline-block px-2 py-1 rounded text-xs font-medium ${
+                            lead.status === 'valid' ? 'bg-green-100 text-green-800' :
+                            lead.status === 'pending_review' ? 'bg-yellow-100 text-yellow-800' :
+                            lead.status === 'duplicate' ? 'bg-orange-100 text-orange-800' :
+                            lead.status === 'invalid' ? 'bg-red-100 text-red-800' :
+                            lead.claimed ? 'bg-blue-100 text-blue-800' : 'bg-gray-100 text-gray-800'
+                          }`}>
+                            {lead.status === 'valid' ? 'Valid' :
+                             lead.status === 'pending_review' ? 'Pending Review' :
+                             lead.status === 'duplicate' ? 'Duplicate' :
+                             lead.status === 'invalid' ? 'Invalid' :
+                             lead.claimed ? 'Claimed' : 'Unknown'}
+                          </span>
+                        </div>
+                        <div>
+                          <span className="font-medium">Archived:</span>
+                          <span className={`inline-block px-2 py-1 rounded text-xs font-medium ${
+                            lead.is_archived ? 'bg-gray-100 text-gray-800' : 'bg-green-100 text-green-800'
+                          }`}>
+                            {lead.is_archived ? 'Yes' : 'No'}
+                          </span>
+                        </div>
+                      </div>
+                      {lead.validation_flags && Object.keys(lead.validation_flags).length > 0 && (
+                        <div className="mb-3">
+                          <span className="font-medium">Validation Flags:</span>
+                          <div className="mt-1 flex flex-wrap gap-1">
+                            {Object.entries(lead.validation_flags).map(([key, value]) => (
+                              <span key={key} className={`inline-block text-xs px-2 py-1 rounded ${
+                                value === true ? 'bg-green-100 text-green-800' :
+                                value === false ? 'bg-red-100 text-red-800' :
+                                'bg-blue-100 text-blue-800'
+                              }`}>
+                                {key}: {String(value)}
+                              </span>
+                            ))}
+                          </div>
+                        </div>
+                      )}
                       <div className="mb-3">
                         <span className="font-medium">Description:</span>
                         <p className="mt-1 text-gray-700">{lead.description}</p>

@@ -4,6 +4,13 @@ import ClaimLead from './components/ClaimLead'
 import ContractorDashboard from './components/ContractorDashboard'
 import AdminDashboard from './components/AdminDashboard'
 import LeadIntake from './components/LeadIntake'
+import { HVACLanding } from './components/industry-pages/HVACLanding'
+import { LegalLanding } from './components/industry-pages/LegalLanding'
+import { RealEstateLanding } from './components/industry-pages/RealEstateLanding'
+import { FinanceLanding } from './components/industry-pages/FinanceLanding'
+import { InsuranceLanding } from './components/industry-pages/InsuranceLanding'
+import { HealthcareLanding } from './components/industry-pages/HealthcareLanding'
+import { AutoLanding } from './components/industry-pages/AutoLanding'
 
 function App() {
   return (
@@ -15,6 +22,13 @@ function App() {
           <Route path="/contractor/:contractorId" element={<ContractorDashboard />} />
           <Route path="/admin" element={<AdminDashboard />} />
           <Route path="/lead-intake" element={<LeadIntake />} />
+          <Route path="/hvac" element={<HVACLanding />} />
+          <Route path="/legal" element={<LegalLanding />} />
+          <Route path="/real-estate" element={<RealEstateLanding />} />
+          <Route path="/finance" element={<FinanceLanding />} />
+          <Route path="/insurance" element={<InsuranceLanding />} />
+          <Route path="/healthcare" element={<HealthcareLanding />} />
+          <Route path="/auto" element={<AutoLanding />} />
         </Routes>
       </div>
     </Router>
