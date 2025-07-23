@@ -395,7 +395,7 @@ const AdminDashboard = () => {
                       <div className="flex justify-between items-center text-sm text-gray-500">
                         <span>Submitted: {new Date(lead.created_at).toLocaleDateString()}</span>
                         {lead.claimed && lead.claimed_by && (
-                          <span>Claimed by: {lead.claimed_by}</span>
+                          <span>Claimed by: {lead.claimed_by} on {new Date(lead.claimed_at).toLocaleDateString()}</span>
                         )}
                       </div>
                     </div>
@@ -523,7 +523,7 @@ const AdminDashboard = () => {
                       <div className="flex justify-between items-center text-sm text-gray-500">
                         <span>Submitted: {new Date(lead.created_at).toLocaleDateString()}</span>
                         {lead.claimed && lead.claimed_by && (
-                          <span>Claimed by: {lead.claimed_by}</span>
+                          <span>Claimed by: {lead.claimed_by} on {new Date(lead.claimed_at).toLocaleDateString()}</span>
                         )}
                       </div>
                     </div>

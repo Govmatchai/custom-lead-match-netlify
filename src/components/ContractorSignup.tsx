@@ -181,7 +181,7 @@ const ContractorSignup = () => {
               Every lead is pre-screened and validated before being sent to you. We reject spam, invalid numbers, duplicates, and junk leads—so you only get high-quality opportunities.
             </p>
             <div className="text-sm text-green-600 space-y-1">
-              <div>✅ Phone number verification via Twilio</div>
+              <div>✅ All phone numbers are screened for validity before delivery</div>
               <div>✅ Email format validation</div>
               <div>✅ Duplicate detection (30-day window)</div>
               <div>✅ Content filtering for spam and junk</div>

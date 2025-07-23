@@ -118,7 +118,8 @@ export const handler = async (event, context) => {
       .update({
         claimed: true,
         claimed_by: contractor_id,
-        claimed_at: new Date().toISOString()
+        claimed_at: new Date().toISOString(),
+        is_archived: true
       })
       .eq('id', claimToken.lead_id)
       .select()
@@ -143,6 +144,15 @@ export const handler = async (event, context) => {
 
     if (creditUpdateError) {
       console.error('Credit update error:', creditUpdateError)
+    }
+
+    const { error: tokenDeleteError } = await supabase
+      .from('claim_tokens')
+      .delete()
+      .eq('token', token)
+
+    if (tokenDeleteError) {
+      console.error('Token deletion error:', tokenDeleteError)
     }
 
     return {

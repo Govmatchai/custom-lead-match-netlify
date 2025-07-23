@@ -30,7 +30,11 @@ interface Contractor {
 interface DashboardData {
   contractor: Contractor
   claimed_leads: Lead[]
+  available_leads: Lead[]
+  archived_leads: Lead[]
   total_claimed: number
+  total_available: number
+  total_archived: number
 }
 
 const ContractorDashboard = () => {
@@ -39,6 +43,7 @@ const ContractorDashboard = () => {
   const [loading, setLoading] = useState(true)
   const [errorMessage, setErrorMessage] = useState('')
   const [purchasing, setPurchasing] = useState(false)
+  const [activeTab, setActiveTab] = useState('available')
 
   useEffect(() => {
     if (contractorId) {
@@ -48,13 +53,31 @@ const ContractorDashboard = () => {
 
   const fetchDashboardData = async () => {
     try {
-      const response = await fetch(`/.netlify/functions/contractors-dashboard?contractor_id=${contractorId}`)
-      const data = await response.json()
+      const [dashboardResponse, availableResponse] = await Promise.all([
+        fetch(`/.netlify/functions/contractors-dashboard?contractor_id=${contractorId}`),
+        fetch(`/.netlify/functions/contractors-available-leads?contractor_id=${contractorId}`)
+      ])
       
-      if (response.ok) {
-        setDashboardData(data)
+      const [dashboardData, availableData] = await Promise.all([
+        dashboardResponse.json(),
+        availableResponse.json()
+      ])
+      
+      if (dashboardResponse.ok && availableResponse.ok) {
+        const archivedLeads = dashboardData.claimed_leads.filter(lead => lead.is_archived)
+        const activeClaimedLeads = dashboardData.claimed_leads.filter(lead => !lead.is_archived)
+        
+        setDashboardData({
+          contractor: dashboardData.contractor,
+          claimed_leads: activeClaimedLeads,
+          available_leads: availableData.available_leads,
+          archived_leads: archivedLeads,
+          total_claimed: activeClaimedLeads.length,
+          total_available: availableData.total_available,
+          total_archived: archivedLeads.length
+        })
       } else {
-        setErrorMessage(data.detail || 'Failed to load dashboard data')
+        setErrorMessage(dashboardData.detail || availableData.detail || 'Failed to load dashboard data')
       }
     } catch (error) {
       setErrorMessage('Network error. Please try again.')
@@ -123,7 +146,7 @@ const ContractorDashboard = () => {
     return null
   }
 
-  const { contractor, claimed_leads, total_claimed } = dashboardData
+  const { contractor, claimed_leads, available_leads, archived_leads, total_claimed, total_available, total_archived } = dashboardData
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -133,7 +156,7 @@ const ContractorDashboard = () => {
           <p className="text-gray-600">Welcome back, {contractor.contact_name}</p>
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
+        <div className="grid grid-cols-1 lg:grid-cols-4 gap-6 mb-8">
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium">Lead Credits</CardTitle>
@@ -149,26 +172,39 @@ const ContractorDashboard = () => {
 
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Total Claimed</CardTitle>
+              <CardTitle className="text-sm font-medium">Available Leads</CardTitle>
               <User className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">{total_claimed}</div>
+              <div className="text-2xl font-bold">{total_available}</div>
               <p className="text-xs text-muted-foreground">
-                Leads claimed
+                Ready to claim
               </p>
             </CardContent>
           </Card>
 
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Service Areas</CardTitle>
+              <CardTitle className="text-sm font-medium">Claimed Leads</CardTitle>
+              <User className="h-4 w-4 text-muted-foreground" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold">{total_claimed}</div>
+              <p className="text-xs text-muted-foreground">
+                Active leads
+              </p>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">Archived</CardTitle>
               <MapPin className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">{contractor.zip_codes.length}</div>
+              <div className="text-2xl font-bold">{total_archived}</div>
               <p className="text-xs text-muted-foreground">
-                ZIP codes covered
+                Completed leads
               </p>
             </CardContent>
           </Card>
@@ -239,50 +275,170 @@ const ContractorDashboard = () => {
 
         <Card className="mt-6">
           <CardHeader>
-            <CardTitle>Recent Claimed Leads</CardTitle>
-            <CardDescription>Your recently claimed leads and customer information</CardDescription>
+            <div className="flex space-x-1 border-b">
+              <button
+                onClick={() => setActiveTab('available')}
+                className={`px-4 py-2 font-medium text-sm ${
+                  activeTab === 'available'
+                    ? 'border-b-2 border-blue-500 text-blue-600'
+                    : 'text-gray-500 hover:text-gray-700'
+                }`}
+              >
+                Available Leads ({total_available})
+              </button>
+              <button
+                onClick={() => setActiveTab('claimed')}
+                className={`px-4 py-2 font-medium text-sm ${
+                  activeTab === 'claimed'
+                    ? 'border-b-2 border-blue-500 text-blue-600'
+                    : 'text-gray-500 hover:text-gray-700'
+                }`}
+              >
+                Claimed Leads ({total_claimed})
+              </button>
+              <button
+                onClick={() => setActiveTab('archived')}
+                className={`px-4 py-2 font-medium text-sm ${
+                  activeTab === 'archived'
+                    ? 'border-b-2 border-blue-500 text-blue-600'
+                    : 'text-gray-500 hover:text-gray-700'
+                }`}
+              >
+                Archived Leads ({total_archived})
+              </button>
+            </div>
           </CardHeader>
           <CardContent>
-            {claimed_leads.length === 0 ? (
-              <p className="text-gray-500 text-center py-8">No leads claimed yet. You'll see them here once you start claiming leads.</p>
-            ) : (
-              <div className="space-y-4">
-                {claimed_leads.map((lead) => (
-                  <div key={lead.id} className="border rounded-lg p-4">
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-3">
-                      <div className="flex items-center space-x-2">
-                        <User className="w-4 h-4 text-gray-500" />
-                        <span className="font-medium">Customer:</span>
-                        <span>{lead.customer_name}</span>
+            {activeTab === 'available' && (
+              <div>
+                {available_leads.length === 0 ? (
+                  <p className="text-gray-500 text-center py-8">No available leads matching your services and location.</p>
+                ) : (
+                  <div className="space-y-4">
+                    {available_leads.map((lead) => (
+                      <div key={lead.id} className="border rounded-lg p-4 bg-green-50">
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-3">
+                          <div className="flex items-center space-x-2">
+                            <User className="w-4 h-4 text-gray-500" />
+                            <span className="font-medium">Customer:</span>
+                            <span>{lead.customer_name}</span>
+                          </div>
+                          <div className="flex items-center space-x-2">
+                            <MapPin className="w-4 h-4 text-gray-500" />
+                            <span className="font-medium">Location:</span>
+                            <span>{lead.zip_code}</span>
+                          </div>
+                        </div>
+                        <div className="mb-3">
+                          <span className="font-medium">Service:</span>
+                          <span className="ml-2">{lead.service_category} - {lead.sub_service}</span>
+                        </div>
+                        <div className="mb-3">
+                          <span className="font-medium">Description:</span>
+                          <p className="mt-1 text-gray-700">{lead.description}</p>
+                        </div>
+                        <div className="flex justify-between items-center text-sm text-gray-500">
+                          <span>Submitted: {new Date(lead.created_at).toLocaleDateString()}</span>
+                          <span className="text-green-600 font-medium">Available to Claim</span>
+                        </div>
                       </div>
-                      <div className="flex items-center space-x-2">
-                        <Phone className="w-4 h-4 text-gray-500" />
-                        <span className="font-medium">Phone:</span>
-                        <span>{lead.phone}</span>
-                      </div>
-                    </div>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-3">
-                      <div className="flex items-center space-x-2">
-                        <MapPin className="w-4 h-4 text-gray-500" />
-                        <span className="font-medium">Location:</span>
-                        <span>{lead.zip_code}</span>
-                      </div>
-                      <div className="flex items-center space-x-2">
-                        <Calendar className="w-4 h-4 text-gray-500" />
-                        <span className="font-medium">Claimed:</span>
-                        <span>{new Date(lead.claimed_at).toLocaleDateString()}</span>
-                      </div>
-                    </div>
-                    <div className="mb-3">
-                      <span className="font-medium">Service:</span>
-                      <span className="ml-2">{lead.service_category} - {lead.sub_service}</span>
-                    </div>
-                    <div>
-                      <span className="font-medium">Description:</span>
-                      <p className="mt-1 text-gray-700">{lead.description}</p>
-                    </div>
+                    ))}
                   </div>
-                ))}
+                )}
+              </div>
+            )}
+
+            {activeTab === 'claimed' && (
+              <div>
+                {claimed_leads.length === 0 ? (
+                  <p className="text-gray-500 text-center py-8">No leads claimed yet. You'll see them here once you start claiming leads.</p>
+                ) : (
+                  <div className="space-y-4">
+                    {claimed_leads.map((lead) => (
+                      <div key={lead.id} className="border rounded-lg p-4 bg-blue-50">
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-3">
+                          <div className="flex items-center space-x-2">
+                            <User className="w-4 h-4 text-gray-500" />
+                            <span className="font-medium">Customer:</span>
+                            <span>{lead.customer_name}</span>
+                          </div>
+                          <div className="flex items-center space-x-2">
+                            <Phone className="w-4 h-4 text-gray-500" />
+                            <span className="font-medium">Phone:</span>
+                            <span>{lead.phone}</span>
+                          </div>
+                        </div>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-3">
+                          <div className="flex items-center space-x-2">
+                            <MapPin className="w-4 h-4 text-gray-500" />
+                            <span className="font-medium">Location:</span>
+                            <span>{lead.zip_code}</span>
+                          </div>
+                          <div className="flex items-center space-x-2">
+                            <Calendar className="w-4 h-4 text-gray-500" />
+                            <span className="font-medium">Claimed:</span>
+                            <span>{new Date(lead.claimed_at).toLocaleDateString()}</span>
+                          </div>
+                        </div>
+                        <div className="mb-3">
+                          <span className="font-medium">Service:</span>
+                          <span className="ml-2">{lead.service_category} - {lead.sub_service}</span>
+                        </div>
+                        <div>
+                          <span className="font-medium">Description:</span>
+                          <p className="mt-1 text-gray-700">{lead.description}</p>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            )}
+
+            {activeTab === 'archived' && (
+              <div>
+                {archived_leads.length === 0 ? (
+                  <p className="text-gray-500 text-center py-8">No archived leads yet.</p>
+                ) : (
+                  <div className="space-y-4">
+                    {archived_leads.map((lead) => (
+                      <div key={lead.id} className="border rounded-lg p-4 bg-gray-50">
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-3">
+                          <div className="flex items-center space-x-2">
+                            <User className="w-4 h-4 text-gray-500" />
+                            <span className="font-medium">Customer:</span>
+                            <span>{lead.customer_name}</span>
+                          </div>
+                          <div className="flex items-center space-x-2">
+                            <Phone className="w-4 h-4 text-gray-500" />
+                            <span className="font-medium">Phone:</span>
+                            <span>{lead.phone}</span>
+                          </div>
+                        </div>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-3">
+                          <div className="flex items-center space-x-2">
+                            <MapPin className="w-4 h-4 text-gray-500" />
+                            <span className="font-medium">Location:</span>
+                            <span>{lead.zip_code}</span>
+                          </div>
+                          <div className="flex items-center space-x-2">
+                            <Calendar className="w-4 h-4 text-gray-500" />
+                            <span className="font-medium">Claimed:</span>
+                            <span>{new Date(lead.claimed_at).toLocaleDateString()}</span>
+                          </div>
+                        </div>
+                        <div className="mb-3">
+                          <span className="font-medium">Service:</span>
+                          <span className="ml-2">{lead.service_category} - {lead.sub_service}</span>
+                        </div>
+                        <div>
+                          <span className="font-medium">Description:</span>
+                          <p className="mt-1 text-gray-700">{lead.description}</p>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
               </div>
             )}
           </CardContent>
