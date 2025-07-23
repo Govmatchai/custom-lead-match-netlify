@@ -3,8 +3,6 @@ import dotenv from 'dotenv'
 
 dotenv.config({ path: '../../.env' })
 
-const twilioClient = twilio(process.env.TWILIO_ACCOUNT_SID, process.env.TWILIO_AUTH_TOKEN)
-
 export const handler = async (event, context) => {
   if (event.httpMethod === 'OPTIONS') {
     return {
@@ -29,6 +27,28 @@ export const handler = async (event, context) => {
   }
 
   try {
+    const { TWILIO_ACCOUNT_SID, TWILIO_AUTH_TOKEN, TWILIO_PHONE_NUMBER } = process.env
+    
+    if (!TWILIO_ACCOUNT_SID || !TWILIO_AUTH_TOKEN || !TWILIO_PHONE_NUMBER) {
+      console.error('Missing Twilio environment variables:', {
+        hasSid: !!TWILIO_ACCOUNT_SID,
+        hasToken: !!TWILIO_AUTH_TOKEN,
+        hasPhone: !!TWILIO_PHONE_NUMBER
+      })
+      return {
+        statusCode: 500,
+        headers: {
+          'Content-Type': 'application/json',
+          'Access-Control-Allow-Origin': '*'
+        },
+        body: JSON.stringify({ 
+          success: false, 
+          message: 'Twilio configuration missing',
+          details: 'Environment variables not properly configured'
+        })
+      }
+    }
+
     const data = JSON.parse(event.body)
     const { industry, location, leadType, link } = data
 
@@ -43,13 +63,15 @@ export const handler = async (event, context) => {
       }
     }
 
-    const testPhoneNumber = '+15551234567'
+    const testPhoneNumber = '+12345678900'
     const smsMessage = `🔥 New ${industry} Lead: ${location} - ${leadType}. Click to claim: ${link}`
+
+    const twilioClient = twilio(TWILIO_ACCOUNT_SID, TWILIO_AUTH_TOKEN)
 
     try {
       const message = await twilioClient.messages.create({
         body: smsMessage,
-        from: process.env.TWILIO_PHONE_NUMBER,
+        from: TWILIO_PHONE_NUMBER,
         to: testPhoneNumber
       })
 
@@ -68,7 +90,12 @@ export const handler = async (event, context) => {
         })
       }
     } catch (smsError) {
-      console.error('SMS error:', smsError)
+      console.error('Twilio SMS error:', smsError)
+      
+      const errorMessage = smsError.message || 'Unknown Twilio error'
+      const errorCode = smsError.code || 'NO_CODE'
+      const errorDetails = smsError.moreInfo || 'No additional details'
+      
       return {
         statusCode: 500,
         headers: {
@@ -77,20 +104,28 @@ export const handler = async (event, context) => {
         },
         body: JSON.stringify({ 
           success: false, 
-          message: 'Failed to send SMS',
-          error: smsError.message 
+          message: `Failed to send SMS: ${errorMessage}`,
+          error: errorMessage,
+          code: errorCode,
+          details: errorDetails,
+          twilioFrom: TWILIO_PHONE_NUMBER,
+          twilioTo: testPhoneNumber
         })
       }
     }
   } catch (error) {
-    console.error('Error:', error)
+    console.error('General error:', error)
     return {
       statusCode: 500,
       headers: {
         'Content-Type': 'application/json',
         'Access-Control-Allow-Origin': '*'
       },
-      body: JSON.stringify({ success: false, message: 'Internal server error' })
+      body: JSON.stringify({ 
+        success: false, 
+        message: `Internal server error: ${error.message || 'Unknown error'}`,
+        error: error.message || 'Unknown error'
+      })
     }
   }
 }
