@@ -1,6 +1,8 @@
 
 CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
 
+DROP TABLE IF EXISTS contractors CASCADE;
+
 CREATE TABLE contractors (
     id UUID DEFAULT uuid_generate_v4() PRIMARY KEY,
     business_name VARCHAR(255) NOT NULL,

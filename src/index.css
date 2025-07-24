@@ -68,3 +68,27 @@
     color: hsl(var(--foreground));
   }
 }
+
+/* Fix dropdown styling for better visibility */
+select, select option {
+  background-color: white !important;
+  color: #000000 !important;
+  border: 1px solid #ccc !important;
+  padding: 8px !important;
+  font-size: 16px !important;
+  z-index: 1000 !important;
+}
+
+/* Ensure dropdown options are visible */
+select option {
+  background-color: white !important;
+  color: #000000 !important;
+  padding: 8px 12px !important;
+}
+
+/* Additional styling for select elements */
+select:focus {
+  outline: 2px solid #2563eb !important;
+  outline-offset: 2px !important;
+  border-color: #2563eb !important;
+}
