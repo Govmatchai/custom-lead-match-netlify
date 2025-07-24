@@ -2,11 +2,13 @@ import { createClient } from '@supabase/supabase-js'
 import sgMail from '@sendgrid/mail'
 
 const supabase = createClient(
-  process.env.SUPABASE_URL,
-  process.env.SUPABASE_SERVICE_KEY
+  process.env.SUPABASE_URL || 'https://placeholder.supabase.co',
+  process.env.SUPABASE_SERVICE_KEY || 'placeholder-key'
 )
 
-sgMail.setApiKey(process.env.SENDGRID_API_KEY)
+if (process.env.SENDGRID_API_KEY) {
+  sgMail.setApiKey(process.env.SENDGRID_API_KEY)
+}
 
 export const handler = async (event, context) => {
   console.log('=== CONTRACTORS SIGNUP DEBUG START ===')
