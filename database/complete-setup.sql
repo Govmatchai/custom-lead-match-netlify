@@ -110,6 +110,22 @@ CREATE INDEX idx_dynamic_pages_slug ON dynamic_pages(slug);
 CREATE INDEX idx_dynamic_pages_industry ON dynamic_pages(industry);
 CREATE INDEX idx_dynamic_pages_contractor_id ON dynamic_pages(contractor_id);
 
+CREATE TABLE IF NOT EXISTS contractor_login_tokens (
+  id UUID DEFAULT uuid_generate_v4() PRIMARY KEY,
+  contractor_id UUID REFERENCES contractors(id) ON DELETE CASCADE,
+  token VARCHAR(255) UNIQUE NOT NULL,
+  expires_at TIMESTAMP WITH TIME ZONE NOT NULL,
+  used BOOLEAN DEFAULT FALSE,
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
+CREATE INDEX idx_contractor_login_tokens_token ON contractor_login_tokens(token);
+CREATE INDEX idx_contractor_login_tokens_expires_at ON contractor_login_tokens(expires_at);
+
+ALTER TABLE contractor_login_tokens ENABLE ROW LEVEL SECURITY;
+CREATE POLICY "Allow all for service role" ON contractor_login_tokens FOR ALL USING (auth.role() = 'service_role');
+CREATE POLICY "Allow anonymous read" ON contractor_login_tokens FOR SELECT USING (true);
+
 INSERT INTO leads (customer_name, service_category, sub_service, zip_code, phone, email, description, status) VALUES
 ('Alice Brown', 'Home Services', 'Plumbing', '12345', '555-0201', 'alice@example.com', 'Kitchen sink is leaking and needs immediate repair', 'valid'),
 ('Mike Davis', 'Legal', 'Personal Injury', '12345', '555-0202', 'mike@example.com', 'Car accident case, need legal representation', 'valid'),

@@ -88,6 +88,27 @@ export const handler = async (event, context) => {
       console.error('Email error:', emailError)
     }
 
+    try {
+      const welcomeEmailResponse = await fetch(`${process.env.URL || 'https://customleadmatch.netlify.app'}/.netlify/functions/send-welcome-email`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          contractor_id: contractor.id,
+          email: email,
+          name: contact_name,
+          business_name: business_name
+        })
+      })
+      
+      if (!welcomeEmailResponse.ok) {
+        console.error('Failed to send welcome email:', await welcomeEmailResponse.text())
+      }
+    } catch (emailError) {
+      console.error('Welcome email error:', emailError)
+    }
+
     return {
       statusCode: 200,
       headers: {
@@ -95,8 +116,10 @@ export const handler = async (event, context) => {
         'Access-Control-Allow-Origin': '*'
       },
       body: JSON.stringify({
-        message: 'Contractor registered successfully',
-        contractor_id: contractor.id
+        success: true,
+        message: 'Contractor registered successfully!',
+        contractor_id: contractor.id,
+        redirect_url: `/welcome?contractor_id=${contractor.id}`
       })
     }
   } catch (error) {

@@ -92,17 +92,21 @@ const ContractorSignup = () => {
       const data = await response.json()
 
       if (response.ok) {
-        setSuccessMessage('✅ You\'re In! You\'ll receive a text when your first matching lead comes in.')
-        setFormData({
-          business_name: '',
-          contact_name: '',
-          email: '',
-          phone: '',
-          industry: '',
-          sub_service: '',
-          zip_codes: '',
-          sms_opt_in: true
-        })
+        if (data.redirect_url) {
+          window.location.href = data.redirect_url
+        } else {
+          setSuccessMessage('✅ You\'re In! You\'ll receive a text when your first matching lead comes in.')
+          setFormData({
+            business_name: '',
+            contact_name: '',
+            email: '',
+            phone: '',
+            industry: '',
+            sub_service: '',
+            zip_codes: '',
+            sms_opt_in: true
+          })
+        }
       } else {
         setErrorMessage(data.detail || 'An error occurred during signup')
       }

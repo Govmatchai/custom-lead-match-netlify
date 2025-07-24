@@ -39,6 +39,7 @@ interface Lead {
   validation_flags: any
   claimed: boolean
   claimed_by: string | null
+  claimed_at?: string
   is_archived: boolean
   created_at: string
 }
@@ -394,7 +395,7 @@ const AdminDashboard = () => {
                       </div>
                       <div className="flex justify-between items-center text-sm text-gray-500">
                         <span>Submitted: {new Date(lead.created_at).toLocaleDateString()}</span>
-                        {lead.claimed && lead.claimed_by && (
+                        {lead.claimed && lead.claimed_by && lead.claimed_at && (
                           <span>Claimed by: {lead.claimed_by} on {new Date(lead.claimed_at).toLocaleDateString()}</span>
                         )}
                       </div>
@@ -522,7 +523,7 @@ const AdminDashboard = () => {
                       </div>
                       <div className="flex justify-between items-center text-sm text-gray-500">
                         <span>Submitted: {new Date(lead.created_at).toLocaleDateString()}</span>
-                        {lead.claimed && lead.claimed_by && (
+                        {lead.claimed && lead.claimed_by && lead.claimed_at && (
                           <span>Claimed by: {lead.claimed_by} on {new Date(lead.claimed_at).toLocaleDateString()}</span>
                         )}
                       </div>

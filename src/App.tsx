@@ -11,6 +11,8 @@ import { FinanceLanding } from './components/industry-pages/FinanceLanding'
 import { InsuranceLanding } from './components/industry-pages/InsuranceLanding'
 import { HealthcareLanding } from './components/industry-pages/HealthcareLanding'
 import { AutoLanding } from './components/industry-pages/AutoLanding'
+import WelcomePage from './components/WelcomePage'
+import ContractorLogin from './components/ContractorLogin'
 
 function App() {
   return (
@@ -29,6 +31,8 @@ function App() {
           <Route path="/insurance" element={<InsuranceLanding />} />
           <Route path="/healthcare" element={<HealthcareLanding />} />
           <Route path="/auto" element={<AutoLanding />} />
+          <Route path="/welcome" element={<WelcomePage />} />
+          <Route path="/contractor-login" element={<ContractorLogin />} />
         </Routes>
       </div>
     </Router>
