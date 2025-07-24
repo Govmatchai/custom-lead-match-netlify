@@ -383,7 +383,7 @@ const ContractorDashboard = () => {
                           <div className="flex items-center space-x-2">
                             <Calendar className="w-4 h-4 text-gray-500" />
                             <span className="font-medium">Claimed:</span>
-                            <span>{new Date(lead.claimed_at).toLocaleDateString()}</span>
+                            <span>{lead.claimed_at ? new Date(lead.claimed_at).toLocaleDateString() : 'N/A'}</span>
                           </div>
                         </div>
                         <div className="mb-3">
@@ -430,7 +430,7 @@ const ContractorDashboard = () => {
                           <div className="flex items-center space-x-2">
                             <Calendar className="w-4 h-4 text-gray-500" />
                             <span className="font-medium">Claimed:</span>
-                            <span>{new Date(lead.claimed_at).toLocaleDateString()}</span>
+                            <span>{lead.claimed_at ? new Date(lead.claimed_at).toLocaleDateString() : 'N/A'}</span>
                           </div>
                         </div>
                         <div className="mb-3">
