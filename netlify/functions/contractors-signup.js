@@ -1,14 +1,9 @@
 import { createClient } from '@supabase/supabase-js'
-import sgMail from '@sendgrid/mail'
 
 const supabase = createClient(
   process.env.SUPABASE_URL || 'https://placeholder.supabase.co',
   process.env.SUPABASE_SERVICE_KEY || 'placeholder-key'
 )
-
-if (process.env.SENDGRID_API_KEY) {
-  sgMail.setApiKey(process.env.SENDGRID_API_KEY)
-}
 
 export const handler = async (event, context) => {
   console.log('=== CONTRACTORS SIGNUP DEBUG START ===')
@@ -135,27 +130,7 @@ export const handler = async (event, context) => {
 
     console.log('Contractor created successfully:', contractor.id)
 
-    try {
-      console.log('Attempting to send SendGrid email...')
-      const msg = {
-        to: email,
-        from: 'noreply@customleadmatch.com',
-        subject: 'Welcome to Custom Lead Match!',
-        html: `
-          <h2>Welcome to Custom Lead Match!</h2>
-          <p>Hi ${contact_name},</p>
-          <p>Thank you for signing up! Your contractor ID is: <strong>${contractor.id}</strong></p>
-          <p>You have 3 free lead credits to get started. You'll receive SMS notifications when new leads match your services.</p>
-          <p>Service Category: ${industry} - ${sub_service}</p>
-          <p>Service Areas: ${zipCodesArray.join(', ')}</p>
-          <p>Best regards,<br>Custom Lead Match Team</p>
-        `
-      }
-      await sgMail.send(msg)
-      console.log('SendGrid email sent successfully')
-    } catch (emailError) {
-      console.error('SendGrid email error:', emailError)
-    }
+    console.log('Skipping SendGrid email (removed for debugging)')
 
     try {
       console.log('Attempting to call send-welcome-email function...')
