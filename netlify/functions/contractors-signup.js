@@ -54,11 +54,14 @@ export const handler = async (event, context) => {
       }
     }
 
-    const zipCodesArray = zip_codes.split(',').map(zip => zip.trim())
+    const zipCodesArray = zip_codes.split(',').map(zip => zip.trim()).filter(zip => zip.length > 0)
     console.log('Processed ZIP codes:', zipCodesArray)
 
     console.log('Attempting Supabase insert...')
-    console.log('Insert data:', {
+    
+    const { data: contractor, error } = await supabase
+      .from('contractors')
+      .insert({
         business_name,
         contact_name,
         email,
@@ -69,58 +72,6 @@ export const handler = async (event, context) => {
         sms_opt_in: sms_opt_in || false,
         lead_credits: 3
       })
-    
-    console.log('Test 1: Minimal insert without optional fields')
-    const { data: testContractor, error: testError } = await supabase
-      .from('contractors')
-      .insert({
-        business_name,
-        contact_name,
-        email,
-        phone,
-        industry,
-        sub_service,
-        zip_codes: zipCodesArray
-      })
-      .select()
-      .single()
-
-    if (testError) {
-      console.error('Minimal insert failed:', testError)
-      console.error('Error code:', testError.code)
-      console.error('Error details:', testError.details)
-      console.error('Error hint:', testError.hint)
-      
-      if (testError.code === '23505') {
-        return {
-          statusCode: 400,
-          headers: {
-            'Content-Type': 'application/json',
-            'Access-Control-Allow-Origin': '*'
-          },
-          body: JSON.stringify({ success: false, message: 'Email address is already registered' })
-        }
-      }
-      
-      return {
-        statusCode: 400,
-        headers: {
-          'Content-Type': 'application/json',
-          'Access-Control-Allow-Origin': '*'
-        },
-        body: JSON.stringify({ success: false, message: testError.message, error_code: testError.code })
-      }
-    }
-
-    console.log('Minimal insert SUCCESS! Now updating with optional fields...')
-    
-    const { data: contractor, error } = await supabase
-      .from('contractors')
-      .update({
-        sms_opt_in: sms_opt_in || false,
-        lead_credits: 3
-      })
-      .eq('id', testContractor.id)
       .select()
       .single()
 
