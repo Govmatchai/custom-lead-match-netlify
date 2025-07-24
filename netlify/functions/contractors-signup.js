@@ -12,6 +12,18 @@ const supabase = createClient(
 sgMail.setApiKey(process.env.SENDGRID_API_KEY)
 
 export const handler = async (event, context) => {
+  if (!process.env.SUPABASE_URL || !process.env.SUPABASE_SERVICE_KEY) {
+    console.error('Missing Supabase environment variables')
+    return {
+      statusCode: 500,
+      headers: {
+        'Content-Type': 'application/json',
+        'Access-Control-Allow-Origin': '*'
+      },
+      body: JSON.stringify({ detail: 'Server configuration error' })
+    }
+  }
+
   if (event.httpMethod === 'OPTIONS') {
     return {
       statusCode: 200,
@@ -35,11 +47,15 @@ export const handler = async (event, context) => {
   }
 
   try {
+    console.log('Starting contractor signup process...')
     const data = JSON.parse(event.body)
+    console.log('Parsed request data:', data)
     const { business_name, contact_name, email, phone, industry, sub_service, zip_codes, sms_opt_in } = data
 
     const zipCodesArray = zip_codes.split(',').map(zip => zip.trim())
+    console.log('Processed ZIP codes:', zipCodesArray)
 
+    console.log('Attempting Supabase insert...')
     const { data: contractor, error } = await supabase
       .from('contractors')
       .insert([{
@@ -68,7 +84,10 @@ export const handler = async (event, context) => {
       }
     }
 
+    console.log('Contractor created successfully:', contractor.id)
+
     try {
+      console.log('Attempting to send SendGrid email...')
       const msg = {
         to: email,
         from: 'noreply@customleadmatch.com',
@@ -84,11 +103,13 @@ export const handler = async (event, context) => {
         `
       }
       await sgMail.send(msg)
+      console.log('SendGrid email sent successfully')
     } catch (emailError) {
-      console.error('Email error:', emailError)
+      console.error('SendGrid email error:', emailError)
     }
 
     try {
+      console.log('Attempting to call send-welcome-email function...')
       const welcomeEmailResponse = await fetch(`${process.env.URL || 'https://customleadmatch.netlify.app'}/.netlify/functions/send-welcome-email`, {
         method: 'POST',
         headers: {
@@ -104,11 +125,14 @@ export const handler = async (event, context) => {
       
       if (!welcomeEmailResponse.ok) {
         console.error('Failed to send welcome email:', await welcomeEmailResponse.text())
+      } else {
+        console.log('Welcome email function called successfully')
       }
     } catch (emailError) {
-      console.error('Welcome email error:', emailError)
+      console.error('Welcome email fetch error:', emailError)
     }
 
+    console.log('Contractor signup completed successfully')
     return {
       statusCode: 200,
       headers: {
