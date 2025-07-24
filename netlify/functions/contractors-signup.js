@@ -58,9 +58,7 @@ export const handler = async (event, context) => {
     console.log('Processed ZIP codes:', zipCodesArray)
 
     console.log('Attempting Supabase insert...')
-    const { data: contractor, error } = await supabase
-      .from('contractors')
-      .insert([{
+    console.log('Insert data:', {
         business_name,
         contact_name,
         email,
@@ -70,7 +68,21 @@ export const handler = async (event, context) => {
         zip_codes: zipCodesArray,
         sms_opt_in: sms_opt_in || false,
         lead_credits: 3
-      }])
+      })
+    
+    const { data: contractor, error } = await supabase
+      .from('contractors')
+      .insert({
+        business_name,
+        contact_name,
+        email,
+        phone,
+        industry,
+        sub_service,
+        zip_codes: zipCodesArray,
+        sms_opt_in: sms_opt_in || false,
+        lead_credits: 3
+      })
       .select()
       .single()
 
