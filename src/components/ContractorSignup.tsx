@@ -178,14 +178,24 @@ const ContractorSignup = () => {
           <div className="mb-8 p-4 bg-green-50 border-2 border-green-200 rounded-lg max-w-2xl mx-auto">
             <h3 className="text-lg font-semibold text-green-800 mb-2 text-center">🔥 Lead Quality Guarantee</h3>
             <p className="text-green-700 text-center mb-3">
-              Every lead is pre-screened and validated before being sent to you. We reject spam, invalid numbers, duplicates, and junk leads—so you only get high-quality opportunities.
+              Every lead is manually and programmatically screened for validity before being sent to you. We reject spam, invalid numbers, duplicates, and junk leads—so you only get high-quality opportunities that convert better.
             </p>
             <div className="text-sm text-green-600 space-y-1">
               <div>✅ All phone numbers are screened for validity before delivery</div>
-              <div>✅ Email format validation</div>
+              <div>✅ Email format validation and deliverability checks</div>
               <div>✅ Duplicate detection (30-day window)</div>
-              <div>✅ Content filtering for spam and junk</div>
-              <div>✅ IP rate limiting to prevent abuse</div>
+              <div>✅ Content filtering for spam and junk submissions</div>
+              <div>✅ IP rate limiting to prevent abuse and fake leads</div>
+              <div>✅ Each lead is sold only once - exclusive to you</div>
+            </div>
+            <div className="mt-4 p-3 bg-blue-50 border border-blue-200 rounded">
+              <h4 className="font-semibold text-blue-800 mb-2">💰 Why Clean Data Matters:</h4>
+              <div className="text-sm text-blue-700 space-y-1">
+                <div>• Higher conversion rates from valid contacts</div>
+                <div>• Less time wasted on bad leads</div>
+                <div>• Better ROI on your lead investment</div>
+                <div>• Direct, actionable customer contact information</div>
+              </div>
             </div>
           </div>
         </div>

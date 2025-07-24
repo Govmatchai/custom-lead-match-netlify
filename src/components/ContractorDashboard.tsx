@@ -11,8 +11,13 @@ interface Lead {
   sub_service: string
   zip_code: string
   phone: string
+  email?: string
   description: string
-  claimed_at: string
+  claimed: boolean
+  claimed_by?: string
+  claimed_at?: string
+  is_archived?: boolean
+  created_at: string
 }
 
 interface Contractor {
@@ -64,8 +69,8 @@ const ContractorDashboard = () => {
       ])
       
       if (dashboardResponse.ok && availableResponse.ok) {
-        const archivedLeads = dashboardData.claimed_leads.filter(lead => lead.is_archived)
-        const activeClaimedLeads = dashboardData.claimed_leads.filter(lead => !lead.is_archived)
+        const archivedLeads = dashboardData.claimed_leads.filter((lead: Lead) => lead.is_archived)
+        const activeClaimedLeads = dashboardData.claimed_leads.filter((lead: Lead) => !lead.is_archived)
         
         setDashboardData({
           contractor: dashboardData.contractor,
@@ -320,22 +325,23 @@ const ContractorDashboard = () => {
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-3">
                           <div className="flex items-center space-x-2">
                             <User className="w-4 h-4 text-gray-500" />
-                            <span className="font-medium">Customer:</span>
-                            <span>{lead.customer_name}</span>
+                            <span className="font-medium">Service Type:</span>
+                            <span>{lead.service_category} - {lead.sub_service}</span>
                           </div>
                           <div className="flex items-center space-x-2">
                             <MapPin className="w-4 h-4 text-gray-500" />
-                            <span className="font-medium">Location:</span>
+                            <span className="font-medium">ZIP Code:</span>
                             <span>{lead.zip_code}</span>
                           </div>
                         </div>
                         <div className="mb-3">
-                          <span className="font-medium">Service:</span>
-                          <span className="ml-2">{lead.service_category} - {lead.sub_service}</span>
+                          <span className="font-medium">Project Summary:</span>
+                          <p className="mt-1 text-gray-700">{lead.description.length > 150 ? lead.description.substring(0, 150) + '...' : lead.description}</p>
                         </div>
-                        <div className="mb-3">
-                          <span className="font-medium">Description:</span>
-                          <p className="mt-1 text-gray-700">{lead.description}</p>
+                        <div className="mb-3 p-3 bg-yellow-50 border border-yellow-200 rounded">
+                          <p className="text-sm text-yellow-800">
+                            🔒 <strong>Contact details hidden until claimed.</strong> Customer name, phone, and email will be revealed after you claim this lead.
+                          </p>
                         </div>
                         <div className="flex justify-between items-center text-sm text-gray-500">
                           <span>Submitted: {new Date(lead.created_at).toLocaleDateString()}</span>
