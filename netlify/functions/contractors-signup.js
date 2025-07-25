@@ -12,8 +12,17 @@ export const handler = async (event, context) => {
   console.log('=== CONTRACTORS SIGNUP DEBUG START ===')
   console.log('Environment check:', {
     hasSupabaseUrl: !!process.env.SUPABASE_URL,
-    hasSupabaseKey: !!process.env.SUPABASE_SERVICE_KEY,
+    hasSupabaseServiceKey: !!process.env.SUPABASE_SERVICE_KEY,
+    hasSupabaseAnonKey: !!process.env.SUPABASE_ANON_KEY,
+    supabaseUrlLength: process.env.SUPABASE_URL ? process.env.SUPABASE_URL.length : 0,
+    serviceKeyLength: process.env.SUPABASE_SERVICE_KEY ? process.env.SUPABASE_SERVICE_KEY.length : 0,
     url: process.env.URL
+  })
+  
+  console.log('Supabase client config:', {
+    url: process.env.SUPABASE_URL ? process.env.SUPABASE_URL.substring(0, 30) + '...' : 'MISSING',
+    keyType: 'SERVICE_KEY',
+    keyPrefix: process.env.SUPABASE_SERVICE_KEY ? process.env.SUPABASE_SERVICE_KEY.substring(0, 20) + '...' : 'MISSING'
   })
 
   if (event.httpMethod === 'OPTIONS') {
