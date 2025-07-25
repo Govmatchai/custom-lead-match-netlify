@@ -2,9 +2,9 @@ name: Deploy to Netlify
 
 on:
   push:
-    branches: [ main, master ]
+    branches: [ main, master, devin/1721659027-custom-lead-match-netlify-platform ]
   pull_request:
-    branches: [ main, master ]
+    branches: [ main, master, devin/1721659027-custom-lead-match-netlify-platform ]
 
 jobs:
   build-and-deploy:
@@ -36,7 +36,7 @@ jobs:
       uses: nwtgck/actions-netlify@v2.0
       with:
         publish-dir: './dist'
-        production-branch: main
+        production-branch: devin/1721659027-custom-lead-match-netlify-platform
         github-token: ${{ secrets.GITHUB_TOKEN }}
         deploy-message: "Deploy from GitHub Actions"
         enable-pull-request-comment: false
