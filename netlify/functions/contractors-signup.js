@@ -55,6 +55,7 @@ export const handler = async (event, context) => {
 
     const zipCodesArray = zip_codes.split(',').map(zip => zip.trim()).filter(zip => zip.length > 0)
 
+    console.log('Attempting contractors table insert...')
     const { data: contractor, error } = await supabase
       .from('contractors')
       .insert({
@@ -72,16 +73,29 @@ export const handler = async (event, context) => {
       .single()
 
     if (error) {
-      console.error('Supabase error:', error)
+      console.error('Contractors table insert failed:', error)
+      console.error('Error details:', {
+        message: error.message,
+        code: error.code,
+        hint: error.hint,
+        details: error.details
+      })
       return {
         statusCode: 400,
         headers: {
           'Content-Type': 'application/json',
           'Access-Control-Allow-Origin': '*'
         },
-        body: JSON.stringify({ success: false, message: error.message })
+        body: JSON.stringify({ 
+          success: false, 
+          message: error.message,
+          error_code: error.code,
+          hint: error.hint
+        })
       }
     }
+
+    console.log('Contractors table insert successful:', contractor.id)
 
     try {
       const welcomeEmailUrl = `${process.env.URL || 'https://customleadmatch.netlify.app'}/.netlify/functions/send-welcome-email`
