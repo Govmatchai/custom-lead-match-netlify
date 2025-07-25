@@ -72,10 +72,6 @@ const ContractorSignup = () => {
 
   const handleInputChange = (field: string, value: string | boolean) => {
     console.log(`Field ${field} changed to:`, value)
-    setFormData(prev => ({
-      ...prev,
-      [field]: value
-    }))
     
     if (field === 'industry') {
       setFormData(prev => ({
@@ -86,6 +82,11 @@ const ContractorSignup = () => {
       if (typeof value === 'string') {
         fetchSubServices(value)
       }
+    } else {
+      setFormData(prev => ({
+        ...prev,
+        [field]: value
+      }))
     }
   }
 
