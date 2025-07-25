@@ -79,6 +79,19 @@ export const handler = async (event, context) => {
         hint: error.hint,
         details: error.details
       })
+      
+      let userMessage = 'Failed to register contractor'
+      
+      if (error.code === '23505') {
+        if (error.message.includes('contractors_email_key')) {
+          userMessage = 'An account with this email address already exists. Please use a different email or try logging in.'
+        } else if (error.message.includes('contractors_username_key')) {
+          userMessage = 'This username is already taken. Please choose a different username.'
+        } else {
+          userMessage = 'An account with these details already exists. Please check your information.'
+        }
+      }
+      
       return {
         statusCode: 400,
         headers: {
@@ -87,9 +100,8 @@ export const handler = async (event, context) => {
         },
         body: JSON.stringify({ 
           success: false, 
-          message: error.message,
-          error_code: error.code,
-          hint: error.hint
+          message: userMessage,
+          error_code: error.code
         })
       }
     }
