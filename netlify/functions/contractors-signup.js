@@ -1,5 +1,5 @@
 import { createClient } from '@supabase/supabase-js'
-import bcrypt from 'bcrypt'
+import bcryptjs from 'bcryptjs'
 import dotenv from 'dotenv'
 
 dotenv.config({ path: '../../.env' })
@@ -48,7 +48,7 @@ export const handler = async (event, context) => {
     }
 
     const saltRounds = 12
-    const password_hash = await bcrypt.hash(password, saltRounds)
+    const password_hash = await bcryptjs.hash(password, saltRounds)
 
     const zipCodesArray = zip_codes.split(',').map(zip => zip.trim()).filter(zip => zip.length > 0)
 

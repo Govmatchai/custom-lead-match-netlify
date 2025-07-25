@@ -1,5 +1,5 @@
 import { createClient } from '@supabase/supabase-js'
-import bcrypt from 'bcrypt'
+import bcryptjs from 'bcryptjs'
 import { randomBytes } from 'crypto'
 import dotenv from 'dotenv'
 
@@ -64,7 +64,7 @@ export const handler = async (event, context) => {
       }
     }
 
-    const passwordMatch = await bcrypt.compare(password, contractor.password_hash)
+    const passwordMatch = await bcryptjs.compare(password, contractor.password_hash)
     
     if (!passwordMatch) {
       return {
