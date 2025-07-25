@@ -90,7 +90,7 @@ export const handler = async (event, context) => {
     
     const { data: contractor, error } = await supabase
       .from('contractors')
-      .insert({
+      .insert([{
         business_name,
         contact_name,
         email,
@@ -100,7 +100,7 @@ export const handler = async (event, context) => {
         zip_codes: zipCodesArray,
         sms_opt_in: sms_opt_in || false,
         lead_credits: 3
-      })
+      }])
       .select()
       .single()
 
