@@ -21,9 +21,7 @@ jobs:
         cache: 'npm'
 
     - name: Install dependencies
-      run: |
-        npm ci
-        cd netlify/functions && npm ci && cd ../..
+      run: npm ci
 
     - name: Build project
       run: npm run build
