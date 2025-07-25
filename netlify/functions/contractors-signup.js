@@ -49,6 +49,21 @@ export const handler = async (event, context) => {
 
   try {
     console.log('Parsing request body...')
+    console.log('Raw event.body:', event.body)
+    console.log('Event body type:', typeof event.body)
+    console.log('Event body length:', event.body ? event.body.length : 'null/undefined')
+    
+    if (!event.body) {
+      return {
+        statusCode: 400,
+        headers: {
+          'Content-Type': 'application/json',
+          'Access-Control-Allow-Origin': '*'
+        },
+        body: JSON.stringify({ success: false, message: 'Request body is missing' })
+      }
+    }
+    
     const { business_name, contact_name, email, phone, industry, sub_service, zip_codes, sms_opt_in } = JSON.parse(event.body)
     console.log('Parsed data:', { business_name, contact_name, email, phone, industry, sub_service, zip_codes, sms_opt_in })
 
