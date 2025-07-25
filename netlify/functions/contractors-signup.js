@@ -9,21 +9,6 @@ const supabase = createClient(
 )
 
 export const handler = async (event, context) => {
-  console.log('=== CONTRACTORS SIGNUP DEBUG START ===')
-  console.log('Environment check:', {
-    hasSupabaseUrl: !!process.env.SUPABASE_URL,
-    hasSupabaseServiceKey: !!process.env.SUPABASE_SERVICE_KEY,
-    hasSupabaseAnonKey: !!process.env.SUPABASE_ANON_KEY,
-    supabaseUrlLength: process.env.SUPABASE_URL ? process.env.SUPABASE_URL.length : 0,
-    serviceKeyLength: process.env.SUPABASE_SERVICE_KEY ? process.env.SUPABASE_SERVICE_KEY.length : 0,
-    url: process.env.URL
-  })
-  
-  console.log('Supabase client config:', {
-    url: process.env.SUPABASE_URL ? process.env.SUPABASE_URL.substring(0, 30) + '...' : 'MISSING',
-    keyType: 'SERVICE_KEY',
-    keyPrefix: process.env.SUPABASE_SERVICE_KEY ? process.env.SUPABASE_SERVICE_KEY.substring(0, 20) + '...' : 'MISSING'
-  })
 
   if (event.httpMethod === 'OPTIONS') {
     return {
@@ -48,24 +33,18 @@ export const handler = async (event, context) => {
   }
 
   try {
-    console.log('Parsing request body...')
-    console.log('Raw event.body:', event.body)
-    console.log('Event body type:', typeof event.body)
-    console.log('Event body length:', event.body ? event.body.length : 'null/undefined')
-    
-    if (!event.body) {
+    const { business_name, contact_name, email, phone, industry, sub_service, zip_codes, sms_opt_in } = JSON.parse(event.body)
+
+    if (!business_name || !contact_name || !email || !phone || !industry || !sub_service || !zip_codes) {
       return {
         statusCode: 400,
         headers: {
           'Content-Type': 'application/json',
           'Access-Control-Allow-Origin': '*'
         },
-        body: JSON.stringify({ success: false, message: 'Request body is missing' })
+        body: JSON.stringify({ success: false, message: 'Missing required fields' })
       }
     }
-    
-    const { business_name, contact_name, email, phone, industry, sub_service, zip_codes, sms_opt_in } = JSON.parse(event.body)
-    console.log('Parsed data:', { business_name, contact_name, email, phone, industry, sub_service, zip_codes, sms_opt_in })
 
     if (!business_name || !contact_name || !email || !phone || !industry || !sub_service || !zip_codes) {
       return {
@@ -79,22 +58,10 @@ export const handler = async (event, context) => {
     }
 
     const zipCodesArray = zip_codes.split(',').map(zip => zip.trim()).filter(zip => zip.length > 0)
-    console.log('Processed ZIP codes:', zipCodesArray)
 
-    if (!sub_service || sub_service === 'Select sub-service') {
-      console.error('Missing or invalid sub_service:', sub_service)
-      return {
-        statusCode: 400,
-        headers: {
-          'Content-Type': 'application/json',
-          'Access-Control-Allow-Origin': '*'
-        },
-        body: JSON.stringify({ success: false, message: 'Please select a valid sub-service' })
-      }
-    }
-
-    console.log('Attempting Supabase insert...')
-    const insertData = {
+    const { data: contractor, error } = await supabase
+      .from('contractors')
+      .insert({
         business_name,
         contact_name,
         email,
@@ -104,31 +71,7 @@ export const handler = async (event, context) => {
         zip_codes: zipCodesArray,
         sms_opt_in: sms_opt_in || false,
         lead_credits: 3
-      }
-    console.log('Insert data:', insertData)
-    
-    console.log('Testing Supabase connection...')
-    const { data: testData, error: testError } = await supabase
-      .from('contractors')
-      .select('id')
-      .limit(1)
-    
-    if (testError) {
-      console.error('Supabase connection test failed:', testError)
-      return {
-        statusCode: 500,
-        headers: {
-          'Content-Type': 'application/json',
-          'Access-Control-Allow-Origin': '*'
-        },
-        body: JSON.stringify({ success: false, message: 'Database connection failed: ' + testError.message })
-      }
-    }
-    console.log('Supabase connection test passed')
-    
-    const { data: contractor, error } = await supabase
-      .from('contractors')
-      .insert(insertData)
+      })
       .select()
       .single()
 
@@ -144,12 +87,8 @@ export const handler = async (event, context) => {
       }
     }
 
-    console.log('Contractor created successfully:', contractor.id)
-
     try {
-      console.log('Attempting to call send-welcome-email function...')
       const welcomeEmailUrl = `${process.env.URL || 'https://customleadmatch.netlify.app'}/.netlify/functions/send-welcome-email`
-      console.log('Welcome email URL:', welcomeEmailUrl)
       
       const welcomeEmailResponse = await fetch(welcomeEmailUrl, {
         method: 'POST',
@@ -164,16 +103,12 @@ export const handler = async (event, context) => {
         })
       })
       
-      console.log('Welcome email response status:', welcomeEmailResponse.status)
       if (!welcomeEmailResponse.ok) {
         const errorText = await welcomeEmailResponse.text()
         console.error('Failed to send welcome email:', errorText)
-      } else {
-        console.log('Welcome email sent successfully')
       }
     } catch (emailError) {
       console.error('Welcome email fetch error:', emailError)
-      console.error('Error details:', emailError.message, emailError.stack)
     }
 
     return {
@@ -191,14 +126,13 @@ export const handler = async (event, context) => {
     }
   } catch (error) {
     console.error('Error in contractor signup:', error)
-    console.error('Error details:', error.message, error.stack)
     return {
       statusCode: 500,
       headers: {
         'Content-Type': 'application/json',
         'Access-Control-Allow-Origin': '*'
       },
-      body: JSON.stringify({ success: false, message: error.message || 'Failed to register contractor' })
+      body: JSON.stringify({ success: false, message: 'Failed to register contractor' })
     }
   }
 }
