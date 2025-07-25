@@ -46,17 +46,6 @@ export const handler = async (event, context) => {
       }
     }
 
-    if (!business_name || !contact_name || !email || !phone || !industry || !sub_service || !zip_codes) {
-      return {
-        statusCode: 400,
-        headers: {
-          'Content-Type': 'application/json',
-          'Access-Control-Allow-Origin': '*'
-        },
-        body: JSON.stringify({ success: false, message: 'Missing required fields' })
-      }
-    }
-
     const zipCodesArray = zip_codes.split(',').map(zip => zip.trim()).filter(zip => zip.length > 0)
 
     const { data: contractor, error } = await supabase
