@@ -70,24 +70,6 @@ export const handler = async (event, context) => {
         lead_credits: 3
       })
     
-    const { data: existingContractor } = await supabase
-      .from('contractors')
-      .select('email')
-      .eq('email', email)
-      .single()
-    
-    if (existingContractor) {
-      console.log('Email already exists:', email)
-      return {
-        statusCode: 400,
-        headers: {
-          'Content-Type': 'application/json',
-          'Access-Control-Allow-Origin': '*'
-        },
-        body: JSON.stringify({ success: false, message: 'Email address is already registered' })
-      }
-    }
-    
     const { data: contractor, error } = await supabase
       .from('contractors')
       .insert([{
