@@ -58,6 +58,35 @@ export const handler = async (event, context) => {
     console.log('Processed ZIP codes:', zipCodesArray)
 
     console.log('Attempting Supabase insert...')
+    console.log('Insert data:', {
+        business_name,
+        contact_name,
+        email,
+        phone,
+        industry,
+        sub_service,
+        zip_codes: zipCodesArray,
+        sms_opt_in: sms_opt_in || false,
+        lead_credits: 3
+      })
+    
+    const { data: existingContractor } = await supabase
+      .from('contractors')
+      .select('email')
+      .eq('email', email)
+      .single()
+    
+    if (existingContractor) {
+      console.log('Email already exists:', email)
+      return {
+        statusCode: 400,
+        headers: {
+          'Content-Type': 'application/json',
+          'Access-Control-Allow-Origin': '*'
+        },
+        body: JSON.stringify({ success: false, message: 'Email address is already registered' })
+      }
+    }
     
     const { data: contractor, error } = await supabase
       .from('contractors')
