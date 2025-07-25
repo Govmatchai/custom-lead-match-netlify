@@ -114,6 +114,7 @@ const ContractorSignup = () => {
 
       if (response.ok) {
         if (data.redirect_url) {
+          console.log('Redirecting to:', data.redirect_url)
           window.location.href = data.redirect_url
         } else {
           setSuccessMessage('✅ You\'re In! You\'ll receive a text when your first matching lead comes in.')
