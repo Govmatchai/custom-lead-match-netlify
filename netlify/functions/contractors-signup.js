@@ -6,7 +6,8 @@ dotenv.config({ path: '../../.env' })
 console.log('Environment check:', {
   hasUrl: !!process.env.SUPABASE_URL,
   hasKey: !!process.env.SUPABASE_SERVICE_KEY,
-  urlPrefix: process.env.SUPABASE_URL?.substring(0, 20)
+  urlPrefix: process.env.SUPABASE_URL?.substring(0, 20),
+  keyPrefix: process.env.SUPABASE_SERVICE_KEY?.substring(0, 20)
 })
 
 const supabase = createClient(
