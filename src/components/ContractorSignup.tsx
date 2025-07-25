@@ -371,7 +371,7 @@ const ContractorSignup = () => {
                     required
                     value={formData.username}
                     onChange={(e) => handleInputChange('username', e.target.value)}
-                    placeholder="johnsmith123"
+                    placeholder="Choose a unique username"
                   />
                 </div>
                 <div>
