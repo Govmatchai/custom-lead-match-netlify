@@ -69,7 +69,39 @@
   }
 }
 
-/* Fix dropdown styling for better visibility */
+/* Fix Radix UI Select dropdown styling for better visibility */
+[data-radix-select-content] {
+  background-color: white !important;
+  border: 1px solid #e5e7eb !important;
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05) !important;
+  z-index: 9999 !important;
+  backdrop-filter: none !important;
+}
+
+[data-radix-select-item] {
+  background-color: white !important;
+  color: #111827 !important;
+  padding: 8px 12px !important;
+  cursor: pointer !important;
+}
+
+[data-radix-select-item]:hover,
+[data-radix-select-item][data-highlighted] {
+  background-color: #f3f4f6 !important;
+  color: #111827 !important;
+}
+
+[data-radix-select-item][data-state="checked"] {
+  background-color: #3b82f6 !important;
+  color: white !important;
+}
+
+/* Ensure dropdown viewport has solid background */
+[data-radix-select-viewport] {
+  background-color: white !important;
+}
+
+/* Legacy select styling for fallback */
 select, select option {
   background-color: white !important;
   color: #000000 !important;
@@ -77,18 +109,4 @@ select, select option {
   padding: 8px !important;
   font-size: 16px !important;
   z-index: 1000 !important;
-}
-
-/* Ensure dropdown options are visible */
-select option {
-  background-color: white !important;
-  color: #000000 !important;
-  padding: 8px 12px !important;
-}
-
-/* Additional styling for select elements */
-select:focus {
-  outline: 2px solid #2563eb !important;
-  outline-offset: 2px !important;
-  border-color: #2563eb !important;
 }
