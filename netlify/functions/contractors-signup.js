@@ -81,19 +81,6 @@ export const handler = async (event, context) => {
     const zipCodesArray = zip_codes.split(',').map(zip => zip.trim()).filter(zip => zip.length > 0)
     console.log('Processed ZIP codes:', zipCodesArray)
 
-    console.log('Attempting Supabase insert...')
-    console.log('Insert data:', {
-        business_name,
-        contact_name,
-        email,
-        phone,
-        industry,
-        sub_service,
-        zip_codes: zipCodesArray,
-        sms_opt_in: sms_opt_in || false,
-        lead_credits: 3
-      })
-    
     if (!sub_service || sub_service === 'Select sub-service') {
       console.error('Missing or invalid sub_service:', sub_service)
       return {
@@ -105,10 +92,9 @@ export const handler = async (event, context) => {
         body: JSON.stringify({ success: false, message: 'Please select a valid sub-service' })
       }
     }
-    
-    const { data: contractor, error } = await supabase
-      .from('contractors')
-      .insert({
+
+    console.log('Attempting Supabase insert...')
+    const insertData = {
         business_name,
         contact_name,
         email,
@@ -118,7 +104,31 @@ export const handler = async (event, context) => {
         zip_codes: zipCodesArray,
         sms_opt_in: sms_opt_in || false,
         lead_credits: 3
-      })
+      }
+    console.log('Insert data:', insertData)
+    
+    console.log('Testing Supabase connection...')
+    const { data: testData, error: testError } = await supabase
+      .from('contractors')
+      .select('id')
+      .limit(1)
+    
+    if (testError) {
+      console.error('Supabase connection test failed:', testError)
+      return {
+        statusCode: 500,
+        headers: {
+          'Content-Type': 'application/json',
+          'Access-Control-Allow-Origin': '*'
+        },
+        body: JSON.stringify({ success: false, message: 'Database connection failed: ' + testError.message })
+      }
+    }
+    console.log('Supabase connection test passed')
+    
+    const { data: contractor, error } = await supabase
+      .from('contractors')
+      .insert(insertData)
       .select()
       .single()
 
