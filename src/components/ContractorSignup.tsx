@@ -71,10 +71,22 @@ const ContractorSignup = () => {
   }
 
   const handleInputChange = (field: string, value: string | boolean) => {
+    console.log(`Field ${field} changed to:`, value)
     setFormData(prev => ({
       ...prev,
       [field]: value
     }))
+    
+    if (field === 'industry') {
+      setFormData(prev => ({
+        ...prev,
+        [field]: value,
+        sub_service: ''
+      }))
+      if (typeof value === 'string') {
+        fetchSubServices(value)
+      }
+    }
   }
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -83,7 +95,20 @@ const ContractorSignup = () => {
     setErrorMessage('')
     setSuccessMessage('')
 
+    console.log('Form data on submit:', formData)
+
     if (!formData.business_name || !formData.contact_name || !formData.email || !formData.phone || !formData.username || !formData.password || !formData.industry || !formData.sub_service || !formData.zip_codes) {
+      console.log('Missing fields:', {
+        business_name: !formData.business_name,
+        contact_name: !formData.contact_name,
+        email: !formData.email,
+        phone: !formData.phone,
+        username: !formData.username,
+        password: !formData.password,
+        industry: !formData.industry,
+        sub_service: !formData.sub_service,
+        zip_codes: !formData.zip_codes
+      })
       setErrorMessage('Please fill in all required fields')
       setIsSubmitting(false)
       return
