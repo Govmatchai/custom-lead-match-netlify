@@ -79,9 +79,21 @@ export const handler = async (event, context) => {
         lead_credits: 3
       })
     
+    if (!sub_service || sub_service === 'Select sub-service') {
+      console.error('Missing or invalid sub_service:', sub_service)
+      return {
+        statusCode: 400,
+        headers: {
+          'Content-Type': 'application/json',
+          'Access-Control-Allow-Origin': '*'
+        },
+        body: JSON.stringify({ success: false, message: 'Please select a valid sub-service' })
+      }
+    }
+    
     const { data: contractor, error } = await supabase
       .from('contractors')
-      .insert([{
+      .insert({
         business_name,
         contact_name,
         email,
@@ -91,7 +103,7 @@ export const handler = async (event, context) => {
         zip_codes: zipCodesArray,
         sms_opt_in: sms_opt_in || false,
         lead_credits: 3
-      }])
+      })
       .select()
       .single()
 
