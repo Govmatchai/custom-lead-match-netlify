@@ -32,16 +32,35 @@ export const handler = async (event, context) => {
   }
 
   try {
-    const { contractor_id } = event.queryStringParameters || {}
+    const { contractor_id, session_token } = event.queryStringParameters || {}
 
-    if (!contractor_id) {
+    if (!contractor_id || !session_token) {
       return {
         statusCode: 400,
         headers: {
           'Content-Type': 'application/json',
           'Access-Control-Allow-Origin': '*'
         },
-        body: JSON.stringify({ detail: 'Contractor ID is required' })
+        body: JSON.stringify({ detail: 'Contractor ID and session token are required' })
+      }
+    }
+
+    const { data: session, error: sessionError } = await supabase
+      .from('contractor_sessions')
+      .select('*')
+      .eq('session_token', session_token)
+      .eq('contractor_id', contractor_id)
+      .gt('expires_at', new Date().toISOString())
+      .single()
+
+    if (sessionError || !session) {
+      return {
+        statusCode: 401,
+        headers: {
+          'Content-Type': 'application/json',
+          'Access-Control-Allow-Origin': '*'
+        },
+        body: JSON.stringify({ detail: 'Invalid or expired session' })
       }
     }
 

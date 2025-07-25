@@ -1,96 +1,136 @@
-import { useEffect, useState } from 'react'
-import { useSearchParams, useNavigate } from 'react-router-dom'
+import { useState } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { Card, CardContent, CardHeader, CardTitle } from './ui/card'
 import { Button } from './ui/button'
-import { Loader2, CheckCircle, AlertCircle } from 'lucide-react'
+import { Input } from './ui/input'
+import { Label } from './ui/label'
+import { Loader2, AlertCircle, Eye, EyeOff } from 'lucide-react'
 
 export default function ContractorLogin() {
-  const [searchParams] = useSearchParams()
   const navigate = useNavigate()
-  const [loading, setLoading] = useState(true)
+  const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
-  const token = searchParams.get('token')
+  const [showPassword, setShowPassword] = useState(false)
+  const [formData, setFormData] = useState({
+    username: '',
+    password: ''
+  })
 
-  useEffect(() => {
-    if (!token) {
-      setError('No login token provided')
-      setLoading(false)
-      return
-    }
+  const handleInputChange = (field: string, value: string) => {
+    setFormData(prev => ({
+      ...prev,
+      [field]: value
+    }))
+  }
 
-    processLoginToken()
-  }, [token])
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault()
+    setLoading(true)
+    setError('')
 
-  const processLoginToken = async () => {
     try {
-      const response = await fetch(`/.netlify/functions/contractor-login?token=${token}`)
+      const response = await fetch('/.netlify/functions/contractor-login', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(formData)
+      })
+      
       const data = await response.json()
       
       if (response.ok && data.success) {
+        localStorage.setItem('contractor_session_token', data.session_token)
+        localStorage.setItem('contractor_id', data.contractor_id)
+        
         if (data.redirect_url) {
-          window.location.href = data.redirect_url
+          navigate(data.redirect_url)
         } else {
           navigate(`/contractor/${data.contractor_id}`)
         }
       } else {
-        setError(data.message || 'Invalid or expired login link')
+        setError(data.message || 'Login failed')
       }
     } catch (error) {
-      console.error('Error processing login token:', error)
-      setError('Failed to process login link')
+      console.error('Error during login:', error)
+      setError('Network error. Please try again.')
     } finally {
       setLoading(false)
     }
   }
 
-  if (loading) {
-    return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <Card className="w-full max-w-md">
-          <CardContent className="pt-6">
-            <div className="text-center">
-              <Loader2 className="w-8 h-8 animate-spin mx-auto mb-4 text-blue-600" />
-              <h2 className="text-xl font-semibold mb-2">Logging you in...</h2>
-              <p className="text-gray-600">Please wait while we verify your login link.</p>
-            </div>
-          </CardContent>
-        </Card>
-      </div>
-    )
-  }
-
-  if (error) {
-    return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <Card className="w-full max-w-md">
-          <CardHeader>
-            <CardTitle className="flex items-center space-x-2 text-red-600">
-              <AlertCircle className="w-5 h-5" />
-              <span>Login Failed</span>
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <p className="text-gray-700 mb-4">{error}</p>
-            <p className="text-sm text-gray-500 mb-4">
-              This could happen if the login link has expired or has already been used.
-            </p>
-            <Button onClick={() => navigate('/')} className="w-full">
-              Return to Home
-            </Button>
-          </CardContent>
-        </Card>
-      </div>
-    )
-  }
-
   return (
-    <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+    <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
       <Card className="w-full max-w-md">
-        <CardContent className="pt-6">
-          <div className="text-center">
-            <CheckCircle className="w-8 h-8 text-green-600 mx-auto mb-4" />
-            <h2 className="text-xl font-semibold mb-2">Login Successful!</h2>
-            <p className="text-gray-600">Redirecting you to your dashboard...</p>
+        <CardHeader>
+          <CardTitle className="text-2xl text-center">Contractor Login</CardTitle>
+        </CardHeader>
+        <CardContent>
+          {error && (
+            <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-md">
+              <div className="flex items-center">
+                <AlertCircle className="w-4 h-4 text-red-600 mr-2" />
+                <span className="text-red-700 text-sm">{error}</span>
+              </div>
+            </div>
+          )}
+
+          <form onSubmit={handleSubmit} className="space-y-4">
+            <div>
+              <Label htmlFor="username">Username</Label>
+              <Input
+                id="username"
+                type="text"
+                required
+                value={formData.username}
+                onChange={(e) => handleInputChange('username', e.target.value)}
+                placeholder="Enter your username"
+              />
+            </div>
+            
+            <div>
+              <Label htmlFor="password">Password</Label>
+              <div className="relative">
+                <Input
+                  id="password"
+                  type={showPassword ? 'text' : 'password'}
+                  required
+                  value={formData.password}
+                  onChange={(e) => handleInputChange('password', e.target.value)}
+                  placeholder="Enter your password"
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword(!showPassword)}
+                  className="absolute right-3 top-1/2 transform -translate-y-1/2"
+                >
+                  {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                </button>
+              </div>
+            </div>
+
+            <Button type="submit" className="w-full" disabled={loading}>
+              {loading ? (
+                <>
+                  <Loader2 className="w-4 h-4 animate-spin mr-2" />
+                  Logging in...
+                </>
+              ) : (
+                'Login'
+              )}
+            </Button>
+          </form>
+
+          <div className="mt-4 text-center">
+            <p className="text-sm text-gray-600">
+              Don't have an account?{' '}
+              <button
+                onClick={() => navigate('/')}
+                className="text-blue-600 hover:text-blue-800 underline"
+              >
+                Sign up here
+              </button>
+            </p>
           </div>
         </CardContent>
       </Card>

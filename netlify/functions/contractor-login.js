@@ -1,4 +1,6 @@
 import { createClient } from '@supabase/supabase-js'
+import bcrypt from 'bcrypt'
+import { randomBytes } from 'crypto'
 import dotenv from 'dotenv'
 
 dotenv.config({ path: '../../.env' })
@@ -20,7 +22,7 @@ export const handler = async (event, context) => {
     }
   }
 
-  if (event.httpMethod !== 'GET') {
+  if (event.httpMethod !== 'POST') {
     return {
       statusCode: 405,
       headers: {
@@ -32,45 +34,70 @@ export const handler = async (event, context) => {
   }
 
   try {
-    const { token } = event.queryStringParameters || {}
+    const { username, password } = JSON.parse(event.body)
 
-    if (!token) {
+    if (!username || !password) {
       return {
         statusCode: 400,
         headers: {
           'Content-Type': 'application/json',
           'Access-Control-Allow-Origin': '*'
         },
-        body: JSON.stringify({ success: false, message: 'Token is required' })
+        body: JSON.stringify({ success: false, message: 'Username and password are required' })
       }
     }
 
-    const { data: loginToken, error: tokenError } = await supabase
-      .from('contractor_login_tokens')
+    const { data: contractor, error: contractorError } = await supabase
+      .from('contractors')
       .select('*')
-      .eq('token', token)
-      .eq('used', false)
-      .gt('expires_at', new Date().toISOString())
+      .eq('username', username)
       .single()
 
-    if (tokenError || !loginToken) {
+    if (contractorError || !contractor) {
       return {
-        statusCode: 400,
+        statusCode: 401,
         headers: {
           'Content-Type': 'application/json',
           'Access-Control-Allow-Origin': '*'
         },
-        body: JSON.stringify({ success: false, message: 'Invalid or expired token' })
+        body: JSON.stringify({ success: false, message: 'Invalid username or password' })
       }
     }
 
-    const { error: updateError } = await supabase
-      .from('contractor_login_tokens')
-      .update({ used: true })
-      .eq('id', loginToken.id)
+    const passwordMatch = await bcrypt.compare(password, contractor.password_hash)
+    
+    if (!passwordMatch) {
+      return {
+        statusCode: 401,
+        headers: {
+          'Content-Type': 'application/json',
+          'Access-Control-Allow-Origin': '*'
+        },
+        body: JSON.stringify({ success: false, message: 'Invalid username or password' })
+      }
+    }
 
-    if (updateError) {
-      console.error('Error marking token as used:', updateError)
+    const sessionToken = randomBytes(32).toString('hex')
+    const expiresAt = new Date(Date.now() + 24 * 60 * 60 * 1000)
+
+    const { error: sessionError } = await supabase
+      .from('contractor_sessions')
+      .insert({
+        contractor_id: contractor.id,
+        session_token: sessionToken,
+        expires_at: expiresAt.toISOString()
+      })
+
+    if (sessionError) {
+      console.error('Error creating session:', sessionError)
+      return {
+        statusCode: 500,
+        headers: {
+          'Content-Type': 'application/json',
+          'Access-Control-Allow-Origin': '*'
+        },
+        body: JSON.stringify({ success: false, message: 'Failed to create session' })
+      }
     }
 
     return {
@@ -81,12 +108,13 @@ export const handler = async (event, context) => {
       },
       body: JSON.stringify({
         success: true,
-        contractor_id: loginToken.contractor_id,
-        redirect_url: `/welcome?contractor_id=${loginToken.contractor_id}`
+        contractor_id: contractor.id,
+        session_token: sessionToken,
+        redirect_url: `/contractor/${contractor.id}`
       })
     }
   } catch (error) {
-    console.error('Error processing login token:', error)
+    console.error('Error processing login:', error)
     return {
       statusCode: 500,
       headers: {

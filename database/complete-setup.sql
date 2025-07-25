@@ -9,6 +9,8 @@ CREATE TABLE contractors (
     contact_name VARCHAR(255) NOT NULL,
     email VARCHAR(255) UNIQUE NOT NULL,
     phone VARCHAR(20) NOT NULL,
+    username VARCHAR(100) UNIQUE NOT NULL,
+    password_hash VARCHAR(255) NOT NULL,
     industry VARCHAR(100) NOT NULL,
     sub_service VARCHAR(100) NOT NULL,
     zip_codes TEXT[] NOT NULL,
@@ -64,6 +66,7 @@ INSERT INTO industries (name, sub_services) VALUES
 CREATE INDEX idx_contractors_industry ON contractors(industry);
 CREATE INDEX idx_contractors_zip_codes ON contractors USING GIN(zip_codes);
 CREATE INDEX idx_contractors_credits ON contractors(lead_credits);
+CREATE INDEX idx_contractors_username ON contractors(username);
 CREATE INDEX idx_leads_service_category ON leads(service_category);
 CREATE INDEX idx_leads_zip_code ON leads(zip_code);
 CREATE INDEX idx_leads_claimed ON leads(claimed);
@@ -91,10 +94,10 @@ CREATE POLICY "Allow anonymous read" ON leads FOR SELECT USING (true);
 CREATE POLICY "Allow anonymous read" ON claim_tokens FOR SELECT USING (true);
 CREATE POLICY "Allow anonymous read" ON industries FOR SELECT USING (true);
 
-INSERT INTO contractors (business_name, contact_name, email, phone, industry, sub_service, zip_codes, sms_opt_in, lead_credits) VALUES
-('ABC Plumbing', 'John Smith', 'john@abcplumbing.com', '555-0101', 'Home Services', 'Plumbing', ARRAY['12345', '12346'], true, 5),
-('Smith Legal', 'Jane Smith', 'jane@smithlegal.com', '555-0102', 'Legal', 'Personal Injury', ARRAY['12345', '12347'], true, 3),
-('Quick HVAC', 'Bob Johnson', 'bob@quickhvac.com', '555-0103', 'Home Services', 'HVAC', ARRAY['12346', '12348'], true, 8);
+INSERT INTO contractors (business_name, contact_name, email, phone, username, password_hash, industry, sub_service, zip_codes, sms_opt_in, lead_credits) VALUES
+('ABC Plumbing', 'John Smith', 'john@abcplumbing.com', '555-0101', 'johnsmith', '$2b$12$defaulthash', 'Home Services', 'Plumbing', ARRAY['12345', '12346'], true, 5),
+('Smith Legal', 'Jane Smith', 'jane@smithlegal.com', '555-0102', 'janesmith', '$2b$12$defaulthash', 'Legal', 'Personal Injury', ARRAY['12345', '12347'], true, 3),
+('Quick HVAC', 'Bob Johnson', 'bob@quickhvac.com', '555-0103', 'bobjohnson', '$2b$12$defaulthash', 'Home Services', 'HVAC', ARRAY['12346', '12348'], true, 8);
 
 CREATE TABLE dynamic_pages (
     id UUID DEFAULT uuid_generate_v4() PRIMARY KEY,
@@ -127,6 +130,20 @@ CREATE INDEX idx_contractor_login_tokens_expires_at ON contractor_login_tokens(e
 ALTER TABLE contractor_login_tokens ENABLE ROW LEVEL SECURITY;
 CREATE POLICY "Allow all for service role" ON contractor_login_tokens FOR ALL USING (auth.role() = 'service_role');
 CREATE POLICY "Allow anonymous read" ON contractor_login_tokens FOR SELECT USING (true);
+
+CREATE TABLE IF NOT EXISTS contractor_sessions (
+  id UUID DEFAULT uuid_generate_v4() PRIMARY KEY,
+  contractor_id UUID REFERENCES contractors(id) ON DELETE CASCADE,
+  session_token VARCHAR(255) UNIQUE NOT NULL,
+  expires_at TIMESTAMP WITH TIME ZONE NOT NULL,
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
+CREATE INDEX idx_contractor_sessions_token ON contractor_sessions(session_token);
+CREATE INDEX idx_contractor_sessions_expires_at ON contractor_sessions(expires_at);
+
+ALTER TABLE contractor_sessions ENABLE ROW LEVEL SECURITY;
+CREATE POLICY "Allow all for service role" ON contractor_sessions FOR ALL USING (auth.role() = 'service_role');
 
 INSERT INTO leads (customer_name, service_category, sub_service, zip_code, phone, email, description, status) VALUES
 ('Alice Brown', 'Home Services', 'Plumbing', '12345', '555-0201', 'alice@example.com', 'Kitchen sink is leaking and needs immediate repair', 'valid'),

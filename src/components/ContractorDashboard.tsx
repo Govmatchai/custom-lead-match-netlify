@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { useParams } from 'react-router-dom'
+import { useParams, useNavigate } from 'react-router-dom'
 import { CreditCard, MapPin, Phone, Calendar, User, Building } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
@@ -44,6 +44,7 @@ interface DashboardData {
 
 const ContractorDashboard = () => {
   const { contractorId } = useParams<{ contractorId: string }>()
+  const navigate = useNavigate()
   const [dashboardData, setDashboardData] = useState<DashboardData | null>(null)
   const [loading, setLoading] = useState(true)
   const [errorMessage, setErrorMessage] = useState('')
@@ -52,15 +53,49 @@ const ContractorDashboard = () => {
 
   useEffect(() => {
     if (contractorId) {
-      fetchDashboardData()
+      checkAuthAndFetchData()
     }
   }, [contractorId])
 
+  const checkAuthAndFetchData = async () => {
+    const sessionToken = localStorage.getItem('contractor_session_token')
+    const storedContractorId = localStorage.getItem('contractor_id')
+    
+    if (!sessionToken || storedContractorId !== contractorId) {
+      navigate('/contractor-login')
+      return
+    }
+
+    try {
+      const authResponse = await fetch('/.netlify/functions/contractor-auth-check', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ session_token: sessionToken })
+      })
+
+      if (!authResponse.ok) {
+        localStorage.removeItem('contractor_session_token')
+        localStorage.removeItem('contractor_id')
+        navigate('/contractor-login')
+        return
+      }
+
+      fetchDashboardData()
+    } catch (error) {
+      console.error('Auth check failed:', error)
+      navigate('/contractor-login')
+    }
+  }
+
   const fetchDashboardData = async () => {
+    const sessionToken = localStorage.getItem('contractor_session_token')
+    
     try {
       const [dashboardResponse, availableResponse] = await Promise.all([
-        fetch(`/.netlify/functions/contractors-dashboard?contractor_id=${contractorId}`),
-        fetch(`/.netlify/functions/contractors-available-leads?contractor_id=${contractorId}`)
+        fetch(`/.netlify/functions/contractors-dashboard?contractor_id=${contractorId}&session_token=${sessionToken}`),
+        fetch(`/.netlify/functions/contractors-available-leads?contractor_id=${contractorId}&session_token=${sessionToken}`)
       ])
       
       const [dashboardData, availableData] = await Promise.all([
@@ -89,6 +124,12 @@ const ContractorDashboard = () => {
     } finally {
       setLoading(false)
     }
+  }
+
+  const handleLogout = () => {
+    localStorage.removeItem('contractor_session_token')
+    localStorage.removeItem('contractor_id')
+    navigate('/contractor-login')
   }
 
   const handlePurchaseCredits = async () => {
@@ -156,9 +197,14 @@ const ContractorDashboard = () => {
   return (
     <div className="min-h-screen bg-gray-50">
       <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <div className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-900">Contractor Dashboard</h1>
-          <p className="text-gray-600">Welcome back, {contractor.contact_name}</p>
+        <div className="mb-8 flex justify-between items-center">
+          <div>
+            <h1 className="text-3xl font-bold text-gray-900">Contractor Dashboard</h1>
+            <p className="text-gray-600">Welcome back, {contractor.contact_name}</p>
+          </div>
+          <Button onClick={handleLogout} variant="outline">
+            Logout
+          </Button>
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-4 gap-6 mb-8">

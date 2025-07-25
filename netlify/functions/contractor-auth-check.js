@@ -14,42 +14,41 @@ export const handler = async (event, context) => {
       statusCode: 200,
       headers: {
         'Access-Control-Allow-Origin': '*',
-        'Access-Control-Allow-Headers': 'Content-Type',
+        'Access-Control-Allow-Headers': 'Content-Type, Authorization',
         'Access-Control-Allow-Methods': 'GET, POST, OPTIONS'
       }
     }
   }
 
-  if (event.httpMethod !== 'GET') {
+  if (event.httpMethod !== 'POST') {
     return {
       statusCode: 405,
       headers: {
         'Content-Type': 'application/json',
         'Access-Control-Allow-Origin': '*'
       },
-      body: JSON.stringify({ detail: 'Method not allowed' })
+      body: JSON.stringify({ success: false, message: 'Method not allowed' })
     }
   }
 
   try {
-    const { contractor_id, session_token } = event.queryStringParameters || {}
+    const { session_token } = JSON.parse(event.body)
 
-    if (!contractor_id || !session_token) {
+    if (!session_token) {
       return {
-        statusCode: 400,
+        statusCode: 401,
         headers: {
           'Content-Type': 'application/json',
           'Access-Control-Allow-Origin': '*'
         },
-        body: JSON.stringify({ detail: 'Contractor ID and session token are required' })
+        body: JSON.stringify({ success: false, message: 'No session token provided' })
       }
     }
 
     const { data: session, error: sessionError } = await supabase
       .from('contractor_sessions')
-      .select('*')
+      .select('*, contractors(*)')
       .eq('session_token', session_token)
-      .eq('contractor_id', contractor_id)
       .gt('expires_at', new Date().toISOString())
       .single()
 
@@ -60,35 +59,8 @@ export const handler = async (event, context) => {
           'Content-Type': 'application/json',
           'Access-Control-Allow-Origin': '*'
         },
-        body: JSON.stringify({ detail: 'Invalid or expired session' })
+        body: JSON.stringify({ success: false, message: 'Invalid or expired session' })
       }
-    }
-
-    const { data: contractor, error: contractorError } = await supabase
-      .from('contractors')
-      .select('*')
-      .eq('id', contractor_id)
-      .single()
-
-    if (contractorError || !contractor) {
-      return {
-        statusCode: 404,
-        headers: {
-          'Content-Type': 'application/json',
-          'Access-Control-Allow-Origin': '*'
-        },
-        body: JSON.stringify({ detail: 'Contractor not found' })
-      }
-    }
-
-    const { data: claimedLeads, error: leadsError } = await supabase
-      .from('leads')
-      .select('*')
-      .eq('claimed_by', contractor_id)
-      .order('claimed_at', { ascending: false })
-
-    if (leadsError) {
-      console.error('Leads query error:', leadsError)
     }
 
     return {
@@ -98,20 +70,19 @@ export const handler = async (event, context) => {
         'Access-Control-Allow-Origin': '*'
       },
       body: JSON.stringify({
-        contractor,
-        claimed_leads: claimedLeads || [],
-        total_claimed: claimedLeads ? claimedLeads.length : 0
+        success: true,
+        contractor: session.contractors
       })
     }
   } catch (error) {
-    console.error('Error:', error)
+    console.error('Error checking session:', error)
     return {
       statusCode: 500,
       headers: {
         'Content-Type': 'application/json',
         'Access-Control-Allow-Origin': '*'
       },
-      body: JSON.stringify({ detail: 'Internal server error' })
+      body: JSON.stringify({ success: false, message: 'Internal server error' })
     }
   }
 }

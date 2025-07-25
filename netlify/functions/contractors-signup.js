@@ -1,4 +1,5 @@
 import { createClient } from '@supabase/supabase-js'
+import bcrypt from 'bcrypt'
 import dotenv from 'dotenv'
 
 dotenv.config({ path: '../../.env' })
@@ -33,9 +34,9 @@ export const handler = async (event, context) => {
   }
 
   try {
-    const { business_name, contact_name, email, phone, industry, sub_service, zip_codes, sms_opt_in } = JSON.parse(event.body)
+    const { business_name, contact_name, email, phone, username, password, industry, sub_service, zip_codes, sms_opt_in } = JSON.parse(event.body)
 
-    if (!business_name || !contact_name || !email || !phone || !industry || !sub_service || !zip_codes) {
+    if (!business_name || !contact_name || !email || !phone || !username || !password || !industry || !sub_service || !zip_codes) {
       return {
         statusCode: 400,
         headers: {
@@ -45,6 +46,9 @@ export const handler = async (event, context) => {
         body: JSON.stringify({ success: false, message: 'Missing required fields' })
       }
     }
+
+    const saltRounds = 12
+    const password_hash = await bcrypt.hash(password, saltRounds)
 
     const zipCodesArray = zip_codes.split(',').map(zip => zip.trim()).filter(zip => zip.length > 0)
 
@@ -56,6 +60,8 @@ export const handler = async (event, context) => {
         contact_name,
         email,
         phone,
+        username,
+        password_hash,
         industry,
         sub_service,
         zip_codes: zipCodesArray,

@@ -23,6 +23,9 @@ const ContractorSignup = () => {
     contact_name: '',
     email: '',
     phone: '',
+    username: '',
+    password: '',
+    confirm_password: '',
     industry: '',
     sub_service: '',
     zip_codes: '',
@@ -80,6 +83,24 @@ const ContractorSignup = () => {
     setErrorMessage('')
     setSuccessMessage('')
 
+    if (!formData.business_name || !formData.contact_name || !formData.email || !formData.phone || !formData.username || !formData.password || !formData.industry || !formData.sub_service || !formData.zip_codes) {
+      setErrorMessage('Please fill in all required fields')
+      setIsSubmitting(false)
+      return
+    }
+
+    if (formData.password !== formData.confirm_password) {
+      setErrorMessage('Passwords do not match')
+      setIsSubmitting(false)
+      return
+    }
+
+    if (formData.password.length < 8) {
+      setErrorMessage('Password must be at least 8 characters long')
+      setIsSubmitting(false)
+      return
+    }
+
     try {
       const response = await fetch('/.netlify/functions/contractors-signup', {
         method: 'POST',
@@ -101,6 +122,9 @@ const ContractorSignup = () => {
             contact_name: '',
             email: '',
             phone: '',
+            username: '',
+            password: '',
+            confirm_password: '',
             industry: '',
             sub_service: '',
             zip_codes: '',
@@ -108,7 +132,7 @@ const ContractorSignup = () => {
           })
         }
       } else {
-        setErrorMessage(data.detail || 'An error occurred during signup')
+        setErrorMessage(data.detail || data.message || 'An error occurred during signup')
       }
     } catch (error) {
       setErrorMessage('Network error. Please try again.')
@@ -336,6 +360,43 @@ const ContractorSignup = () => {
                     </SelectContent>
                   </Select>
                 </div>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <Label htmlFor="username">Username *</Label>
+                  <Input
+                    id="username"
+                    type="text"
+                    required
+                    value={formData.username}
+                    onChange={(e) => handleInputChange('username', e.target.value)}
+                    placeholder="johnsmith123"
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="password">Password *</Label>
+                  <Input
+                    id="password"
+                    type="password"
+                    required
+                    value={formData.password}
+                    onChange={(e) => handleInputChange('password', e.target.value)}
+                    placeholder="Enter secure password"
+                  />
+                </div>
+              </div>
+
+              <div>
+                <Label htmlFor="confirm_password">Confirm Password *</Label>
+                <Input
+                  id="confirm_password"
+                  type="password"
+                  required
+                  value={formData.confirm_password}
+                  onChange={(e) => handleInputChange('confirm_password', e.target.value)}
+                  placeholder="Confirm your password"
+                />
               </div>
 
               <div>
