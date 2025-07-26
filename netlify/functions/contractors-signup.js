@@ -3,7 +3,7 @@ import bcryptjs from 'bcryptjs'
 import { randomBytes } from 'crypto'
 import dotenv from 'dotenv'
 
-dotenv.config({ path: '../../.env' })
+dotenv.config({ path: '.env' })
 
 const supabase = createClient(
   process.env.SUPABASE_URL,

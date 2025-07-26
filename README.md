@@ -212,7 +212,18 @@ custom-lead-match-netlify/
 # Run frontend tests
 npm test
 
-# Test Netlify Functions locally
+# Local Development
+
+For local development with Netlify functions access, use:
+```bash
+netlify dev
+```
+
+This serves both the frontend and Netlify functions together on localhost:8888.
+
+**Important:** Do NOT use `npm run dev` for testing signup forms or other features that require Netlify functions, as it only serves the frontend via Vite and cannot access the functions. This will cause dropdown menus and form submissions to fail.
+
+## Test Netlify Functions locally
 netlify dev
 ```
 
