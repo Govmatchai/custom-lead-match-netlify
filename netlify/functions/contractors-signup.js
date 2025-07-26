@@ -9,7 +9,7 @@ const supabase = createClient(
   process.env.SUPABASE_SERVICE_KEY
 )
 
-export const handler = async (event, context) => {
+exports.handler = async (event, context) => {
 
   if (event.httpMethod === 'OPTIONS') {
     return {
