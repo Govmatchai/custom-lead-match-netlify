@@ -95,6 +95,8 @@ const ContractorSignup = () => {
     setSuccessMessage('')
 
     console.log('Form data on submit:', formData)
+    console.log('Current industry value:', formData.industry)
+    console.log('Current sub_service value:', formData.sub_service)
 
     if (!formData.business_name || !formData.contact_name || !formData.email || !formData.phone || !formData.username || !formData.password || !formData.industry || !formData.sub_service || !formData.zip_codes) {
       console.log('Missing fields:', {
@@ -353,7 +355,13 @@ const ContractorSignup = () => {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
                   <Label htmlFor="industry">Service Category *</Label>
-                  <Select value={formData.industry || ""} onValueChange={(value) => handleInputChange('industry', value)}>
+                  <Select 
+                    value={formData.industry || ""} 
+                    onValueChange={(value) => {
+                      console.log('Industry Select onValueChange triggered with:', value)
+                      handleInputChange('industry', value)
+                    }}
+                  >
                     <SelectTrigger>
                       <SelectValue placeholder="Select service category" />
                     </SelectTrigger>
@@ -370,7 +378,10 @@ const ContractorSignup = () => {
                   <Label htmlFor="sub_service">Sub-Service *</Label>
                   <Select 
                     value={formData.sub_service || ""} 
-                    onValueChange={(value) => handleInputChange('sub_service', value)}
+                    onValueChange={(value) => {
+                      console.log('Sub-Service Select onValueChange triggered with:', value)
+                      handleInputChange('sub_service', value)
+                    }}
                     disabled={!formData.industry}
                   >
                     <SelectTrigger>
