@@ -227,6 +227,73 @@ This serves both the frontend and Netlify functions together on localhost:8888.
 netlify dev
 ```
 
+## Development Safeguards Protocol
+
+This project implements comprehensive safeguards to prevent regressions and ensure code quality.
+
+### Automated Testing
+
+Run the full UI test suite:
+```bash
+npm run test
+```
+
+Run tests with UI (interactive mode):
+```bash
+npm run test:ui
+```
+
+Run tests in headed mode (see browser):
+```bash
+npm run test:headed
+```
+
+### Pre-Commit QA Checklist
+
+Before committing any changes, follow the [QA Checklist](./QA_CHECKLIST.md):
+
+1. **Code Quality**: Run `npm run build` and `npm run lint`
+2. **Functionality**: Test locally with `netlify dev`
+3. **Automated Tests**: Run `npx playwright test`
+4. **Component Isolation**: Verify reusable components work correctly
+5. **Documentation**: Update docs if workflow changes
+
+### Rollback Procedures
+
+If issues arise after deployment, follow the [Rollback Procedures](./ROLLBACK_PROCEDURES.md):
+
+- **Emergency**: Use Netlify dashboard for immediate rollback
+- **Planned**: Follow systematic rollback process
+- **Component-specific**: Target specific functionality rollbacks
+
+### Reusable Components
+
+The project uses isolated, reusable components to prevent code duplication:
+
+- **IndustryDropdown**: Shared dropdown component for industry/sub-service selection
+- **useIndustryDropdowns**: Custom hook for dropdown data management
+
+### Commit Message Format
+
+Use the provided [commit message template](./.gitmessage):
+
+```
+feat: Add new feature
+
+- Detailed description of changes
+- Why the changes were made
+- Any breaking changes or migration notes
+
+Closes #issue-number
+```
+
+### Testing Strategy
+
+- **Unit Tests**: Component-level testing with isolated functionality
+- **Integration Tests**: Full user flow testing (signup, authentication, etc.)
+- **Mobile Testing**: Responsive design verification across viewports
+- **Regression Testing**: Automated prevention of functionality breaks
+
 ## Troubleshooting
 
 ### Common Issues

@@ -1,22 +1,12 @@
-import React, { useState, useEffect } from 'react'
+import React, { useState } from 'react'
 import { CheckCircle, Send, AlertCircle } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Alert, AlertDescription } from '@/components/ui/alert'
-
-interface Industry {
-  value: string
-  label: string
-}
-
-interface SubService {
-  value: string
-  label: string
-}
+import { IndustryDropdown } from '@/components/shared/IndustryDropdown'
 
 interface LeadFormProps {
   industry: string
@@ -35,49 +25,30 @@ export const LeadForm: React.FC<LeadFormProps> = ({ industry, defaultSubService,
     description: ''
   })
 
-  const [industries, setIndustries] = useState<Industry[]>([])
-  const [subServices, setSubServices] = useState<SubService[]>([])
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [successMessage, setSuccessMessage] = useState('')
   const [errorMessage, setErrorMessage] = useState('')
   const [validationSummary, setValidationSummary] = useState<any>(null)
 
-  useEffect(() => {
-    fetchIndustries()
-  }, [])
-
-  useEffect(() => {
-    if (formData.service_category) {
-      fetchSubServices(formData.service_category)
-    } else {
-      setSubServices([])
-    }
-  }, [formData.service_category])
-
-  const fetchIndustries = async () => {
-    try {
-      const response = await fetch('/.netlify/functions/industries')
-      const data = await response.json()
-      setIndustries(data)
-    } catch (error) {
-      console.error('Failed to fetch industries:', error)
-    }
-  }
-
-  const fetchSubServices = async (industry: string) => {
-    try {
-      const response = await fetch(`/.netlify/functions/sub-services?industry=${industry}`)
-      const data = await response.json()
-      setSubServices(data)
-    } catch (error) {
-      console.error('Failed to fetch sub-services:', error)
-    }
-  }
-
   const handleInputChange = (field: string, value: string) => {
     setFormData(prev => ({
       ...prev,
       [field]: value
+    }))
+  }
+
+  const handleServiceCategoryChange = (value: string) => {
+    setFormData(prev => ({
+      ...prev,
+      service_category: value,
+      sub_service: ''
+    }))
+  }
+
+  const handleSubServiceChange = (value: string) => {
+    setFormData(prev => ({
+      ...prev,
+      sub_service: value
     }))
   }
 
@@ -230,42 +201,13 @@ export const LeadForm: React.FC<LeadFormProps> = ({ industry, defaultSubService,
             </div>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div>
-              <Label htmlFor="service_category">Service Category *</Label>
-              <Select value={formData.service_category} onValueChange={(value) => handleInputChange('service_category', value)}>
-                <SelectTrigger>
-                  <SelectValue placeholder="Select service category" />
-                </SelectTrigger>
-                <SelectContent>
-                  {industries.map((industry) => (
-                    <SelectItem key={industry.value} value={industry.value}>
-                      {industry.label}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-            <div>
-              <Label htmlFor="sub_service">Specific Service *</Label>
-              <Select 
-                value={formData.sub_service} 
-                onValueChange={(value) => handleInputChange('sub_service', value)}
-                disabled={!formData.service_category}
-              >
-                <SelectTrigger>
-                  <SelectValue placeholder="Select specific service" />
-                </SelectTrigger>
-                <SelectContent>
-                  {subServices.map((service) => (
-                    <SelectItem key={service.value} value={service.value}>
-                      {service.label}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-          </div>
+          <IndustryDropdown
+            industryValue={formData.service_category}
+            subServiceValue={formData.sub_service}
+            onIndustryChange={handleServiceCategoryChange}
+            onSubServiceChange={handleSubServiceChange}
+            required={true}
+          />
 
           <div>
             <Label htmlFor="description">Project Description *</Label>

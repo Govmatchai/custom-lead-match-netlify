@@ -1,20 +1,11 @@
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
 import { CheckCircle, Edit, Zap, Users } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Alert, AlertDescription } from '@/components/ui/alert'
-
-interface Industry {
-  value: string
-  label: string
-}
-
-interface SubService {
-  value: string
-  label: string
-}
+import { IndustryDropdown } from '@/components/shared/IndustryDropdown'
 
 const ContractorSignup = () => {
   const [formData, setFormData] = useState({
@@ -31,60 +22,32 @@ const ContractorSignup = () => {
     sms_opt_in: true
   })
 
-  const [industries, setIndustries] = useState<Industry[]>([])
-  const [subServices, setSubServices] = useState<SubService[]>([])
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [successMessage, setSuccessMessage] = useState('')
   const [errorMessage, setErrorMessage] = useState('')
 
-  useEffect(() => {
-    fetchIndustries()
-  }, [])
-
-  useEffect(() => {
-    if (formData.industry) {
-      fetchSubServices(formData.industry)
-    } else {
-      setSubServices([])
-    }
-  }, [formData.industry])
-
-  const fetchIndustries = async () => {
-    try {
-      const response = await fetch('/.netlify/functions/industries')
-      const data = await response.json()
-      setIndustries(data)
-    } catch (error) {
-      console.error('Failed to fetch industries:', error)
-    }
-  }
-
-  const fetchSubServices = async (industry: string) => {
-    try {
-      const response = await fetch(`/.netlify/functions/sub-services?industry=${industry}`)
-      const data = await response.json()
-      setSubServices(data)
-    } catch (error) {
-      console.error('Failed to fetch sub-services:', error)
-    }
-  }
-
   const handleInputChange = (field: string, value: string | boolean) => {
     console.log(`Field ${field} changed to:`, value)
     
-    if (field === 'industry' && typeof value === 'string') {
-      setFormData(prev => ({
-        ...prev,
-        industry: value,
-        sub_service: ''
-      }))
-      fetchSubServices(value)
-    } else {
-      setFormData(prev => ({
-        ...prev,
-        [field]: value
-      }))
-    }
+    setFormData(prev => ({
+      ...prev,
+      [field]: value
+    }))
+  }
+
+  const handleIndustryChange = (value: string) => {
+    setFormData(prev => ({
+      ...prev,
+      industry: value,
+      sub_service: ''
+    }))
+  }
+
+  const handleSubServiceChange = (value: string) => {
+    setFormData(prev => ({
+      ...prev,
+      sub_service: value
+    }))
   }
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -93,7 +56,14 @@ const ContractorSignup = () => {
     setErrorMessage('')
     setSuccessMessage('')
 
-    console.log('Form data on submit:', formData)
+    console.log('Form data on submit:', {
+      ...formData,
+      password: formData.password ? '[REDACTED]' : 'MISSING',
+      confirm_password: formData.confirm_password ? '[REDACTED]' : 'MISSING'
+    })
+    console.log('Password field value:', formData.password ? 'HAS_VALUE' : 'EMPTY')
+    console.log('Confirm password field value:', formData.confirm_password ? 'HAS_VALUE' : 'EMPTY')
+    console.log('Full formData keys:', Object.keys(formData))
     console.log('Current industry value:', formData.industry)
     console.log('Current sub_service value:', formData.sub_service)
 
@@ -127,12 +97,16 @@ const ContractorSignup = () => {
     }
 
     try {
+      const requestBody = JSON.stringify(formData)
+      console.log('Request body being sent:', requestBody)
+      console.log('Request body length:', requestBody.length)
+      
       const response = await fetch('/.netlify/functions/contractors-signup', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify(formData)
+        body: requestBody
       })
 
       const data = await response.json()
@@ -356,43 +330,13 @@ const ContractorSignup = () => {
                 </div>
               </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
-                  <Label htmlFor="industry">Service Category *</Label>
-                  <select
-                    id="industry"
-                    required
-                    value={formData.industry}
-                    onChange={(e) => handleInputChange('industry', e.target.value)}
-                    className="flex h-10 w-full items-center justify-between rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
-                  >
-                    <option value="">Select service category</option>
-                    {industries.map((industry) => (
-                      <option key={industry.value} value={industry.value}>
-                        {industry.label}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-                <div>
-                  <Label htmlFor="sub_service">Sub-Service *</Label>
-                  <select
-                    id="sub_service"
-                    required
-                    value={formData.sub_service}
-                    onChange={(e) => handleInputChange('sub_service', e.target.value)}
-                    disabled={!formData.industry}
-                    className="flex h-10 w-full items-center justify-between rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
-                  >
-                    <option value="">Select sub-service</option>
-                    {subServices.map((service) => (
-                      <option key={service.value} value={service.value}>
-                        {service.label}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-              </div>
+              <IndustryDropdown
+                industryValue={formData.industry}
+                subServiceValue={formData.sub_service}
+                onIndustryChange={handleIndustryChange}
+                onSubServiceChange={handleSubServiceChange}
+                required={true}
+              />
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>

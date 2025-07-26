@@ -1,0 +1,19 @@
+# <type>: <subject>
+#
+# <body>
+#
+# <footer>
+
+# Type: feat, fix, docs, style, refactor, test, chore
+# Subject: 50 chars max, no period, imperative mood
+# Body: 72 chars per line, explain what and why
+# Footer: reference issues, breaking changes
+
+# Example:
+# feat: Add automated UI testing with Playwright
+# 
+# - Set up Playwright configuration for desktop and mobile testing
+# - Add tests for signup flow, dropdowns, and authentication
+# - Integrate UI tests into GitHub Actions CI pipeline
+# 
+# Closes #123
