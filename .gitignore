@@ -109,3 +109,8 @@ public
 
 # Local Netlify folder
 .netlify
+
+# Testing
+test-results/
+playwright-report/
+playwright/.cache/
