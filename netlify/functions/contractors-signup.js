@@ -1,5 +1,6 @@
 import { createClient } from '@supabase/supabase-js'
 import bcryptjs from 'bcryptjs'
+import { randomBytes } from 'crypto'
 import dotenv from 'dotenv'
 
 dotenv.config({ path: '../../.env' })
@@ -108,6 +109,29 @@ exports.handler = async (event, context) => {
 
     console.log('Contractors table insert successful:', contractor.id)
 
+    const sessionToken = randomBytes(32).toString('hex')
+    const expiresAt = new Date(Date.now() + 24 * 60 * 60 * 1000)
+
+    const { error: sessionError } = await supabase
+      .from('contractor_sessions')
+      .insert({
+        contractor_id: contractor.id,
+        session_token: sessionToken,
+        expires_at: expiresAt.toISOString()
+      })
+
+    if (sessionError) {
+      console.error('Error creating session:', sessionError)
+      return {
+        statusCode: 500,
+        headers: {
+          'Content-Type': 'application/json',
+          'Access-Control-Allow-Origin': '*'
+        },
+        body: JSON.stringify({ success: false, message: 'Failed to create session' })
+      }
+    }
+
     try {
       const welcomeEmailUrl = `${process.env.URL || 'https://customleadmatch.netlify.app'}/.netlify/functions/send-welcome-email`
       
@@ -142,6 +166,7 @@ exports.handler = async (event, context) => {
         success: true,
         message: 'Contractor registered successfully!',
         contractor_id: contractor.id,
+        session_token: sessionToken,
         redirect_url: `/welcome?contractor_id=${contractor.id}`
       })
     }

@@ -31,7 +31,15 @@ export default function WelcomePage() {
 
   const fetchContractorData = async () => {
     try {
-      const response = await fetch(`/.netlify/functions/contractors-dashboard?contractor_id=${contractorId}`)
+      const sessionToken = localStorage.getItem('contractor_session_token')
+      
+      if (!sessionToken) {
+        console.error('No session token found')
+        navigate('/')
+        return
+      }
+      
+      const response = await fetch(`/.netlify/functions/contractors-dashboard?contractor_id=${contractorId}&session_token=${sessionToken}`)
       const data = await response.json()
       
       if (response.ok) {
@@ -49,6 +57,9 @@ export default function WelcomePage() {
   }
 
   const handleGoToDashboard = () => {
+    if (contractorId) {
+      localStorage.setItem('contractor_id', contractorId)
+    }
     navigate(`/contractor/${contractorId}`)
   }
 

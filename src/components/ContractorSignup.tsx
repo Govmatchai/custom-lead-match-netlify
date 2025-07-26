@@ -138,6 +138,11 @@ const ContractorSignup = () => {
       const data = await response.json()
 
       if (response.ok) {
+        if (data.contractor_id && data.session_token) {
+          localStorage.setItem("contractor_id", data.contractor_id);
+          localStorage.setItem("contractor_session_token", data.session_token);
+        }
+        
         if (data.redirect_url) {
           console.log('Redirecting to:', data.redirect_url)
           window.location.href = data.redirect_url
