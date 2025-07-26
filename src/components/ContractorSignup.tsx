@@ -353,7 +353,7 @@ const ContractorSignup = () => {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
                   <Label htmlFor="industry">Service Category *</Label>
-                  <Select value={formData.industry} onValueChange={(value) => handleInputChange('industry', value)}>
+                  <Select value={formData.industry || ""} onValueChange={(value) => handleInputChange('industry', value)}>
                     <SelectTrigger>
                       <SelectValue placeholder="Select service category" />
                     </SelectTrigger>
@@ -369,7 +369,7 @@ const ContractorSignup = () => {
                 <div>
                   <Label htmlFor="sub_service">Sub-Service *</Label>
                   <Select 
-                    value={formData.sub_service} 
+                    value={formData.sub_service || ""} 
                     onValueChange={(value) => handleInputChange('sub_service', value)}
                     disabled={!formData.industry}
                   >
