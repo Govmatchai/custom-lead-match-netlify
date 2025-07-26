@@ -355,46 +355,38 @@ const ContractorSignup = () => {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
                   <Label htmlFor="industry">Service Category *</Label>
-                  <Select 
-                    value={formData.industry || ""} 
-                    onValueChange={(value) => {
-                      console.log('Industry Select onValueChange triggered with:', value)
-                      handleInputChange('industry', value)
-                    }}
+                  <select
+                    id="industry"
+                    required
+                    value={formData.industry}
+                    onChange={(e) => handleInputChange('industry', e.target.value)}
+                    className="flex h-10 w-full items-center justify-between rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
                   >
-                    <SelectTrigger>
-                      <SelectValue placeholder="Select service category" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {industries.map((industry) => (
-                        <SelectItem key={industry.value} value={industry.value}>
-                          {industry.label}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
+                    <option value="">Select service category</option>
+                    {industries.map((industry) => (
+                      <option key={industry.value} value={industry.value}>
+                        {industry.label}
+                      </option>
+                    ))}
+                  </select>
                 </div>
                 <div>
                   <Label htmlFor="sub_service">Sub-Service *</Label>
-                  <Select 
-                    value={formData.sub_service || ""} 
-                    onValueChange={(value) => {
-                      console.log('Sub-Service Select onValueChange triggered with:', value)
-                      handleInputChange('sub_service', value)
-                    }}
+                  <select
+                    id="sub_service"
+                    required
+                    value={formData.sub_service}
+                    onChange={(e) => handleInputChange('sub_service', e.target.value)}
                     disabled={!formData.industry}
+                    className="flex h-10 w-full items-center justify-between rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
                   >
-                    <SelectTrigger>
-                      <SelectValue placeholder="Select sub-service" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {subServices.map((service) => (
-                        <SelectItem key={service.value} value={service.value}>
-                          {service.label}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
+                    <option value="">Select sub-service</option>
+                    {subServices.map((service) => (
+                      <option key={service.value} value={service.value}>
+                        {service.label}
+                      </option>
+                    ))}
+                  </select>
                 </div>
               </div>
 
