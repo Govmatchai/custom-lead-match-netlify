@@ -5,6 +5,6 @@ export const handler = async (event, context) => {
       'Content-Type': 'application/json',
       'Access-Control-Allow-Origin': '*'
     },
-    body: JSON.stringify({ message: "Hello from Netlify Functions!" }),
+    body: JSON.stringify({ message: "Hello from Netlify Functions - Updated!" }),
   };
 };
