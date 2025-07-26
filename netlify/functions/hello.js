@@ -1,10 +1,6 @@
-exports.handler = async (event, context) => {
+exports.handler = async () => {
   return {
     statusCode: 200,
-    headers: {
-      'Content-Type': 'application/json',
-      'Access-Control-Allow-Origin': '*'
-    },
-    body: JSON.stringify({ message: "Hello from Netlify Functions - CommonJS!" }),
+    body: JSON.stringify({ message: "Function is working!" }),
   };
 };
