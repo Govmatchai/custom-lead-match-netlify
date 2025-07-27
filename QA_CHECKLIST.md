@@ -48,6 +48,17 @@
 - [ ] Build artifacts are properly ignored
 - [ ] Real credentials configured for production deployment
 
+## Deployment Verification
+- [ ] Verify Netlify functions are accessible after deployment
+- [ ] Test `curl https://customleadmatch.netlify.app/.netlify/functions/industries`
+- [ ] Test `curl https://customleadmatch.netlify.app/.netlify/functions/sub-services?industry=home_services`
+- [ ] Confirm dropdowns populate on live site (not just local)
+- [ ] Run live site Playwright tests: `npx playwright test tests/dropdown-functionality.spec.ts`
+- [ ] Verify GitHub Actions deployment includes function verification step
+- [ ] Check Netlify dashboard shows functions are deployed
+- [ ] Test signup flow end-to-end on live site
+- [ ] Verify mobile viewport dropdown functionality on live site
+
 ## Rollback Preparation
 - [ ] Current deployment state documented
 - [ ] Rollback procedure tested if major changes

@@ -37,17 +37,21 @@ jobs:
         VITE_SUPABASE_ANON_KEY: ${{ secrets.VITE_SUPABASE_ANON_KEY }}
         VITE_STRIPE_PUBLISHABLE_KEY: ${{ secrets.VITE_STRIPE_PUBLISHABLE_KEY }}
 
+    - name: Install Netlify CLI
+      run: npm install -g netlify-cli
+
     - name: Deploy to Netlify
-      uses: nwtgck/actions-netlify@v2.0
-      with:
-        publish-dir: './dist'
-        production-branch: devin/1721659027-custom-lead-match-netlify-platform
-        github-token: ${{ secrets.GITHUB_TOKEN }}
-        deploy-message: "Deploy from GitHub Actions"
-        enable-pull-request-comment: false
-        enable-commit-comment: true
-        overwrites-pull-request-comment: true
+      run: netlify deploy --prod --dir=dist --message="Deploy from GitHub Actions"
       env:
         NETLIFY_AUTH_TOKEN: ${{ secrets.NETLIFY_AUTH_TOKEN }}
         NETLIFY_SITE_ID: ${{ secrets.NETLIFY_SITE_ID }}
-      timeout-minutes: 1
+
+    - name: Verify function deployment
+      run: |
+        sleep 30
+        curl -f https://customleadmatch.netlify.app/.netlify/functions/industries || exit 1
+        curl -f https://customleadmatch.netlify.app/.netlify/functions/sub-services?industry=home_services || exit 1
+        echo "✅ Netlify functions deployed successfully"
+      env:
+        NETLIFY_AUTH_TOKEN: ${{ secrets.NETLIFY_AUTH_TOKEN }}
+        NETLIFY_SITE_ID: ${{ secrets.NETLIFY_SITE_ID }}
