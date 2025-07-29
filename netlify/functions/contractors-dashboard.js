@@ -91,6 +91,16 @@ export const handler = async (event, context) => {
       console.error('Leads query error:', leadsError)
     }
 
+    const { data: transactions, error: transactionsError } = await supabase
+      .from('transactions')
+      .select('amount')
+      .eq('contractor_id', contractor_id)
+
+    let walletBalance = 0
+    if (!transactionsError && transactions) {
+      walletBalance = transactions.reduce((sum, transaction) => sum + parseFloat(transaction.amount), 0)
+    }
+
     return {
       statusCode: 200,
       headers: {
@@ -100,7 +110,8 @@ export const handler = async (event, context) => {
       body: JSON.stringify({
         contractor,
         claimed_leads: claimedLeads || [],
-        total_claimed: claimedLeads ? claimedLeads.length : 0
+        total_claimed: claimedLeads ? claimedLeads.length : 0,
+        wallet_balance: walletBalance.toFixed(2)
       })
     }
   } catch (error) {

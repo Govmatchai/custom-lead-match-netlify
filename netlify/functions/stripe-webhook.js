@@ -47,23 +47,21 @@ export const handler = async (event, context) => {
       const { contractor_id, credits } = session.metadata
 
       if (contractor_id && credits) {
-        const { data: contractor, error: contractorError } = await supabase
-          .from('contractors')
-          .select('lead_credits')
-          .eq('id', contractor_id)
-          .single()
+        const depositAmount = parseFloat(credits) * 10.00
 
-        if (!contractorError && contractor) {
-          const newCredits = contractor.lead_credits + parseInt(credits)
-          
-          const { error: updateError } = await supabase
-            .from('contractors')
-            .update({ lead_credits: newCredits })
-            .eq('id', contractor_id)
+        const { error: transactionError } = await supabase
+          .from('transactions')
+          .insert({
+            contractor_id,
+            amount: depositAmount,
+            source: 'stripe',
+            notes: `Deposit via Stripe - ${credits} credit${credits > 1 ? 's' : ''} purchased`
+          })
 
-          if (updateError) {
-            console.error('Failed to update contractor credits:', updateError)
-          }
+        if (transactionError) {
+          console.error('Failed to insert transaction:', transactionError)
+        } else {
+          console.log(`Successfully added $${depositAmount} to contractor ${contractor_id} wallet`)
         }
       }
     }

@@ -63,14 +63,34 @@ export const handler = async (event, context) => {
       }
     }
 
-    if (contractor.lead_credits <= 0) {
+    const { data: transactions, error: balanceError } = await supabase
+      .from('transactions')
+      .select('amount')
+      .eq('contractor_id', contractor_id)
+
+    if (balanceError) {
+      console.error('Balance calculation error:', balanceError)
+      return {
+        statusCode: 500,
+        headers: {
+          'Content-Type': 'application/json',
+          'Access-Control-Allow-Origin': '*'
+        },
+        body: JSON.stringify({ success: false, message: 'Failed to check balance' })
+      }
+    }
+
+    const currentBalance = transactions.reduce((sum, transaction) => sum + parseFloat(transaction.amount), 0)
+    const leadPrice = 10.00
+
+    if (currentBalance < leadPrice) {
       return {
         statusCode: 400,
         headers: {
           'Content-Type': 'application/json',
           'Access-Control-Allow-Origin': '*'
         },
-        body: JSON.stringify({ success: false, message: 'Insufficient lead credits' })
+        body: JSON.stringify({ success: false, message: 'Insufficient balance to purchase this lead.' })
       }
     }
 
@@ -137,13 +157,17 @@ export const handler = async (event, context) => {
       }
     }
 
-    const { error: creditUpdateError } = await supabase
-      .from('contractors')
-      .update({ lead_credits: contractor.lead_credits - 1 })
-      .eq('id', contractor_id)
+    const { error: transactionError } = await supabase
+      .from('transactions')
+      .insert({
+        contractor_id,
+        amount: -10.00,
+        source: 'purchase',
+        notes: `Lead purchase: ${claimToken.leads.service_category} / ${claimToken.leads.zip_code}`
+      })
 
-    if (creditUpdateError) {
-      console.error('Credit update error:', creditUpdateError)
+    if (transactionError) {
+      console.error('Transaction insertion error:', transactionError)
     }
 
     const { error: tokenDeleteError } = await supabase

@@ -40,6 +40,7 @@ interface DashboardData {
   total_claimed: number
   total_available: number
   total_archived: number
+  wallet_balance: string
 }
 
 const ContractorDashboard = () => {
@@ -114,7 +115,8 @@ const ContractorDashboard = () => {
           archived_leads: archivedLeads,
           total_claimed: activeClaimedLeads.length,
           total_available: availableData.total_available,
-          total_archived: archivedLeads.length
+          total_archived: archivedLeads.length,
+          wallet_balance: dashboardData.wallet_balance
         })
       } else {
         setErrorMessage(dashboardData.detail || availableData.detail || 'Failed to load dashboard data')
@@ -210,13 +212,13 @@ const ContractorDashboard = () => {
         <div className="grid grid-cols-1 lg:grid-cols-4 gap-6 mb-8">
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Lead Credits</CardTitle>
+              <CardTitle className="text-sm font-medium">Wallet Balance</CardTitle>
               <CreditCard className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">{contractor.lead_credits}</div>
+              <div className="text-2xl font-bold">${dashboardData.wallet_balance}</div>
               <p className="text-xs text-muted-foreground">
-                Available credits
+                Available balance
               </p>
             </CardContent>
           </Card>
@@ -317,7 +319,7 @@ const ContractorDashboard = () => {
                   disabled={purchasing}
                   className="w-full"
                 >
-                  {purchasing ? 'Processing...' : 'Purchase 1 Credit ($10)'}
+                  {purchasing ? 'Processing...' : 'Add $10 to Wallet'}
                 </Button>
               </div>
             </CardContent>

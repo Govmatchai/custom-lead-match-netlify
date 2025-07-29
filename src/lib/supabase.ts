@@ -116,6 +116,58 @@ export type Database = {
           created_at?: string
         }
       }
+      transactions: {
+        Row: {
+          id: string
+          contractor_id: string
+          amount: number
+          source: string
+          notes: string | null
+          created_at: string
+        }
+        Insert: {
+          id?: string
+          contractor_id: string
+          amount: number
+          source: string
+          notes?: string | null
+          created_at?: string
+        }
+        Update: {
+          id?: string
+          contractor_id?: string
+          amount?: number
+          source?: string
+          notes?: string | null
+          created_at?: string
+        }
+        transactions: {
+          Row: {
+            id: string
+            contractor_id: string
+            amount: number
+            source: string
+            notes: string | null
+            created_at: string
+          }
+          Insert: {
+            id?: string
+            contractor_id: string
+            amount: number
+            source: string
+            notes?: string | null
+            created_at?: string
+          }
+          Update: {
+            id?: string
+            contractor_id?: string
+            amount?: number
+            source?: string
+            notes?: string | null
+            created_at?: string
+          }
+        }
+      }
     }
   }
 }

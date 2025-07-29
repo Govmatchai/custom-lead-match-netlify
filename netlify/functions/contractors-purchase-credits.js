@@ -93,8 +93,8 @@ export const handler = async (event, context) => {
           price_data: {
             currency: 'usd',
             product_data: {
-              name: `Lead Credits (${credits} credit${credits > 1 ? 's' : ''})`,
-              description: 'Custom Lead Match - Lead Credits'
+              name: `Wallet Deposit ($${credits * 10})`,
+              description: 'Custom Lead Match - Wallet Deposit'
             },
             unit_amount: 1000 * credits
           },
