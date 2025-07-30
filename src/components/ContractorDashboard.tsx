@@ -41,6 +41,7 @@ interface PurchasedLead {
   zip_code: string
   purchased_at: string
   created_at: string
+  status: string
   leads: {
     id: string
     customer_name: string
@@ -62,11 +63,13 @@ interface DashboardData {
   archived_leads: Lead[]
   purchased_leads: PurchasedLead[]
   archived_purchased_leads: PurchasedLead[]
+  completed_leads: PurchasedLead[]
   total_claimed: number
   total_available: number
   total_archived: number
   total_purchased: number
   total_archived_purchased: number
+  total_completed: number
   wallet_balance: string
 }
 
@@ -86,6 +89,7 @@ const ContractorDashboard = () => {
   const [confirmPurchase, setConfirmPurchase] = useState<Lead | null>(null)
   const [successMessage, setSuccessMessage] = useState('')
   const [archivingLead, setArchivingLead] = useState<string | null>(null)
+  const [completingLead, setCompletingLead] = useState<string | null>(null)
 
   useEffect(() => {
     if (contractorId) {
@@ -169,11 +173,13 @@ const ContractorDashboard = () => {
           archived_leads: archivedLeads,
           purchased_leads: purchasedData.purchased_leads || [],
           archived_purchased_leads: purchasedData.archived_leads || [],
+          completed_leads: purchasedData.completed_leads || [],
           total_claimed: activeClaimedLeads.length,
           total_available: availableData.total_available,
           total_archived: archivedLeads.length,
           total_purchased: purchasedData.purchased_leads?.length || 0,
           total_archived_purchased: purchasedData.archived_leads?.length || 0,
+          total_completed: purchasedData.completed_leads?.length || 0,
           wallet_balance: dashboardData.wallet_balance
         })
       } else {
@@ -319,6 +325,46 @@ const ContractorDashboard = () => {
     }
   }
 
+  const handleCompleteLead = async (leadId: string) => {
+    const sessionToken = localStorage.getItem('contractor_session_token')
+    
+    if (!sessionToken) {
+      setErrorMessage('Session expired. Please log in again.')
+      return
+    }
+    
+    setCompletingLead(leadId)
+    try {
+      const response = await fetch('/.netlify/functions/complete-lead', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ 
+          lead_id: leadId, 
+          contractor_id: contractorId,
+          session_token: sessionToken
+        })
+      })
+
+      const data = await response.json()
+      
+      if (data.success) {
+        setSuccessMessage('Lead marked as completed!')
+        await fetchDashboardData()
+        setErrorMessage('')
+        
+        setTimeout(() => setSuccessMessage(''), 5000)
+      } else {
+        setErrorMessage(data.message || 'Failed to complete lead')
+      }
+    } catch (error) {
+      setErrorMessage('Network error. Please try again.')
+    } finally {
+      setCompletingLead(null)
+    }
+  }
+
   if (loading) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
@@ -354,7 +400,7 @@ const ContractorDashboard = () => {
     return null
   }
 
-  const { contractor, claimed_leads, available_leads, archived_leads, purchased_leads, archived_purchased_leads, total_claimed, total_available, total_archived, total_purchased, total_archived_purchased } = dashboardData
+  const { contractor, claimed_leads, available_leads, archived_leads, purchased_leads, archived_purchased_leads, completed_leads, total_claimed, total_available, total_archived, total_purchased, total_archived_purchased, total_completed } = dashboardData
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -539,6 +585,16 @@ const ContractorDashboard = () => {
                 }`}
               >
                 Purchased Leads ({total_purchased})
+              </button>
+              <button
+                onClick={() => setActiveTab('completed')}
+                className={`px-4 py-2 font-medium text-sm ${
+                  activeTab === 'completed'
+                    ? 'border-b-2 border-blue-500 text-blue-600'
+                    : 'text-gray-500 hover:text-gray-700'
+                }`}
+              >
+                Completed Leads ({total_completed})
               </button>
               <button
                 onClick={() => setActiveTab('archived')}
@@ -845,6 +901,15 @@ const ContractorDashboard = () => {
                               </DialogContent>
                             </Dialog>
                             <Button
+                              onClick={() => handleCompleteLead(purchasedLead.lead_id)}
+                              disabled={completingLead === purchasedLead.lead_id}
+                              size="sm"
+                              variant="outline"
+                              className="text-green-600 hover:text-green-800"
+                            >
+                              {completingLead === purchasedLead.lead_id ? 'Completing...' : 'Mark as Completed'}
+                            </Button>
+                            <Button
                               onClick={() => handleArchiveLead(purchasedLead.lead_id)}
                               disabled={archivingLead === purchasedLead.lead_id}
                               size="sm"
@@ -853,6 +918,122 @@ const ContractorDashboard = () => {
                             >
                               {archivingLead === purchasedLead.lead_id ? 'Archiving...' : 'Archive'}
                             </Button>
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            )}
+
+            {activeTab === 'completed' && (
+              <div>
+                {completed_leads.length === 0 ? (
+                  <p className="text-gray-500 text-center py-8">No completed leads yet. Mark purchased leads as completed to see them here.</p>
+                ) : (
+                  <div className="space-y-4">
+                    {completed_leads.map((purchasedLead) => (
+                      <div key={purchasedLead.id} className="border rounded-lg p-4 bg-green-50">
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-3">
+                          <div className="flex items-center space-x-2">
+                            <User className="w-4 h-4 text-gray-500" />
+                            <span className="font-medium">Customer:</span>
+                            <span>{purchasedLead.leads.customer_name}</span>
+                          </div>
+                          <div className="flex items-center space-x-2">
+                            <Building className="w-4 h-4 text-gray-500" />
+                            <span className="font-medium">Service:</span>
+                            <span>{purchasedLead.leads.service_category} - {purchasedLead.leads.sub_service}</span>
+                          </div>
+                        </div>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-3">
+                          <div className="flex items-center space-x-2">
+                            <MapPin className="w-4 h-4 text-gray-500" />
+                            <span className="font-medium">ZIP Code:</span>
+                            <span>{purchasedLead.leads.zip_code}</span>
+                          </div>
+                          <div className="flex items-center space-x-2">
+                            <Calendar className="w-4 h-4 text-gray-500" />
+                            <span className="font-medium">Purchase Date:</span>
+                            <span>{new Date(purchasedLead.purchased_at).toLocaleDateString()}</span>
+                          </div>
+                        </div>
+                        <div className="flex items-center space-x-2 mb-3">
+                          <CreditCard className="w-4 h-4 text-gray-500" />
+                          <span className="font-medium">Price Paid:</span>
+                          <span className="font-bold text-green-600">${purchasedLead.price_paid.toFixed(2)}</span>
+                        </div>
+                        <div className="flex justify-between items-center">
+                          <span className="text-sm text-gray-500">
+                            Lead submitted: {new Date(purchasedLead.leads.created_at).toLocaleDateString()}
+                          </span>
+                          <div className="flex space-x-2">
+                            <Dialog>
+                              <DialogTrigger asChild>
+                                <Button variant="outline" size="sm" onClick={() => setSelectedPurchasedLead(purchasedLead)}>
+                                  <Eye className="w-4 h-4 mr-1" />
+                                  View Details
+                                </Button>
+                              </DialogTrigger>
+                              <DialogContent className="max-w-2xl">
+                                <DialogHeader>
+                                  <DialogTitle>Completed Lead Details</DialogTitle>
+                                  <DialogDescription>
+                                    Complete information for this completed lead
+                                  </DialogDescription>
+                                </DialogHeader>
+                                {selectedPurchasedLead && (
+                                  <div className="space-y-4">
+                                    <div className="grid grid-cols-2 gap-4">
+                                      <div>
+                                        <span className="font-medium">Customer Name:</span>
+                                        <p>{selectedPurchasedLead.leads.customer_name}</p>
+                                      </div>
+                                      <div>
+                                        <span className="font-medium">Customer Phone:</span>
+                                        <p>{selectedPurchasedLead.leads.customer_phone}</p>
+                                      </div>
+                                    </div>
+                                    <div className="grid grid-cols-2 gap-4">
+                                      <div>
+                                        <span className="font-medium">Customer Email:</span>
+                                        <p>{selectedPurchasedLead.leads.customer_email}</p>
+                                      </div>
+                                      <div>
+                                        <span className="font-medium">Location:</span>
+                                        <p>{selectedPurchasedLead.leads.zip_code}</p>
+                                      </div>
+                                    </div>
+                                    <div className="grid grid-cols-2 gap-4">
+                                      <div>
+                                        <span className="font-medium">Service:</span>
+                                        <p>{selectedPurchasedLead.leads.service_category} - {selectedPurchasedLead.leads.sub_service}</p>
+                                      </div>
+                                      <div>
+                                        <span className="font-medium">Price Paid:</span>
+                                        <p className="font-bold text-green-600">${selectedPurchasedLead.price_paid.toFixed(2)}</p>
+                                      </div>
+                                    </div>
+                                    <div>
+                                      <span className="font-medium">Project Description:</span>
+                                      <p className="mt-1 text-gray-700">{selectedPurchasedLead.leads.description}</p>
+                                    </div>
+                                    <div className="grid grid-cols-2 gap-4">
+                                      <div>
+                                        <span className="font-medium">Lead Submitted:</span>
+                                        <p>{new Date(selectedPurchasedLead.leads.created_at).toLocaleString()}</p>
+                                      </div>
+                                      <div>
+                                        <span className="font-medium">Purchased:</span>
+                                        <p>{new Date(selectedPurchasedLead.purchased_at).toLocaleString()}</p>
+                                      </div>
+                                    </div>
+                                  </div>
+                                )}
+                              </DialogContent>
+                            </Dialog>
+                            <span className="text-xs bg-green-100 text-green-800 px-2 py-1 rounded">Completed</span>
                           </div>
                         </div>
                       </div>

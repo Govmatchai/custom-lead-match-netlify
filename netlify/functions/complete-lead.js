@@ -15,12 +15,12 @@ export const handler = async (event, context) => {
       headers: {
         'Access-Control-Allow-Origin': '*',
         'Access-Control-Allow-Headers': 'Content-Type',
-        'Access-Control-Allow-Methods': 'GET, OPTIONS'
+        'Access-Control-Allow-Methods': 'POST, OPTIONS'
       }
     }
   }
 
-  if (event.httpMethod !== 'GET') {
+  if (event.httpMethod !== 'POST') {
     return {
       statusCode: 405,
       headers: {
@@ -32,16 +32,17 @@ export const handler = async (event, context) => {
   }
 
   try {
-    const { contractor_id, session_token } = event.queryStringParameters || {}
+    const data = JSON.parse(event.body)
+    const { lead_id, contractor_id, session_token } = data
 
-    if (!contractor_id || !session_token) {
+    if (!lead_id || !contractor_id || !session_token) {
       return {
         statusCode: 400,
         headers: {
           'Content-Type': 'application/json',
           'Access-Control-Allow-Origin': '*'
         },
-        body: JSON.stringify({ success: false, message: 'Contractor ID and session token are required' })
+        body: JSON.stringify({ success: false, message: 'Lead ID, contractor ID, and session token are required' })
       }
     }
 
@@ -64,41 +65,44 @@ export const handler = async (event, context) => {
       }
     }
 
-    const { data: purchasedLeads, error: purchasedError } = await supabase
+    const { data: purchasedLead, error: purchaseCheckError } = await supabase
       .from('purchased_leads')
-      .select(`
-        *,
-        leads (
-          id,
-          customer_name,
-          customer_email,
-          customer_phone,
-          service_category,
-          sub_service,
-          zip_code,
-          description,
-          created_at,
-          is_archived
-        )
-      `)
+      .select('*')
       .eq('contractor_id', contractor_id)
-      .order('purchased_at', { ascending: false })
+      .eq('lead_id', lead_id)
+      .eq('status', 'active')
+      .single()
 
-    if (purchasedError) {
-      console.error('Error fetching purchased leads:', purchasedError)
+    if (purchaseCheckError || !purchasedLead) {
+      return {
+        statusCode: 403,
+        headers: {
+          'Content-Type': 'application/json',
+          'Access-Control-Allow-Origin': '*'
+        },
+        body: JSON.stringify({ success: false, message: 'You can only complete active purchased leads' })
+      }
+    }
+
+    const { data: updatedLead, error: completeError } = await supabase
+      .from('purchased_leads')
+      .update({ status: 'completed' })
+      .eq('id', purchasedLead.id)
+      .eq('contractor_id', contractor_id)
+      .select()
+      .single()
+
+    if (completeError) {
+      console.error('Error completing lead:', completeError)
       return {
         statusCode: 500,
         headers: {
           'Content-Type': 'application/json',
           'Access-Control-Allow-Origin': '*'
         },
-        body: JSON.stringify({ success: false, message: 'Failed to fetch purchased leads' })
+        body: JSON.stringify({ success: false, message: 'Failed to complete lead' })
       }
     }
-
-    const activePurchasedLeads = purchasedLeads.filter(lead => !lead.leads?.is_archived && (lead.status === 'active' || !lead.status))
-    const archivedPurchasedLeads = purchasedLeads.filter(lead => lead.leads?.is_archived)
-    const completedLeads = purchasedLeads.filter(lead => !lead.leads?.is_archived && lead.status === 'completed')
 
     return {
       statusCode: 200,
@@ -108,9 +112,8 @@ export const handler = async (event, context) => {
       },
       body: JSON.stringify({
         success: true,
-        purchased_leads: activePurchasedLeads,
-        archived_leads: archivedPurchasedLeads,
-        completed_leads: completedLeads
+        message: 'Lead marked as completed successfully',
+        lead: updatedLead
       })
     }
   } catch (error) {
