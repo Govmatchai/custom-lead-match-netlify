@@ -51,10 +51,29 @@ const ContractorDashboard = () => {
   const [errorMessage, setErrorMessage] = useState('')
   const [purchasing, setPurchasing] = useState(false)
   const [activeTab, setActiveTab] = useState('available')
+  const [fundAmount, setFundAmount] = useState('')
+  const [fundAmountError, setFundAmountError] = useState('')
 
   useEffect(() => {
     if (contractorId) {
       checkAuthAndFetchData()
+    }
+    
+    const urlParams = new URLSearchParams(window.location.search)
+    const paymentStatus = urlParams.get('payment')
+    
+    if (paymentStatus === 'success') {
+      setFundAmount('')
+      setFundAmountError('')
+      setTimeout(() => {
+        fetchDashboardData()
+      }, 2000)
+    } else if (paymentStatus === 'cancelled') {
+      setFundAmountError('Payment was cancelled')
+    }
+    
+    if (paymentStatus) {
+      window.history.replaceState({}, document.title, window.location.pathname)
     }
   }, [contractorId])
 
@@ -134,7 +153,25 @@ const ContractorDashboard = () => {
     navigate('/contractor-login')
   }
 
-  const handlePurchaseCredits = async () => {
+  const handleFundWallet = async () => {
+    setFundAmountError('')
+    
+    const amount = parseFloat(fundAmount)
+    if (!fundAmount || isNaN(amount)) {
+      setFundAmountError('Please enter a valid amount')
+      return
+    }
+    
+    if (amount < 10) {
+      setFundAmountError('Minimum funding amount is $10')
+      return
+    }
+    
+    if (amount > 10000) {
+      setFundAmountError('Maximum funding amount is $10,000')
+      return
+    }
+    
     setPurchasing(true)
     try {
       const response = await fetch('/.netlify/functions/contractors-purchase-credits', {
@@ -142,7 +179,10 @@ const ContractorDashboard = () => {
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ contractor_id: contractorId, credits: 1 })
+        body: JSON.stringify({ 
+          contractor_id: contractorId, 
+          amount: amount 
+        })
       })
 
       const data = await response.json()
@@ -150,10 +190,10 @@ const ContractorDashboard = () => {
       if (response.ok) {
         window.location.href = data.payment_url
       } else {
-        setErrorMessage(data.detail || 'Failed to initiate payment')
+        setFundAmountError(data.detail || 'Failed to initiate payment')
       }
     } catch (error) {
-      setErrorMessage('Network error. Please try again.')
+      setFundAmountError('Network error. Please try again.')
     } finally {
       setPurchasing(false)
     }
@@ -304,22 +344,43 @@ const ContractorDashboard = () => {
 
           <Card>
             <CardHeader>
-              <CardTitle>Purchase More Credits</CardTitle>
-              <CardDescription>Buy additional lead credits to continue receiving leads</CardDescription>
+              <CardTitle>Fund Wallet</CardTitle>
+              <CardDescription>Add funds to your wallet balance for purchasing leads</CardDescription>
             </CardHeader>
             <CardContent>
               <div className="space-y-4">
                 <div className="bg-blue-50 p-4 rounded-lg">
-                  <h4 className="font-semibold mb-2">Lead Credit Pricing</h4>
+                  <h4 className="font-semibold mb-2">Lead Pricing</h4>
                   <p className="text-2xl font-bold text-blue-600">$10 <span className="text-sm font-normal text-gray-600">per lead</span></p>
                   <p className="text-sm text-gray-600 mt-1">Only pay when you claim a lead</p>
                 </div>
+                <div>
+                  <label htmlFor="fundAmount" className="block text-sm font-medium text-gray-700 mb-2">
+                    Amount to Add (minimum $10)
+                  </label>
+                  <div className="relative">
+                    <span className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500">$</span>
+                    <input
+                      id="fundAmount"
+                      type="number"
+                      min="10"
+                      step="1"
+                      value={fundAmount}
+                      onChange={(e) => setFundAmount(e.target.value)}
+                      className="w-full pl-8 pr-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      placeholder="10"
+                    />
+                  </div>
+                  {fundAmountError && (
+                    <p className="text-red-600 text-sm mt-1">{fundAmountError}</p>
+                  )}
+                </div>
                 <Button 
-                  onClick={handlePurchaseCredits}
-                  disabled={purchasing}
+                  onClick={handleFundWallet}
+                  disabled={purchasing || !fundAmount || parseFloat(fundAmount) < 10}
                   className="w-full"
                 >
-                  {purchasing ? 'Processing...' : 'Add $10 to Wallet'}
+                  {purchasing ? 'Processing...' : `Add $${fundAmount || '0'} to Wallet`}
                 </Button>
               </div>
             </CardContent>
