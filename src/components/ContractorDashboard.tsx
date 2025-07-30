@@ -1,9 +1,10 @@
 import { useState, useEffect } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
-import { CreditCard, MapPin, Phone, Calendar, User, Building, Eye, ShoppingCart } from 'lucide-react'
+import { CreditCard, MapPin, Phone, Calendar, User, Building, Eye, ShoppingCart, Edit } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog'
+import { EditProfileModal } from './EditProfileModal'
 
 interface Lead {
   id: string
@@ -90,6 +91,7 @@ const ContractorDashboard = () => {
   const [successMessage, setSuccessMessage] = useState('')
   const [archivingLead, setArchivingLead] = useState<string | null>(null)
   const [completingLead, setCompletingLead] = useState<string | null>(null)
+  const [isEditProfileOpen, setIsEditProfileOpen] = useState(false)
 
   useEffect(() => {
     if (contractorId) {
@@ -365,6 +367,12 @@ const ContractorDashboard = () => {
     }
   }
 
+  const handleProfileUpdateSuccess = () => {
+    setSuccessMessage('Profile updated successfully!')
+    fetchDashboardData()
+    setTimeout(() => setSuccessMessage(''), 5000)
+  }
+
   if (loading) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
@@ -471,9 +479,20 @@ const ContractorDashboard = () => {
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           <Card>
-            <CardHeader>
-              <CardTitle>Business Information</CardTitle>
-              <CardDescription>Your registered business details</CardDescription>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <div>
+                <CardTitle>Business Information</CardTitle>
+                <CardDescription>Your registered business details</CardDescription>
+              </div>
+              <Button 
+                variant="outline" 
+                size="sm"
+                onClick={() => setIsEditProfileOpen(true)}
+                className="flex items-center space-x-1"
+              >
+                <Edit className="w-4 h-4" />
+                <span>Edit Profile</span>
+              </Button>
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="flex items-center space-x-2">
@@ -1191,6 +1210,13 @@ const ContractorDashboard = () => {
             </div>
           </div>
         )}
+
+        <EditProfileModal
+          isOpen={isEditProfileOpen}
+          onClose={() => setIsEditProfileOpen(false)}
+          contractor={contractor}
+          onSuccess={handleProfileUpdateSuccess}
+        />
       </div>
     </div>
   )
