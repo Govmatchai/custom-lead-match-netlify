@@ -1,8 +1,9 @@
 import { useState, useEffect } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
-import { CreditCard, MapPin, Phone, Calendar, User, Building } from 'lucide-react'
+import { CreditCard, MapPin, Phone, Calendar, User, Building, Eye, ShoppingCart } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog'
 
 interface Lead {
   id: string
@@ -53,6 +54,8 @@ const ContractorDashboard = () => {
   const [activeTab, setActiveTab] = useState('available')
   const [fundAmount, setFundAmount] = useState('')
   const [fundAmountError, setFundAmountError] = useState('')
+  const [purchasingLead, setPurchasingLead] = useState<string | null>(null)
+  const [selectedLead, setSelectedLead] = useState<Lead | null>(null)
 
   useEffect(() => {
     if (contractorId) {
@@ -196,6 +199,43 @@ const ContractorDashboard = () => {
       setFundAmountError('Network error. Please try again.')
     } finally {
       setPurchasing(false)
+    }
+  }
+
+  const handlePurchaseLead = async (leadId: string) => {
+    const sessionToken = localStorage.getItem('contractor_session_token')
+    
+    if (!sessionToken) {
+      setErrorMessage('Session expired. Please log in again.')
+      return
+    }
+    
+    setPurchasingLead(leadId)
+    try {
+      const response = await fetch('/.netlify/functions/purchase-lead', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ 
+          lead_id: leadId, 
+          contractor_id: contractorId,
+          session_token: sessionToken
+        })
+      })
+
+      const data = await response.json()
+      
+      if (data.success) {
+        await fetchDashboardData()
+        setErrorMessage('')
+      } else {
+        setErrorMessage(data.message || 'Failed to purchase lead')
+      }
+    } catch (error) {
+      setErrorMessage('Network error. Please try again.')
+    } finally {
+      setPurchasingLead(null)
     }
   }
 
@@ -429,35 +469,133 @@ const ContractorDashboard = () => {
                   <p className="text-gray-500 text-center py-8">No available leads matching your services and location.</p>
                 ) : (
                   <div className="space-y-4">
-                    {available_leads.map((lead) => (
-                      <div key={lead.id} className="border rounded-lg p-4 bg-green-50">
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-3">
-                          <div className="flex items-center space-x-2">
-                            <User className="w-4 h-4 text-gray-500" />
-                            <span className="font-medium">Service Type:</span>
-                            <span>{lead.service_category} - {lead.sub_service}</span>
+                    {available_leads.map((lead) => {
+                      const leadPrice = 10.00
+                      const walletBalance = parseFloat(dashboardData?.wallet_balance || '0')
+                      const canPurchase = walletBalance >= leadPrice
+                      
+                      return (
+                        <div key={lead.id} className="border rounded-lg p-4 bg-green-50">
+                          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-3">
+                            <div className="flex items-center space-x-2">
+                              <User className="w-4 h-4 text-gray-500" />
+                              <span className="font-medium">Customer:</span>
+                              <span>New Lead</span>
+                            </div>
+                            <div className="flex items-center space-x-2">
+                              <MapPin className="w-4 h-4 text-gray-500" />
+                              <span className="font-medium">ZIP Code:</span>
+                              <span>{lead.zip_code}</span>
+                            </div>
                           </div>
-                          <div className="flex items-center space-x-2">
-                            <MapPin className="w-4 h-4 text-gray-500" />
-                            <span className="font-medium">ZIP Code:</span>
-                            <span>{lead.zip_code}</span>
+                          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-3">
+                            <div className="flex items-center space-x-2">
+                              <Building className="w-4 h-4 text-gray-500" />
+                              <span className="font-medium">Service:</span>
+                              <span>{lead.sub_service}</span>
+                            </div>
+                            <div className="flex items-center space-x-2">
+                              <CreditCard className="w-4 h-4 text-gray-500" />
+                              <span className="font-medium">Cost:</span>
+                              <span className="font-bold text-blue-600">💸 ${leadPrice.toFixed(2)}</span>
+                            </div>
                           </div>
+                          <div className="mb-3">
+                            <span className="font-medium">Project Summary:</span>
+                            <p className="mt-1 text-gray-700">
+                              {lead.description.length > 100 ? lead.description.substring(0, 100) + '...' : lead.description}
+                            </p>
+                          </div>
+                          <div className="flex justify-between items-center">
+                            <span className="text-sm text-gray-500">
+                              Submitted: {new Date(lead.created_at).toLocaleDateString()}
+                            </span>
+                            <div className="flex space-x-2">
+                              <Dialog>
+                                <DialogTrigger asChild>
+                                  <Button variant="outline" size="sm" onClick={() => setSelectedLead(lead)}>
+                                    <Eye className="w-4 h-4 mr-1" />
+                                    View Details
+                                  </Button>
+                                </DialogTrigger>
+                                <DialogContent className="max-w-2xl">
+                                  <DialogHeader>
+                                    <DialogTitle>Lead Details</DialogTitle>
+                                    <DialogDescription>
+                                      Complete information for this lead opportunity
+                                    </DialogDescription>
+                                  </DialogHeader>
+                                  {selectedLead && (
+                                    <div className="space-y-4">
+                                      <div className="grid grid-cols-2 gap-4">
+                                        <div>
+                                          <span className="font-medium">Service:</span>
+                                          <p>{selectedLead.service_category} - {selectedLead.sub_service}</p>
+                                        </div>
+                                        <div>
+                                          <span className="font-medium">Location:</span>
+                                          <p>{selectedLead.zip_code}</p>
+                                        </div>
+                                      </div>
+                                      <div>
+                                        <span className="font-medium">Project Description:</span>
+                                        <p className="mt-1 text-gray-700">{selectedLead.description}</p>
+                                      </div>
+                                      <div className="grid grid-cols-2 gap-4">
+                                        <div>
+                                          <span className="font-medium">Cost:</span>
+                                          <p className="font-bold text-blue-600">${leadPrice.toFixed(2)}</p>
+                                        </div>
+                                        <div>
+                                          <span className="font-medium">Submitted:</span>
+                                          <p>{new Date(selectedLead.created_at).toLocaleString()}</p>
+                                        </div>
+                                      </div>
+                                      <div className="bg-yellow-50 p-3 rounded border border-yellow-200">
+                                        <p className="text-sm text-yellow-800">
+                                          🔒 <strong>Contact details will be revealed after purchase.</strong> Customer name, phone, and email will be available once you purchase this lead.
+                                        </p>
+                                      </div>
+                                    </div>
+                                  )}
+                                  <DialogFooter>
+                                    <Button
+                                      onClick={() => selectedLead && handlePurchaseLead(selectedLead.id)}
+                                      disabled={!canPurchase || purchasingLead === selectedLead?.id}
+                                      className="bg-blue-600 hover:bg-blue-700"
+                                    >
+                                      {purchasingLead === selectedLead?.id ? 'Purchasing...' : `Purchase Lead ($${leadPrice.toFixed(2)})`}
+                                    </Button>
+                                  </DialogFooter>
+                                </DialogContent>
+                              </Dialog>
+                              <Button
+                                onClick={() => handlePurchaseLead(lead.id)}
+                                disabled={!canPurchase || purchasingLead === lead.id}
+                                size="sm"
+                                className="bg-blue-600 hover:bg-blue-700"
+                              >
+                                {purchasingLead === lead.id ? (
+                                  'Purchasing...'
+                                ) : (
+                                  <>
+                                    <ShoppingCart className="w-4 h-4 mr-1" />
+                                    Purchase Lead
+                                  </>
+                                )}
+                              </Button>
+                            </div>
+                          </div>
+                          {!canPurchase && (
+                            <div className="mt-2 p-2 bg-red-50 border border-red-200 rounded">
+                              <p className="text-sm text-red-700">
+                                Insufficient wallet balance. Add funds to purchase this lead.
+                              </p>
+                            </div>
+                          )}
                         </div>
-                        <div className="mb-3">
-                          <span className="font-medium">Project Summary:</span>
-                          <p className="mt-1 text-gray-700">{lead.description.length > 150 ? lead.description.substring(0, 150) + '...' : lead.description}</p>
-                        </div>
-                        <div className="mb-3 p-3 bg-yellow-50 border border-yellow-200 rounded">
-                          <p className="text-sm text-yellow-800">
-                            🔒 <strong>Contact details hidden until claimed.</strong> Customer name, phone, and email will be revealed after you claim this lead.
-                          </p>
-                        </div>
-                        <div className="flex justify-between items-center text-sm text-gray-500">
-                          <span>Submitted: {new Date(lead.created_at).toLocaleDateString()}</span>
-                          <span className="text-green-600 font-medium">Available to Claim</span>
-                        </div>
-                      </div>
-                    ))}
+                      )
+                    })}
                   </div>
                 )}
               </div>
