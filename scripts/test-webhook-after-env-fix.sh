@@ -31,9 +31,11 @@ TEST_CONTRACTOR_RESPONSE=$(curl -s -X POST "https://customleadmatch.netlify.app/
     "business_name": "Test Webhook Company",
     "contact_name": "Test Contact",
     "phone": "555-0123",
+    "username": "testwebhook",
+    "password": "TestPassword123!",
     "industry": "home_services",
     "sub_service": "electrical",
-    "zip_codes": ["12345"]
+    "zip_codes": "12345"
   }' \
   -w "HTTP_STATUS:%{http_code}")
 
