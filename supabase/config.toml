@@ -1,0 +1,9 @@
+[api]
+enabled = true
+port = 54321
+
+[functions]
+enabled = true
+
+[functions.match-contractors-for-lead]
+verify_jwt = false
