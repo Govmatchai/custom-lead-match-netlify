@@ -353,15 +353,15 @@ const ContractorDashboard = () => {
     
     setCompletingLead(leadId)
     try {
-      const response = await fetch('/.netlify/functions/complete-lead', {
+      const response = await fetch('/.netlify/functions/mark-lead-complete', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
+          'Authorization': `Bearer ${sessionToken}`
         },
         body: JSON.stringify({ 
-          lead_id: leadId, 
           contractor_id: contractorId,
-          session_token: sessionToken
+          lead_id: leadId
         })
       })
 

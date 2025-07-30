@@ -71,8 +71,6 @@ export const handler = async (event, context) => {
         leads (
           id,
           customer_name,
-          customer_email,
-          customer_phone,
           service_category,
           sub_service,
           zip_code,
