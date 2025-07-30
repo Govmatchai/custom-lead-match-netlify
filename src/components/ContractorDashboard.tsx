@@ -33,14 +33,40 @@ interface Contractor {
   lead_credits: number
 }
 
+interface PurchasedLead {
+  id: string
+  contractor_id: string
+  lead_id: string
+  price_paid: number
+  zip_code: string
+  purchased_at: string
+  created_at: string
+  leads: {
+    id: string
+    customer_name: string
+    customer_email: string
+    customer_phone: string
+    service_category: string
+    sub_service: string
+    zip_code: string
+    description: string
+    created_at: string
+    is_archived: boolean
+  }
+}
+
 interface DashboardData {
   contractor: Contractor
   claimed_leads: Lead[]
   available_leads: Lead[]
   archived_leads: Lead[]
+  purchased_leads: PurchasedLead[]
+  archived_purchased_leads: PurchasedLead[]
   total_claimed: number
   total_available: number
   total_archived: number
+  total_purchased: number
+  total_archived_purchased: number
   wallet_balance: string
 }
 
@@ -56,8 +82,10 @@ const ContractorDashboard = () => {
   const [fundAmountError, setFundAmountError] = useState('')
   const [purchasingLead, setPurchasingLead] = useState<string | null>(null)
   const [selectedLead, setSelectedLead] = useState<Lead | null>(null)
+  const [selectedPurchasedLead, setSelectedPurchasedLead] = useState<PurchasedLead | null>(null)
   const [confirmPurchase, setConfirmPurchase] = useState<Lead | null>(null)
   const [successMessage, setSuccessMessage] = useState('')
+  const [archivingLead, setArchivingLead] = useState<string | null>(null)
 
   useEffect(() => {
     if (contractorId) {
@@ -118,17 +146,19 @@ const ContractorDashboard = () => {
     const sessionToken = localStorage.getItem('contractor_session_token')
     
     try {
-      const [dashboardResponse, availableResponse] = await Promise.all([
+      const [dashboardResponse, availableResponse, purchasedResponse] = await Promise.all([
         fetch(`/.netlify/functions/contractors-dashboard?contractor_id=${contractorId}&session_token=${sessionToken}`),
-        fetch(`/.netlify/functions/contractors-available-leads?contractor_id=${contractorId}&session_token=${sessionToken}`)
+        fetch(`/.netlify/functions/contractors-available-leads?contractor_id=${contractorId}&session_token=${sessionToken}`),
+        fetch(`/.netlify/functions/get-purchased-leads?contractor_id=${contractorId}&session_token=${sessionToken}`)
       ])
       
-      const [dashboardData, availableData] = await Promise.all([
+      const [dashboardData, availableData, purchasedData] = await Promise.all([
         dashboardResponse.json(),
-        availableResponse.json()
+        availableResponse.json(),
+        purchasedResponse.json()
       ])
       
-      if (dashboardResponse.ok && availableResponse.ok) {
+      if (dashboardResponse.ok && availableResponse.ok && purchasedResponse.ok) {
         const archivedLeads = dashboardData.claimed_leads.filter((lead: Lead) => lead.is_archived)
         const activeClaimedLeads = dashboardData.claimed_leads.filter((lead: Lead) => !lead.is_archived)
         
@@ -137,13 +167,17 @@ const ContractorDashboard = () => {
           claimed_leads: activeClaimedLeads,
           available_leads: availableData.available_leads,
           archived_leads: archivedLeads,
+          purchased_leads: purchasedData.purchased_leads || [],
+          archived_purchased_leads: purchasedData.archived_leads || [],
           total_claimed: activeClaimedLeads.length,
           total_available: availableData.total_available,
           total_archived: archivedLeads.length,
+          total_purchased: purchasedData.purchased_leads?.length || 0,
+          total_archived_purchased: purchasedData.archived_leads?.length || 0,
           wallet_balance: dashboardData.wallet_balance
         })
       } else {
-        setErrorMessage(dashboardData.detail || availableData.detail || 'Failed to load dashboard data')
+        setErrorMessage(dashboardData.detail || availableData.detail || purchasedData.message || 'Failed to load dashboard data')
       }
     } catch (error) {
       setErrorMessage('Network error. Please try again.')
@@ -245,6 +279,46 @@ const ContractorDashboard = () => {
     }
   }
 
+  const handleArchiveLead = async (leadId: string) => {
+    const sessionToken = localStorage.getItem('contractor_session_token')
+    
+    if (!sessionToken) {
+      setErrorMessage('Session expired. Please log in again.')
+      return
+    }
+    
+    setArchivingLead(leadId)
+    try {
+      const response = await fetch('/.netlify/functions/archive-lead', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ 
+          lead_id: leadId, 
+          contractor_id: contractorId,
+          session_token: sessionToken
+        })
+      })
+
+      const data = await response.json()
+      
+      if (data.success) {
+        setSuccessMessage('Lead archived successfully!')
+        await fetchDashboardData()
+        setErrorMessage('')
+        
+        setTimeout(() => setSuccessMessage(''), 5000)
+      } else {
+        setErrorMessage(data.message || 'Failed to archive lead')
+      }
+    } catch (error) {
+      setErrorMessage('Network error. Please try again.')
+    } finally {
+      setArchivingLead(null)
+    }
+  }
+
   if (loading) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
@@ -280,7 +354,7 @@ const ContractorDashboard = () => {
     return null
   }
 
-  const { contractor, claimed_leads, available_leads, archived_leads, total_claimed, total_available, total_archived } = dashboardData
+  const { contractor, claimed_leads, available_leads, archived_leads, purchased_leads, archived_purchased_leads, total_claimed, total_available, total_archived, total_purchased, total_archived_purchased } = dashboardData
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -457,6 +531,16 @@ const ContractorDashboard = () => {
                 Claimed Leads ({total_claimed})
               </button>
               <button
+                onClick={() => setActiveTab('purchased')}
+                className={`px-4 py-2 font-medium text-sm ${
+                  activeTab === 'purchased'
+                    ? 'border-b-2 border-blue-500 text-blue-600'
+                    : 'text-gray-500 hover:text-gray-700'
+                }`}
+              >
+                Purchased Leads ({total_purchased})
+              </button>
+              <button
                 onClick={() => setActiveTab('archived')}
                 className={`px-4 py-2 font-medium text-sm ${
                   activeTab === 'archived'
@@ -464,7 +548,7 @@ const ContractorDashboard = () => {
                     : 'text-gray-500 hover:text-gray-700'
                 }`}
               >
-                Archived Leads ({total_archived})
+                Archived Leads ({total_archived + total_archived_purchased})
               </button>
             </div>
           </CardHeader>
@@ -654,14 +738,138 @@ const ContractorDashboard = () => {
               </div>
             )}
 
+            {activeTab === 'purchased' && (
+              <div>
+                {purchased_leads.length === 0 ? (
+                  <p className="text-gray-500 text-center py-8">No purchased leads yet. Purchase leads from the Available Leads tab to see them here.</p>
+                ) : (
+                  <div className="space-y-4">
+                    {purchased_leads.map((purchasedLead) => (
+                      <div key={purchasedLead.id} className="border rounded-lg p-4 bg-purple-50">
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-3">
+                          <div className="flex items-center space-x-2">
+                            <User className="w-4 h-4 text-gray-500" />
+                            <span className="font-medium">Customer:</span>
+                            <span>{purchasedLead.leads.customer_name}</span>
+                          </div>
+                          <div className="flex items-center space-x-2">
+                            <Building className="w-4 h-4 text-gray-500" />
+                            <span className="font-medium">Service:</span>
+                            <span>{purchasedLead.leads.service_category} - {purchasedLead.leads.sub_service}</span>
+                          </div>
+                        </div>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-3">
+                          <div className="flex items-center space-x-2">
+                            <MapPin className="w-4 h-4 text-gray-500" />
+                            <span className="font-medium">ZIP Code:</span>
+                            <span>{purchasedLead.leads.zip_code}</span>
+                          </div>
+                          <div className="flex items-center space-x-2">
+                            <Calendar className="w-4 h-4 text-gray-500" />
+                            <span className="font-medium">Purchase Date:</span>
+                            <span>{new Date(purchasedLead.purchased_at).toLocaleDateString()}</span>
+                          </div>
+                        </div>
+                        <div className="flex items-center space-x-2 mb-3">
+                          <CreditCard className="w-4 h-4 text-gray-500" />
+                          <span className="font-medium">Price Paid:</span>
+                          <span className="font-bold text-green-600">${purchasedLead.price_paid.toFixed(2)}</span>
+                        </div>
+                        <div className="flex justify-between items-center">
+                          <span className="text-sm text-gray-500">
+                            Lead submitted: {new Date(purchasedLead.leads.created_at).toLocaleDateString()}
+                          </span>
+                          <div className="flex space-x-2">
+                            <Dialog>
+                              <DialogTrigger asChild>
+                                <Button variant="outline" size="sm" onClick={() => setSelectedPurchasedLead(purchasedLead)}>
+                                  <Eye className="w-4 h-4 mr-1" />
+                                  View Details
+                                </Button>
+                              </DialogTrigger>
+                              <DialogContent className="max-w-2xl">
+                                <DialogHeader>
+                                  <DialogTitle>Purchased Lead Details</DialogTitle>
+                                  <DialogDescription>
+                                    Complete information for this purchased lead
+                                  </DialogDescription>
+                                </DialogHeader>
+                                {selectedPurchasedLead && (
+                                  <div className="space-y-4">
+                                    <div className="grid grid-cols-2 gap-4">
+                                      <div>
+                                        <span className="font-medium">Customer Name:</span>
+                                        <p>{selectedPurchasedLead.leads.customer_name}</p>
+                                      </div>
+                                      <div>
+                                        <span className="font-medium">Customer Phone:</span>
+                                        <p>{selectedPurchasedLead.leads.customer_phone}</p>
+                                      </div>
+                                    </div>
+                                    <div className="grid grid-cols-2 gap-4">
+                                      <div>
+                                        <span className="font-medium">Customer Email:</span>
+                                        <p>{selectedPurchasedLead.leads.customer_email}</p>
+                                      </div>
+                                      <div>
+                                        <span className="font-medium">Location:</span>
+                                        <p>{selectedPurchasedLead.leads.zip_code}</p>
+                                      </div>
+                                    </div>
+                                    <div className="grid grid-cols-2 gap-4">
+                                      <div>
+                                        <span className="font-medium">Service:</span>
+                                        <p>{selectedPurchasedLead.leads.service_category} - {selectedPurchasedLead.leads.sub_service}</p>
+                                      </div>
+                                      <div>
+                                        <span className="font-medium">Price Paid:</span>
+                                        <p className="font-bold text-green-600">${selectedPurchasedLead.price_paid.toFixed(2)}</p>
+                                      </div>
+                                    </div>
+                                    <div>
+                                      <span className="font-medium">Project Description:</span>
+                                      <p className="mt-1 text-gray-700">{selectedPurchasedLead.leads.description}</p>
+                                    </div>
+                                    <div className="grid grid-cols-2 gap-4">
+                                      <div>
+                                        <span className="font-medium">Lead Submitted:</span>
+                                        <p>{new Date(selectedPurchasedLead.leads.created_at).toLocaleString()}</p>
+                                      </div>
+                                      <div>
+                                        <span className="font-medium">Purchased:</span>
+                                        <p>{new Date(selectedPurchasedLead.purchased_at).toLocaleString()}</p>
+                                      </div>
+                                    </div>
+                                  </div>
+                                )}
+                              </DialogContent>
+                            </Dialog>
+                            <Button
+                              onClick={() => handleArchiveLead(purchasedLead.lead_id)}
+                              disabled={archivingLead === purchasedLead.lead_id}
+                              size="sm"
+                              variant="outline"
+                              className="text-gray-600 hover:text-gray-800"
+                            >
+                              {archivingLead === purchasedLead.lead_id ? 'Archiving...' : 'Archive'}
+                            </Button>
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            )}
+
             {activeTab === 'archived' && (
               <div>
-                {archived_leads.length === 0 ? (
-                  <p className="text-gray-500 text-center py-8">No archived leads yet.</p>
+                {(archived_leads.length === 0 && archived_purchased_leads.length === 0) ? (
+                  <p className="text-gray-500 text-center py-8">No leads found in this category.</p>
                 ) : (
                   <div className="space-y-4">
                     {archived_leads.map((lead) => (
-                      <div key={lead.id} className="border rounded-lg p-4 bg-gray-50">
+                      <div key={`claimed-${lead.id}`} className="border rounded-lg p-4 bg-gray-50">
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-3">
                           <div className="flex items-center space-x-2">
                             <User className="w-4 h-4 text-gray-500" />
@@ -693,6 +901,56 @@ const ContractorDashboard = () => {
                         <div>
                           <span className="font-medium">Description:</span>
                           <p className="mt-1 text-gray-700">{lead.description}</p>
+                        </div>
+                        <div className="mt-2">
+                          <span className="text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded">Claimed Lead</span>
+                        </div>
+                      </div>
+                    ))}
+                    {archived_purchased_leads.map((purchasedLead) => (
+                      <div key={`purchased-${purchasedLead.id}`} className="border rounded-lg p-4 bg-gray-50">
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-3">
+                          <div className="flex items-center space-x-2">
+                            <User className="w-4 h-4 text-gray-500" />
+                            <span className="font-medium">Customer:</span>
+                            <span>{purchasedLead.leads.customer_name}</span>
+                          </div>
+                          <div className="flex items-center space-x-2">
+                            <Phone className="w-4 h-4 text-gray-500" />
+                            <span className="font-medium">Phone:</span>
+                            <span>{purchasedLead.leads.customer_phone}</span>
+                          </div>
+                        </div>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-3">
+                          <div className="flex items-center space-x-2">
+                            <MapPin className="w-4 h-4 text-gray-500" />
+                            <span className="font-medium">Location:</span>
+                            <span>{purchasedLead.leads.zip_code}</span>
+                          </div>
+                          <div className="flex items-center space-x-2">
+                            <Calendar className="w-4 h-4 text-gray-500" />
+                            <span className="font-medium">Purchased:</span>
+                            <span>{new Date(purchasedLead.purchased_at).toLocaleDateString()}</span>
+                          </div>
+                        </div>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-3">
+                          <div className="flex items-center space-x-2">
+                            <Building className="w-4 h-4 text-gray-500" />
+                            <span className="font-medium">Service:</span>
+                            <span>{purchasedLead.leads.service_category} - {purchasedLead.leads.sub_service}</span>
+                          </div>
+                          <div className="flex items-center space-x-2">
+                            <CreditCard className="w-4 h-4 text-gray-500" />
+                            <span className="font-medium">Price Paid:</span>
+                            <span className="font-bold text-green-600">${purchasedLead.price_paid.toFixed(2)}</span>
+                          </div>
+                        </div>
+                        <div>
+                          <span className="font-medium">Description:</span>
+                          <p className="mt-1 text-gray-700">{purchasedLead.leads.description}</p>
+                        </div>
+                        <div className="mt-2">
+                          <span className="text-xs bg-purple-100 text-purple-800 px-2 py-1 rounded">Purchased Lead</span>
                         </div>
                       </div>
                     ))}
