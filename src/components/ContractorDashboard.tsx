@@ -351,7 +351,7 @@ const ContractorDashboard = () => {
               <div className="space-y-4">
                 <div className="bg-blue-50 p-4 rounded-lg">
                   <h4 className="font-semibold mb-2">Lead Pricing</h4>
-                  <p className="text-2xl font-bold text-blue-600">$10 <span className="text-sm font-normal text-gray-600">per lead</span></p>
+                  <p className="text-sm text-gray-600">Lead prices vary based on industry and service type.</p>
                   <p className="text-sm text-gray-600 mt-1">Only pay when you claim a lead</p>
                 </div>
                 <div>
