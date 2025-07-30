@@ -115,12 +115,33 @@ export const handler = async (event, context) => {
       }
     }
 
+    const { data: existingPurchase, error: purchaseCheckError } = await supabase
+      .from('purchased_leads')
+      .select('id')
+      .eq('contractor_id', contractor_id)
+      .eq('lead_id', lead_id)
+      .single()
+
+    if (existingPurchase) {
+      return {
+        statusCode: 400,
+        headers: {
+          'Content-Type': 'application/json',
+          'Access-Control-Allow-Origin': '*'
+        },
+        body: JSON.stringify({ success: false, message: 'You have already purchased this lead' })
+      }
+    }
+
     const { data: updatedLead, error: leadUpdateError } = await supabase
       .from('leads')
       .update({
+        status: 'purchased',
         claimed: true,
         claimed_by: contractor_id,
         claimed_at: new Date().toISOString(),
+        purchased_by: contractor_id,
+        purchased_at: new Date().toISOString(),
         is_archived: true
       })
       .eq('id', lead_id)
@@ -149,6 +170,19 @@ export const handler = async (event, context) => {
 
     if (transactionError) {
       console.error('Transaction insertion error:', transactionError)
+    }
+
+    const { error: purchasedLeadError } = await supabase
+      .from('purchased_leads')
+      .insert({
+        contractor_id,
+        lead_id,
+        price_paid: leadPrice,
+        zip_code: lead.zip_code
+      })
+
+    if (purchasedLeadError) {
+      console.error('Purchased lead insertion error:', purchasedLeadError)
     }
 
     return {

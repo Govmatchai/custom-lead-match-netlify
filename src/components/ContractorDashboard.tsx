@@ -56,6 +56,8 @@ const ContractorDashboard = () => {
   const [fundAmountError, setFundAmountError] = useState('')
   const [purchasingLead, setPurchasingLead] = useState<string | null>(null)
   const [selectedLead, setSelectedLead] = useState<Lead | null>(null)
+  const [confirmPurchase, setConfirmPurchase] = useState<Lead | null>(null)
+  const [successMessage, setSuccessMessage] = useState('')
 
   useEffect(() => {
     if (contractorId) {
@@ -202,7 +204,7 @@ const ContractorDashboard = () => {
     }
   }
 
-  const handlePurchaseLead = async (leadId: string) => {
+  const handlePurchaseLead = async (lead: Lead) => {
     const sessionToken = localStorage.getItem('contractor_session_token')
     
     if (!sessionToken) {
@@ -210,7 +212,7 @@ const ContractorDashboard = () => {
       return
     }
     
-    setPurchasingLead(leadId)
+    setPurchasingLead(lead.id)
     try {
       const response = await fetch('/.netlify/functions/purchase-lead', {
         method: 'POST',
@@ -218,7 +220,7 @@ const ContractorDashboard = () => {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({ 
-          lead_id: leadId, 
+          lead_id: lead.id, 
           contractor_id: contractorId,
           session_token: sessionToken
         })
@@ -227,8 +229,12 @@ const ContractorDashboard = () => {
       const data = await response.json()
       
       if (data.success) {
+        setSuccessMessage('Lead purchased! Check your dashboard for details.')
+        setConfirmPurchase(null)
         await fetchDashboardData()
         setErrorMessage('')
+        
+        setTimeout(() => setSuccessMessage(''), 5000)
       } else {
         setErrorMessage(data.message || 'Failed to purchase lead')
       }
@@ -560,7 +566,7 @@ const ContractorDashboard = () => {
                                   )}
                                   <DialogFooter>
                                     <Button
-                                      onClick={() => selectedLead && handlePurchaseLead(selectedLead.id)}
+                                      onClick={() => selectedLead && setConfirmPurchase(selectedLead)}
                                       disabled={!canPurchase || purchasingLead === selectedLead?.id}
                                       className="bg-blue-600 hover:bg-blue-700"
                                     >
@@ -570,7 +576,7 @@ const ContractorDashboard = () => {
                                 </DialogContent>
                               </Dialog>
                               <Button
-                                onClick={() => handlePurchaseLead(lead.id)}
+                                onClick={() => setConfirmPurchase(lead)}
                                 disabled={!canPurchase || purchasingLead === lead.id}
                                 size="sm"
                                 className="bg-blue-600 hover:bg-blue-700"
@@ -696,6 +702,56 @@ const ContractorDashboard = () => {
             )}
           </CardContent>
         </Card>
+
+        {/* Purchase Confirmation Modal */}
+        {confirmPurchase && (
+          <Dialog open={!!confirmPurchase} onOpenChange={() => setConfirmPurchase(null)}>
+            <DialogContent>
+              <DialogHeader>
+                <DialogTitle>Confirm Purchase</DialogTitle>
+                <DialogDescription>
+                  Are you sure you want to purchase this lead for $10.00?
+                </DialogDescription>
+              </DialogHeader>
+              <div className="space-y-4">
+                <div>
+                  <span className="font-medium">Service:</span>
+                  <p>{confirmPurchase.service_category} - {confirmPurchase.sub_service}</p>
+                </div>
+                <div>
+                  <span className="font-medium">Location:</span>
+                  <p>{confirmPurchase.zip_code}</p>
+                </div>
+                <div>
+                  <span className="font-medium">Description:</span>
+                  <p className="text-gray-700">{confirmPurchase.description}</p>
+                </div>
+              </div>
+              <DialogFooter>
+                <Button variant="outline" onClick={() => setConfirmPurchase(null)}>
+                  Cancel
+                </Button>
+                <Button
+                  onClick={() => handlePurchaseLead(confirmPurchase)}
+                  disabled={purchasingLead === confirmPurchase.id}
+                  className="bg-blue-600 hover:bg-blue-700"
+                >
+                  {purchasingLead === confirmPurchase.id ? 'Purchasing...' : 'Confirm Purchase'}
+                </Button>
+              </DialogFooter>
+            </DialogContent>
+          </Dialog>
+        )}
+
+        {/* Success Message */}
+        {successMessage && (
+          <div className="fixed top-4 right-4 z-50 bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded shadow-lg">
+            <div className="flex items-center">
+              <span className="mr-2">✅</span>
+              <span>{successMessage}</span>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   )
