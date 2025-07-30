@@ -57,6 +57,17 @@ interface PurchasedLead {
   }
 }
 
+interface PurchaseHistoryItem {
+  id: string
+  lead_id: string
+  date_purchased: string
+  industry: string
+  sub_service: string
+  lead_zip_code: string
+  purchase_price: number
+  status: string
+}
+
 interface DashboardData {
   contractor: Contractor
   claimed_leads: Lead[]
@@ -92,6 +103,11 @@ const ContractorDashboard = () => {
   const [archivingLead, setArchivingLead] = useState<string | null>(null)
   const [completingLead, setCompletingLead] = useState<string | null>(null)
   const [isEditProfileOpen, setIsEditProfileOpen] = useState(false)
+  const [purchaseHistory, setPurchaseHistory] = useState<PurchaseHistoryItem[]>([])
+  const [historyLoading, setHistoryLoading] = useState(false)
+  const [currentPage, setCurrentPage] = useState(1)
+  const [totalPages, setTotalPages] = useState(1)
+  const [totalRecords, setTotalRecords] = useState(0)
 
   useEffect(() => {
     if (contractorId) {
@@ -373,6 +389,35 @@ const ContractorDashboard = () => {
     setTimeout(() => setSuccessMessage(''), 5000)
   }
 
+  const fetchPurchaseHistory = async (page = 1) => {
+    const sessionToken = localStorage.getItem('contractor_session_token')
+    
+    if (!sessionToken) {
+      setErrorMessage('Session expired. Please log in again.')
+      return
+    }
+    
+    setHistoryLoading(true)
+    try {
+      const response = await fetch(`/.netlify/functions/get-lead-purchase-history?contractor_id=${contractorId}&session_token=${sessionToken}&page=${page}&limit=25`)
+      const data = await response.json()
+      
+      if (data.success) {
+        setPurchaseHistory(data.purchase_history)
+        setCurrentPage(data.pagination.current_page)
+        setTotalPages(data.pagination.total_pages)
+        setTotalRecords(data.pagination.total_records)
+        setErrorMessage('')
+      } else {
+        setErrorMessage(data.message || 'Failed to fetch purchase history')
+      }
+    } catch (error) {
+      setErrorMessage('Network error. Please try again.')
+    } finally {
+      setHistoryLoading(false)
+    }
+  }
+
   if (loading) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
@@ -624,6 +669,19 @@ const ContractorDashboard = () => {
                 }`}
               >
                 Archived Leads ({total_archived + total_archived_purchased})
+              </button>
+              <button
+                onClick={() => {
+                  setActiveTab('history')
+                  fetchPurchaseHistory(1)
+                }}
+                className={`px-4 py-2 font-medium text-sm ${
+                  activeTab === 'history'
+                    ? 'border-b-2 border-blue-500 text-blue-600'
+                    : 'text-gray-500 hover:text-gray-700'
+                }`}
+              >
+                Lead Purchase History ({totalRecords})
               </button>
             </div>
           </CardHeader>
@@ -1154,6 +1212,150 @@ const ContractorDashboard = () => {
                         </div>
                       </div>
                     ))}
+                  </div>
+                )}
+              </div>
+            )}
+
+            {activeTab === 'history' && (
+              <div>
+                {historyLoading ? (
+                  <div className="flex justify-center items-center py-8">
+                    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+                    <span className="ml-2">Loading purchase history...</span>
+                  </div>
+                ) : purchaseHistory.length === 0 ? (
+                  <p className="text-gray-500 text-center py-8">No purchase history found.</p>
+                ) : (
+                  <div className="space-y-4">
+                    <div className="bg-white rounded-lg border overflow-hidden">
+                      <div className="overflow-x-auto">
+                        <table className="min-w-full divide-y divide-gray-200">
+                          <thead className="bg-gray-50">
+                            <tr>
+                              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                Lead ID
+                              </th>
+                              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                Date Purchased
+                              </th>
+                              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                Industry
+                              </th>
+                              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                Sub-Service
+                              </th>
+                              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                ZIP Code
+                              </th>
+                              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                Purchase Price
+                              </th>
+                              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                Status
+                              </th>
+                            </tr>
+                          </thead>
+                          <tbody className="bg-white divide-y divide-gray-200">
+                            {purchaseHistory.map((item) => (
+                              <tr key={item.id} className="hover:bg-gray-50">
+                                <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                                  {item.lead_id.substring(0, 8)}...
+                                </td>
+                                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                  {new Date(item.date_purchased).toLocaleDateString()}
+                                </td>
+                                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                  {item.industry}
+                                </td>
+                                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                  {item.sub_service}
+                                </td>
+                                <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                  {item.lead_zip_code}
+                                </td>
+                                <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-green-600">
+                                  ${item.purchase_price.toFixed(2)}
+                                </td>
+                                <td className="px-6 py-4 whitespace-nowrap">
+                                  <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
+                                    item.status === 'Completed' ? 'bg-green-100 text-green-800' :
+                                    item.status === 'Archived' ? 'bg-gray-100 text-gray-800' :
+                                    'bg-blue-100 text-blue-800'
+                                  }`}>
+                                    {item.status}
+                                  </span>
+                                </td>
+                              </tr>
+                            ))}
+                          </tbody>
+                        </table>
+                      </div>
+                    </div>
+
+                    {totalPages > 1 && (
+                      <div className="flex items-center justify-between bg-white px-4 py-3 border rounded-lg">
+                        <div className="flex-1 flex justify-between sm:hidden">
+                          <button
+                            onClick={() => fetchPurchaseHistory(currentPage - 1)}
+                            disabled={currentPage === 1}
+                            className="relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                          >
+                            Previous
+                          </button>
+                          <button
+                            onClick={() => fetchPurchaseHistory(currentPage + 1)}
+                            disabled={currentPage === totalPages}
+                            className="ml-3 relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                          >
+                            Next
+                          </button>
+                        </div>
+                        <div className="hidden sm:flex-1 sm:flex sm:items-center sm:justify-between">
+                          <div>
+                            <p className="text-sm text-gray-700">
+                              Showing <span className="font-medium">{((currentPage - 1) * 25) + 1}</span> to{' '}
+                              <span className="font-medium">{Math.min(currentPage * 25, totalRecords)}</span> of{' '}
+                              <span className="font-medium">{totalRecords}</span> results
+                            </p>
+                          </div>
+                          <div>
+                            <nav className="relative z-0 inline-flex rounded-md shadow-sm -space-x-px">
+                              <button
+                                onClick={() => fetchPurchaseHistory(currentPage - 1)}
+                                disabled={currentPage === 1}
+                                className="relative inline-flex items-center px-2 py-2 rounded-l-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                              >
+                                Previous
+                              </button>
+                              {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
+                                const pageNum = i + 1
+                                return (
+                                  <button
+                                    key={pageNum}
+                                    onClick={() => fetchPurchaseHistory(pageNum)}
+                                    className={`relative inline-flex items-center px-4 py-2 border text-sm font-medium ${
+                                      currentPage === pageNum
+                                        ? 'z-10 bg-blue-50 border-blue-500 text-blue-600'
+                                        : 'bg-white border-gray-300 text-gray-500 hover:bg-gray-50'
+                                    }`}
+                                  >
+                                    {pageNum}
+                                  </button>
+                                )
+                              })}
+                              <button
+                                onClick={() => fetchPurchaseHistory(currentPage + 1)}
+                                disabled={currentPage === totalPages}
+                                className="relative inline-flex items-center px-2 py-2 rounded-r-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                              >
+                                Next
+                              </button>
+                            </nav>
+                          </div>
+                        </div>
+                      </div>
+                    )}
                   </div>
                 )}
               </div>
