@@ -81,7 +81,7 @@ export const handler = async (event, context) => {
     }
 
     const currentBalance = transactions.reduce((sum, transaction) => sum + parseFloat(transaction.amount), 0)
-    const leadPrice = 10.00
+    const leadPrice = 20.00
 
     if (currentBalance < leadPrice) {
       return {

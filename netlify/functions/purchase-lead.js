@@ -82,7 +82,7 @@ export const handler = async (event, context) => {
     }
 
     const currentBalance = transactions.reduce((sum, transaction) => sum + parseFloat(transaction.amount), 0)
-    const leadPrice = 10.00
+    const leadPrice = 20.00
 
     if (currentBalance < leadPrice) {
       return {
@@ -183,6 +183,18 @@ export const handler = async (event, context) => {
 
     if (purchasedLeadError) {
       console.error('Purchased lead insertion error:', purchasedLeadError)
+    }
+
+    const { error: leadSalesError } = await supabase
+      .from('lead_sales')
+      .insert({
+        contractor_id,
+        lead_id,
+        amount: leadPrice
+      })
+
+    if (leadSalesError) {
+      console.error('Lead sales insertion error:', leadSalesError)
     }
 
     return {

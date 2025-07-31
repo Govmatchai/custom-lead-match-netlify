@@ -586,14 +586,14 @@ const ContractorDashboard = () => {
                 </div>
                 <div>
                   <label htmlFor="fundAmount" className="block text-sm font-medium text-gray-700 mb-2">
-                    Amount to Add (minimum $10)
+                    Amount to Add (minimum $20)
                   </label>
                   <div className="relative">
                     <span className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500">$</span>
                     <input
                       id="fundAmount"
                       type="number"
-                      min="10"
+                      min="20"
                       step="1"
                       value={fundAmount}
                       onChange={(e) => setFundAmount(e.target.value)}
@@ -693,7 +693,7 @@ const ContractorDashboard = () => {
                 ) : (
                   <div className="space-y-4">
                     {available_leads.map((lead) => {
-                      const leadPrice = 10.00
+                      const leadPrice = 20.00
                       const walletBalance = parseFloat(dashboardData?.wallet_balance || '0')
                       const canPurchase = walletBalance >= leadPrice
                       
