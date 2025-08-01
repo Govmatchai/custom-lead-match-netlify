@@ -1,4 +1,5 @@
 import { Link } from 'react-router-dom'
+import { Logo } from './ui/Logo'
 
 export const Footer = () => {
   return (
@@ -6,7 +7,9 @@ export const Footer = () => {
       <div className="max-w-6xl mx-auto px-4">
         <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
           <div className="col-span-1 md:col-span-2">
-            <h3 className="text-2xl font-bold mb-4">Custom Lead Match</h3>
+            <div className="mb-4">
+              <Logo className="max-w-xs" width={250} height={75} />
+            </div>
             <p className="text-gray-300 mb-4">
               Real-time lead matching for contractors. No subscriptions, no competition - just quality leads delivered directly to you.
             </p>

@@ -5,6 +5,7 @@ import { Button } from './ui/button'
 import { Input } from './ui/input'
 import { Label } from './ui/label'
 import { Loader2, AlertCircle, Eye, EyeOff } from 'lucide-react'
+import { Logo } from './ui/Logo'
 
 export default function ContractorLogin() {
   const navigate = useNavigate()
@@ -63,6 +64,9 @@ export default function ContractorLogin() {
     <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
       <Card className="w-full max-w-md">
         <CardHeader>
+          <div className="flex justify-center mb-4">
+            <Logo className="max-w-xs" width={250} height={75} />
+          </div>
           <CardTitle className="text-2xl text-center">Contractor Login Portal</CardTitle>
         </CardHeader>
         <CardContent>

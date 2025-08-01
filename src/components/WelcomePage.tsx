@@ -3,6 +3,7 @@ import { useSearchParams, useNavigate } from 'react-router-dom'
 import { Card, CardContent, CardHeader, CardTitle } from './ui/card'
 import { Button } from './ui/button'
 import { CheckCircle, ArrowRight, Smartphone, Shield } from 'lucide-react'
+import { Logo } from './ui/Logo'
 
 interface Contractor {
   id: string
@@ -97,11 +98,14 @@ export default function WelcomePage() {
         <div className="max-w-4xl mx-auto">
           {/* Header */}
           <div className="text-center mb-8">
+            <div className="flex justify-center mb-4">
+              <Logo className="max-w-sm" width={300} height={90} />
+            </div>
             <div className="inline-flex items-center justify-center w-16 h-16 bg-green-100 rounded-full mb-4">
               <CheckCircle className="w-8 h-8 text-green-600" />
             </div>
             <h1 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
-              Welcome to Custom Lead Match!
+              Welcome to our platform!
             </h1>
             <p className="text-xl text-gray-600 max-w-2xl mx-auto mb-6">
               Thanks for signing up — you're now part of our exclusive contractor network.

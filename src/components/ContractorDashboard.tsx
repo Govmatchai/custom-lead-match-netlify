@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog'
 import { EditProfileModal } from './EditProfileModal'
+import { Logo } from '@/components/ui/Logo'
 
 interface Lead {
   id: string
@@ -459,9 +460,12 @@ const ContractorDashboard = () => {
     <div className="min-h-screen bg-gray-50">
       <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="mb-8 flex justify-between items-center">
-          <div>
-            <h1 className="text-3xl font-bold text-gray-900">Contractor Dashboard</h1>
-            <p className="text-gray-600">Welcome back, {contractor.contact_name}</p>
+          <div className="flex items-center space-x-4">
+            <Logo className="max-w-xs" width={200} height={60} />
+            <div>
+              <h1 className="text-3xl font-bold text-gray-900">Dashboard</h1>
+              <p className="text-gray-600">Welcome back, {contractor.contact_name}</p>
+            </div>
           </div>
           <Button onClick={handleLogout} variant="outline">
             Logout

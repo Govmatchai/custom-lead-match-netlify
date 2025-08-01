@@ -7,6 +7,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Alert, AlertDescription } from '@/components/ui/alert'
 import { IndustryDropdown } from '@/components/shared/IndustryDropdown'
 import { Footer } from './Footer'
+import { Logo } from '@/components/ui/Logo'
 
 const ContractorSignup = () => {
   const [formData, setFormData] = useState({
@@ -228,9 +229,9 @@ const ContractorSignup = () => {
     <div className="min-h-screen bg-gradient-to-br from-white via-blue-50 to-indigo-50 font-['Inter',_'Roboto',_'Open_Sans',_sans-serif]">
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
         <div className="text-center mb-12">
-          <h1 className="text-5xl md:text-6xl font-bold text-gray-900 mb-6">
-            Custom Lead Match
-          </h1>
+          <div className="flex justify-center mb-6">
+            <Logo className="max-w-md w-full h-auto" width={400} height={120} />
+          </div>
           <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
             Get 3 Free Leads — Instantly Connect with High-Intent Customers in Your Industry
           </h2>
@@ -266,7 +267,7 @@ const ContractorSignup = () => {
 
         {/* About Us Section */}
         <div className="mb-16 bg-gradient-to-r from-blue-50 to-indigo-50 p-8 rounded-xl">
-          <h3 className="text-3xl font-bold text-center text-gray-900 mb-6">About Custom Lead Match</h3>
+          <h3 className="text-3xl font-bold text-center text-gray-900 mb-6">About Us</h3>
           <div className="max-w-3xl mx-auto text-center">
             <p className="text-lg text-gray-700 mb-6">
               Custom Lead Match was created to fix what's broken in the lead gen industry. We're not a list broker or middleman — we're a real-time match platform built for small business contractors.
