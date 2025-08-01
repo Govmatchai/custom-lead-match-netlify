@@ -63,8 +63,8 @@ interface Transaction {
 }
 
 interface PricingSettings {
-  current_price: number
-  default_price: number
+  category_pricing: { [key: string]: number }
+  categories: string[]
 }
 
 const AdminDashboard = () => {
@@ -82,7 +82,7 @@ const AdminDashboard = () => {
   const [transactions, setTransactions] = useState<Transaction[]>([])
   const [totalRevenue, setTotalRevenue] = useState<string>('0.00')
   const [pricing, setPricing] = useState<PricingSettings | null>(null)
-  const [newLeadPrice, setNewLeadPrice] = useState<string>('')
+  const [categoryPrices, setCategoryPrices] = useState<{ [key: string]: string }>({})
   const [walletAdjustment, setWalletAdjustment] = useState({ contractor_id: '', amount: '', notes: '' })
   const [newLead, setNewLead] = useState({
     customer_name: '', phone: '', email: '', service_category: '', sub_service: '', zip_code: '', description: ''
@@ -150,7 +150,11 @@ const AdminDashboard = () => {
       if (pricingResponse.ok) {
         const pricingData = await pricingResponse.json()
         setPricing(pricingData)
-        setNewLeadPrice(pricingData.current_price.toString())
+        const initialPrices: { [key: string]: string } = {}
+        Object.entries(pricingData.category_pricing).forEach(([category, price]) => {
+          initialPrices[category] = (price as number).toString()
+        })
+        setCategoryPrices(initialPrices)
       }
     } catch (error) {
       console.error('Failed to fetch admin data:', error)
@@ -159,19 +163,29 @@ const AdminDashboard = () => {
     }
   }
 
-  const handleUpdatePricing = async (e: React.FormEvent) => {
-    e.preventDefault()
+  const handleUpdateCategoryPricing = async (category: string) => {
     try {
+      const price = parseFloat(categoryPrices[category])
+      if (isNaN(price) || price < 0) {
+        alert('Please enter a valid price')
+        return
+      }
+
       const response = await fetch('/.netlify/functions/admin-pricing', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ price: parseFloat(newLeadPrice) })
+        body: JSON.stringify({ category, price })
       })
+      
       if (response.ok) {
         fetchAdminData()
+        alert(`${category} pricing updated successfully`)
+      } else {
+        alert('Failed to update pricing')
       }
     } catch (error) {
       console.error('Failed to update pricing:', error)
+      alert('Failed to update pricing')
     }
   }
 
@@ -747,35 +761,59 @@ const AdminDashboard = () => {
         {activeTab === 'pricing' && pricing && (
           <Card>
             <CardHeader>
-              <CardTitle>Lead Pricing Control</CardTitle>
-              <CardDescription>Manage global lead pricing settings</CardDescription>
+              <CardTitle>Category-Specific Lead Pricing</CardTitle>
+              <CardDescription>Set different prices for each lead category</CardDescription>
             </CardHeader>
             <CardContent>
               <div className="space-y-6">
                 <div className="bg-blue-50 p-4 rounded-lg">
-                  <h4 className="font-semibold mb-2">Current Settings</h4>
-                  <p>Current Lead Price: <span className="font-bold text-blue-600">${pricing.current_price}</span></p>
-                  <p>Default Price: <span className="text-gray-600">${pricing.default_price}</span></p>
+                  <h4 className="font-semibold mb-2">Current Category Pricing</h4>
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                    {Object.entries(pricing.category_pricing).map(([category, price]) => (
+                      <div key={category} className="bg-white p-3 rounded border">
+                        <div className="font-medium text-sm text-gray-700 capitalize">
+                          {category.replace('_', ' ')}
+                        </div>
+                        <div className="text-lg font-bold text-blue-600">
+                          ${price.toFixed(2)}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
                 </div>
                 
-                <form onSubmit={handleUpdatePricing} className="space-y-4">
-                  <div>
-                    <label className="block text-sm font-medium mb-2">Update Lead Price</label>
-                    <Input
-                      type="number"
-                      step="0.01"
-                      min="0"
-                      value={newLeadPrice}
-                      onChange={(e) => setNewLeadPrice(e.target.value)}
-                      placeholder="Enter new price"
-                      required
-                    />
+                <div className="space-y-4">
+                  <h4 className="font-semibold">Update Category Pricing</h4>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    {pricing.categories.map((category) => (
+                      <div key={category} className="border rounded-lg p-4">
+                        <label className="block text-sm font-medium mb-2 capitalize">
+                          {category.replace('_', ' ')} Lead Price
+                        </label>
+                        <div className="flex gap-2">
+                          <Input
+                            type="number"
+                            step="0.01"
+                            min="0"
+                            value={categoryPrices[category] || ''}
+                            onChange={(e) => setCategoryPrices({
+                              ...categoryPrices,
+                              [category]: e.target.value
+                            })}
+                            placeholder="Enter price"
+                          />
+                          <Button 
+                            onClick={() => handleUpdateCategoryPricing(category)}
+                            size="sm"
+                          >
+                            <DollarSign className="w-4 h-4 mr-1" />
+                            Update
+                          </Button>
+                        </div>
+                      </div>
+                    ))}
                   </div>
-                  <Button type="submit">
-                    <DollarSign className="w-4 h-4 mr-2" />
-                    Update Pricing
-                  </Button>
-                </form>
+                </div>
               </div>
             </CardContent>
           </Card>

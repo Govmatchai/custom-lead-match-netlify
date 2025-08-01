@@ -82,18 +82,6 @@ export const handler = async (event, context) => {
     }
 
     const currentBalance = transactions.reduce((sum, transaction) => sum + parseFloat(transaction.amount), 0)
-    const leadPrice = 20.00
-
-    if (currentBalance < leadPrice) {
-      return {
-        statusCode: 400,
-        headers: {
-          'Content-Type': 'application/json',
-          'Access-Control-Allow-Origin': '*'
-        },
-        body: JSON.stringify({ success: false, message: 'Insufficient balance to purchase this lead.' })
-      }
-    }
 
     const { data: lead, error: leadError } = await supabase
       .from('leads')
@@ -112,6 +100,25 @@ export const handler = async (event, context) => {
           'Access-Control-Allow-Origin': '*'
         },
         body: JSON.stringify({ success: false, message: 'Lead not available or already claimed' })
+      }
+    }
+
+    const { data: categoryPricing, error: pricingError } = await supabase
+      .from('category_pricing')
+      .select('price')
+      .eq('category', lead.service_category)
+      .single()
+
+    const leadPrice = categoryPricing ? parseFloat(categoryPricing.price) : 20.00
+
+    if (currentBalance < leadPrice) {
+      return {
+        statusCode: 400,
+        headers: {
+          'Content-Type': 'application/json',
+          'Access-Control-Allow-Origin': '*'
+        },
+        body: JSON.stringify({ success: false, message: 'Insufficient balance to purchase this lead.' })
       }
     }
 

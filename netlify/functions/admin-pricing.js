@@ -22,14 +22,27 @@ export const handler = async (event, context) => {
 
   try {
     if (event.httpMethod === 'GET') {
-      const { data: pricing, error } = await supabase
-        .from('admin_settings')
+      const { data: categoryPricing, error } = await supabase
+        .from('category_pricing')
         .select('*')
-        .eq('key', 'lead_price')
-        .single()
+        .order('category')
 
-      const defaultPrice = 20.00
-      const currentPrice = pricing ? parseFloat(pricing.value) : defaultPrice
+      if (error) {
+        console.error('Error fetching category pricing:', error)
+        return {
+          statusCode: 500,
+          headers: {
+            'Content-Type': 'application/json',
+            'Access-Control-Allow-Origin': '*'
+          },
+          body: JSON.stringify({ detail: 'Failed to fetch pricing' })
+        }
+      }
+
+      const pricingByCategory = {}
+      categoryPricing.forEach(item => {
+        pricingByCategory[item.category] = parseFloat(item.price)
+      })
 
       return {
         statusCode: 200,
@@ -38,33 +51,35 @@ export const handler = async (event, context) => {
           'Access-Control-Allow-Origin': '*'
         },
         body: JSON.stringify({
-          current_price: currentPrice,
-          default_price: defaultPrice
+          category_pricing: pricingByCategory,
+          categories: categoryPricing.map(item => item.category)
         })
       }
     }
 
     if (event.httpMethod === 'POST') {
       const data = JSON.parse(event.body)
-      const { price } = data
+      const { category, price } = data
 
-      if (!price || isNaN(price) || price < 0) {
+      if (!category || !price || isNaN(price) || price < 0) {
         return {
           statusCode: 400,
           headers: {
             'Content-Type': 'application/json',
             'Access-Control-Allow-Origin': '*'
           },
-          body: JSON.stringify({ detail: 'Valid price is required' })
+          body: JSON.stringify({ detail: 'Valid category and price are required' })
         }
       }
 
       const { error } = await supabase
-        .from('admin_settings')
+        .from('category_pricing')
         .upsert({
-          key: 'lead_price',
-          value: price.toString(),
+          category: category,
+          price: parseFloat(price),
           updated_at: new Date().toISOString()
+        }, {
+          onConflict: 'category'
         })
 
       if (error) {
@@ -85,7 +100,7 @@ export const handler = async (event, context) => {
           'Content-Type': 'application/json',
           'Access-Control-Allow-Origin': '*'
         },
-        body: JSON.stringify({ message: 'Pricing updated successfully', price })
+        body: JSON.stringify({ message: 'Pricing updated successfully', category, price })
       }
     }
 

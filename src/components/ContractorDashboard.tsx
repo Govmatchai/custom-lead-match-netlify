@@ -109,6 +109,7 @@ const ContractorDashboard = () => {
   const [currentPage, setCurrentPage] = useState(1)
   const [totalPages, setTotalPages] = useState(1)
   const [totalRecords, setTotalRecords] = useState(0)
+  const [categoryPricing, setCategoryPricing] = useState<{ [key: string]: number }>({})
 
   useEffect(() => {
     if (contractorId) {
@@ -169,16 +170,18 @@ const ContractorDashboard = () => {
     const sessionToken = localStorage.getItem('contractor_session_token')
     
     try {
-      const [dashboardResponse, availableResponse, purchasedResponse] = await Promise.all([
+      const [dashboardResponse, availableResponse, purchasedResponse, pricingResponse] = await Promise.all([
         fetch(`/.netlify/functions/contractors-dashboard?contractor_id=${contractorId}&session_token=${sessionToken}`),
         fetch(`/.netlify/functions/contractors-available-leads?contractor_id=${contractorId}&session_token=${sessionToken}`),
-        fetch(`/.netlify/functions/get-purchased-leads?contractor_id=${contractorId}&session_token=${sessionToken}`)
+        fetch(`/.netlify/functions/get-purchased-leads?contractor_id=${contractorId}&session_token=${sessionToken}`),
+        fetch('/.netlify/functions/get-category-pricing')
       ])
       
-      const [dashboardData, availableData, purchasedData] = await Promise.all([
+      const [dashboardData, availableData, purchasedData, pricingData] = await Promise.all([
         dashboardResponse.json(),
         availableResponse.json(),
-        purchasedResponse.json()
+        purchasedResponse.json(),
+        pricingResponse.json()
       ])
       
       if (dashboardResponse.ok && availableResponse.ok && purchasedResponse.ok) {
@@ -201,7 +204,11 @@ const ContractorDashboard = () => {
           total_completed: purchasedData.completed_leads?.length || 0,
           wallet_balance: dashboardData.wallet_balance
         })
-      } else {
+      }
+
+      if (pricingResponse.ok) {
+        setCategoryPricing(pricingData.pricing || {})
+      }else {
         setErrorMessage(dashboardData.detail || availableData.detail || purchasedData.message || 'Failed to load dashboard data')
       }
     } catch (error) {
@@ -697,7 +704,7 @@ const ContractorDashboard = () => {
                 ) : (
                   <div className="space-y-4">
                     {available_leads.map((lead) => {
-                      const leadPrice = 20.00
+                      const leadPrice = categoryPricing?.[lead.service_category] || 20.00
                       const walletBalance = parseFloat(dashboardData?.wallet_balance || '0')
                       const canPurchase = walletBalance >= leadPrice
                       
