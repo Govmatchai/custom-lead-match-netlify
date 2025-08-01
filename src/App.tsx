@@ -22,6 +22,8 @@ function App() {
           <Route path="/" element={<ContractorSignup />} />
           <Route path="/claim/:token" element={<ClaimLead />} />
           <Route path="/contractor/:contractorId" element={<ContractorDashboard />} />
+          <Route path="/dashboard" element={<ContractorDashboard />} />
+          <Route path="/login" element={<ContractorLogin />} />
           <Route path="/admin" element={<AdminDashboard />} />
           <Route path="/lead-intake" element={<LeadIntake />} />
           <Route path="/hvac" element={<HVACLanding />} />

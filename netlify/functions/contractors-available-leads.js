@@ -87,8 +87,8 @@ export const handler = async (event, context) => {
       .eq('claimed', false)
       .eq('is_archived', false)
       .eq('status', 'valid')
-      .eq('service_category', contractor.industry)
-      .eq('sub_service', contractor.sub_service)
+      .ilike('service_category', contractor.industry.replace(/_/g, ' '))
+      .ilike('sub_service', contractor.sub_service.replace(/_/g, ' '))
       .in('zip_code', contractor.zip_codes)
       .order('created_at', { ascending: false })
 

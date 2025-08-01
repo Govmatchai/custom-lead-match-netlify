@@ -1,0 +1,56 @@
+INSERT INTO leads (
+  id,
+  customer_name,
+  phone,
+  email,
+  service_category,
+  sub_service,
+  zip_code,
+  description,
+  status,
+  claimed,
+  is_archived,
+  created_at
+) VALUES 
+(
+  'qa-test-lead-plumbing-001',
+  'QA Test Customer - Plumbing',
+  '(555) 111-2222',
+  'qatest.plumbing@example.com',
+  'home_services',
+  'plumbing',
+  '12345',
+  'QA Test - Kitchen sink repair needed urgently',
+  'valid',
+  false,
+  false,
+  NOW()
+),
+(
+  'qa-test-lead-hvac-001',
+  'QA Test Customer - HVAC',
+  '(555) 333-4444',
+  'qatest.hvac@example.com',
+  'home_services',
+  'hvac',
+  '12345',
+  'QA Test - Air conditioning unit not working',
+  'valid',
+  false,
+  false,
+  NOW()
+),
+(
+  'qa-test-lead-hvac-002',
+  'QA Test Customer - HVAC 2',
+  '(555) 555-6666',
+  'qatest.hvac2@example.com',
+  'home_services',
+  'hvac',
+  '32073',
+  'QA Test - Heating system maintenance required',
+  'valid',
+  false,
+  false,
+  NOW()
+) ON CONFLICT (id) DO NOTHING;
