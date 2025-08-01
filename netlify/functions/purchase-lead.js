@@ -136,7 +136,6 @@ export const handler = async (event, context) => {
     const { data: updatedLead, error: leadUpdateError } = await supabase
       .from('leads')
       .update({
-        status: 'purchased',
         claimed: true,
         claimed_by: contractor_id,
         claimed_at: new Date().toISOString(),
