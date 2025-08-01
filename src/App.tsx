@@ -13,6 +13,10 @@ import { HealthcareLanding } from './components/industry-pages/HealthcareLanding
 import { AutoLanding } from './components/industry-pages/AutoLanding'
 import WelcomePage from './components/WelcomePage'
 import ContractorLogin from './components/ContractorLogin'
+import { PrivacyPolicy } from './components/legal/PrivacyPolicy'
+import { TermsOfService } from './components/legal/TermsOfService'
+import { Disclaimer } from './components/legal/Disclaimer'
+import { TCPACompliance } from './components/legal/TCPACompliance'
 
 function App() {
   return (
@@ -37,6 +41,12 @@ function App() {
           <Route path="/auto" element={<AutoLanding />} />
           <Route path="/welcome" element={<WelcomePage />} />
           <Route path="/contractor-login" element={<ContractorLogin />} />
+          <Route path="/privacy-policy" element={<PrivacyPolicy />} />
+          <Route path="/terms-of-service" element={<TermsOfService />} />
+          <Route path="/disclaimer" element={<Disclaimer />} />
+          <Route path="/tcpa" element={<TCPACompliance />} />
+          <Route path="/about" element={<ContractorSignup />} />
+          <Route path="/how-it-works" element={<ContractorSignup />} />
         </Routes>
       </div>
     </Router>

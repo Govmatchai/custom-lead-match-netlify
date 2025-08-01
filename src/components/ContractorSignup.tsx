@@ -1,11 +1,12 @@
 import { useState } from 'react'
-import { CheckCircle, Edit, Zap, Users } from 'lucide-react'
+import { CheckCircle, Zap, Star, DollarSign, Phone, Lock } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Alert, AlertDescription } from '@/components/ui/alert'
 import { IndustryDropdown } from '@/components/shared/IndustryDropdown'
+import { Footer } from './Footer'
 
 const ContractorSignup = () => {
   const [formData, setFormData] = useState({
@@ -147,23 +148,6 @@ const ContractorSignup = () => {
   }
 
 
-  const howItWorksSteps = [
-    {
-      icon: Edit,
-      title: "Create a free account",
-      description: "Sign up in minutes with your business details"
-    },
-    {
-      icon: Zap,
-      title: "Get instant SMS alerts when new leads come in",
-      description: "Receive notifications for matching opportunities"
-    },
-    {
-      icon: Users,
-      title: "View lead details and claim it on a first-come basis",
-      description: "Review and claim leads that match your services"
-    }
-  ]
 
   const benefits = [
     "3 Free Leads — No Strings Attached",
@@ -172,6 +156,53 @@ const ContractorSignup = () => {
     "Industry & Service-Type Matching",
     "First-Come, First-Serve Claim System",
     "Pre-Screened & Validated Leads Only — No Spam or Junk"
+  ]
+
+  const testimonials = [
+    {
+      name: "Marcus G.",
+      title: "HVAC Pro",
+      quote: "I stopped buying from [redacted] and switched to CLM full-time.",
+      avatar: "MG"
+    },
+    {
+      name: "Denise R.", 
+      title: "Roofing Contractor",
+      quote: "Real leads, actual jobs, no BS.",
+      avatar: "DR"
+    },
+    {
+      name: "Carlos A.",
+      title: "General Contractor", 
+      quote: "Got a $14,000 kitchen job from my 2nd lead.",
+      avatar: "CA"
+    }
+  ]
+
+  const trustBadges = [
+    { icon: CheckCircle, text: "TCPA Compliant" },
+    { icon: Lock, text: "SSL Secured" },
+    { icon: Star, text: "AI-Powered Matching" },
+    { icon: Phone, text: "1 Contractor per Lead" },
+    { icon: DollarSign, text: "Pay-as-you-go, no contracts" }
+  ]
+
+  const updatedHowItWorksSteps = [
+    {
+      icon: CheckCircle,
+      title: "Claim Your Free Leads",
+      description: "No payment needed to get started"
+    },
+    {
+      icon: Zap,
+      title: "Get Matched Instantly", 
+      description: "New leads sent via text/email in real-time"
+    },
+    {
+      icon: DollarSign,
+      title: "Buy More When You're Ready",
+      description: "Pay only if the system works for you"
+    }
   ]
 
   if (successMessage) {
@@ -194,7 +225,7 @@ const ContractorSignup = () => {
   }
 
   return (
-    <div className="min-h-screen bg-white font-['Inter',_'Roboto',_'Open_Sans',_sans-serif]">
+    <div className="min-h-screen bg-gradient-to-br from-white via-blue-50 to-indigo-50 font-['Inter',_'Roboto',_'Open_Sans',_sans-serif]">
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
         <div className="text-center mb-12">
           <h1 className="text-5xl md:text-6xl font-bold text-gray-900 mb-6">
@@ -233,10 +264,97 @@ const ContractorSignup = () => {
           </div>
         </div>
 
-        <div className="mb-12">
-          <h3 className="text-2xl font-bold text-center text-gray-900 mb-8">How It Works</h3>
+        {/* About Us Section */}
+        <div className="mb-16 bg-gradient-to-r from-blue-50 to-indigo-50 p-8 rounded-xl">
+          <h3 className="text-3xl font-bold text-center text-gray-900 mb-6">About Custom Lead Match</h3>
+          <div className="max-w-3xl mx-auto text-center">
+            <p className="text-lg text-gray-700 mb-6">
+              Custom Lead Match was created to fix what's broken in the lead gen industry. We're not a list broker or middleman — we're a real-time match platform built for small business contractors.
+            </p>
+            <p className="text-lg text-gray-700">
+              We focus on trust, fairness, and transparency — connecting verified customers to only one contractor per lead, with no subscription pressure or shady filters. This is how lead generation should be.
+            </p>
+          </div>
+        </div>
+
+        {/* Why We Built This Section */}
+        <div className="mb-16">
+          <h3 className="text-3xl font-bold text-center text-gray-900 mb-8">Why We Built This</h3>
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
+            <div>
+              <p className="text-lg text-gray-700 mb-6">
+                Most platforms charge contractors before they've earned your trust. They deliver recycled or fake leads, and spam multiple companies with the same customer inquiry.
+              </p>
+              <p className="text-lg text-gray-700 mb-6">
+                At Custom Lead Match, we're building a better way:
+              </p>
+            </div>
+            <div className="space-y-4">
+              <div className="flex items-center">
+                <div className="w-8 h-8 bg-green-500 text-white rounded-full flex items-center justify-center mr-4">
+                  <CheckCircle className="w-5 h-5" />
+                </div>
+                <span className="text-lg font-semibold">3 free leads to prove we work</span>
+              </div>
+              <div className="flex items-center">
+                <div className="w-8 h-8 bg-green-500 text-white rounded-full flex items-center justify-center mr-4">
+                  <CheckCircle className="w-5 h-5" />
+                </div>
+                <span className="text-lg font-semibold">1 contractor per lead — no competition once it's yours</span>
+              </div>
+              <div className="flex items-center">
+                <div className="w-8 h-8 bg-green-500 text-white rounded-full flex items-center justify-center mr-4">
+                  <CheckCircle className="w-5 h-5" />
+                </div>
+                <span className="text-lg font-semibold">No monthly fees or upfront contracts</span>
+              </div>
+              <p className="text-lg text-gray-600 italic mt-4">You pay only if we prove our value.</p>
+            </div>
+          </div>
+        </div>
+
+        {/* Trust Badges Section */}
+        <div className="mb-16">
+          <div className="flex flex-wrap justify-center items-center gap-8 py-8 bg-white border border-gray-200 rounded-lg">
+            {trustBadges.map((badge, index) => {
+              const IconComponent = badge.icon
+              return (
+                <div key={index} className="flex items-center space-x-2 text-gray-700">
+                  <IconComponent className="w-5 h-5 text-green-500" />
+                  <span className="font-medium">{badge.text}</span>
+                </div>
+              )
+            })}
+          </div>
+        </div>
+
+        {/* Testimonials Section */}
+        <div className="mb-16">
+          <h3 className="text-3xl font-bold text-center text-gray-900 mb-12">What Contractors Say</h3>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            {howItWorksSteps.map((step, index) => {
+            {testimonials.map((testimonial, index) => (
+              <Card key={index} className="border-2 hover:shadow-lg transition-shadow">
+                <CardContent className="p-6">
+                  <div className="flex items-center mb-4">
+                    <div className="w-12 h-12 bg-blue-500 text-white rounded-full flex items-center justify-center font-bold mr-4">
+                      {testimonial.avatar}
+                    </div>
+                    <div>
+                      <h4 className="font-semibold">{testimonial.name}</h4>
+                      <p className="text-gray-600 text-sm">{testimonial.title}</p>
+                    </div>
+                  </div>
+                  <p className="text-gray-700 italic">"{testimonial.quote}"</p>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+        </div>
+
+        <div className="mb-12">
+          <h3 className="text-3xl font-bold text-center text-gray-900 mb-8">How It Works</h3>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+            {updatedHowItWorksSteps.map((step, index) => {
               const IconComponent = step.icon
               return (
                 <div key={index} className="text-center">
@@ -405,7 +523,7 @@ const ContractorSignup = () => {
 
               <Button 
                 type="submit" 
-                className="w-full bg-blue-600 hover:bg-blue-700 text-white py-3 text-lg font-bold"
+                className="w-full bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white py-4 text-xl font-bold rounded-lg shadow-lg hover:shadow-xl transition-all duration-200 transform hover:scale-105"
                 disabled={isSubmitting}
               >
                 {isSubmitting ? 'Creating Account...' : 'Create My Free Account'}
@@ -414,6 +532,7 @@ const ContractorSignup = () => {
           </CardContent>
         </Card>
       </div>
+      <Footer />
     </div>
   )
 }
