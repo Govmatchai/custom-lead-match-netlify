@@ -179,8 +179,7 @@ export const handler = async (event, context) => {
       .insert({
         contractor_id,
         lead_id,
-        price_paid: leadPrice,
-        zip_code: lead.zip_code
+        amount_paid: leadPrice
       })
 
     if (purchasedLeadError) {
