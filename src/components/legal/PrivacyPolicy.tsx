@@ -10,7 +10,7 @@ export const PrivacyPolicy = () => {
           </CardHeader>
           <CardContent className="prose max-w-none">
             <div className="privacy-policy-content space-y-6">
-              <p className="text-sm text-gray-600">Last updated: [Insert Date]</p>
+              <p className="text-sm text-gray-600">Last updated: August 1, 2025</p>
               
               <p>
                 Custom Lead Match ("we", "us", or "our") is committed to protecting your privacy. This Privacy Policy explains how we collect, use, disclose, and safeguard your information when you visit our website customleadmatch.com or interact with our platform.

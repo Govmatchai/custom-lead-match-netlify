@@ -10,7 +10,7 @@ export const TermsOfService = () => {
           </CardHeader>
           <CardContent className="prose max-w-none">
             <div className="terms-of-service-content space-y-6">
-              <p className="text-sm text-gray-600">Last updated: [Insert Date]</p>
+              <p className="text-sm text-gray-600">Last updated: August 1, 2025</p>
               
               <p>
                 Welcome to Custom Lead Match. By using our website and services, you agree to be bound by these Terms.
@@ -54,7 +54,7 @@ export const TermsOfService = () => {
               <div>
                 <h2 className="text-xl font-semibold mb-3">Governing Law</h2>
                 <p>
-                  These Terms are governed by the laws of the State of [Insert State].
+                  These Terms are governed by the laws of the State of Florida.
                 </p>
               </div>
 
