@@ -106,7 +106,7 @@ export const handler = async (event, context) => {
       },
       body: JSON.stringify({
         success: true,
-        purchased_leads: activePurchasedLeads,
+        purchased_leads: [...activePurchasedLeads, ...archivedPurchasedLeads],
         archived_leads: archivedPurchasedLeads,
         completed_leads: completedLeads
       })
