@@ -60,7 +60,7 @@ export const PrivacyPolicy = () => {
             
             <div className="flex justify-center mt-8 pt-6 border-t border-gray-200">
               <Button 
-                onClick={() => window.location.href = 'https://customleadmatch.com'}
+                onClick={() => window.location.href = 'https://www.customleadmatch.com'}
                 className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-lg transition-colors"
               >
                 🔙 Return to Homepage
