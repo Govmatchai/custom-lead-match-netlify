@@ -1,4 +1,5 @@
 import { Card, CardContent, CardHeader, CardTitle } from '../ui/card'
+import { Button } from '../ui/button'
 
 export const Disclaimer = () => {
   return (
@@ -21,6 +22,15 @@ export const Disclaimer = () => {
               <p>
                 All leads are provided "as-is" and do not constitute a binding guarantee of income or contract work.
               </p>
+            </div>
+            
+            <div className="flex justify-center mt-8 pt-6 border-t border-gray-200">
+              <Button 
+                onClick={() => window.location.href = 'https://customleadmatch.com'}
+                className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-lg transition-colors"
+              >
+                🔙 Return to Homepage
+              </Button>
             </div>
           </CardContent>
         </Card>
