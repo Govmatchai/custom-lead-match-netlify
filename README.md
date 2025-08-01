@@ -1,326 +1,183 @@
-# Custom Lead Match - Netlify Platform
+# Supabase CLI
 
-A full-stack contractor lead generation platform built with React, Tailwind CSS, Netlify Functions, and Supabase.
+[![Coverage Status](https://coveralls.io/repos/github/supabase/cli/badge.svg?branch=main)](https://coveralls.io/github/supabase/cli?branch=main) [![Bitbucket Pipelines](https://img.shields.io/bitbucket/pipelines/supabase-cli/setup-cli/master?style=flat-square&label=Bitbucket%20Canary)](https://bitbucket.org/supabase-cli/setup-cli/pipelines) [![Gitlab Pipeline Status](https://img.shields.io/gitlab/pipeline-status/sweatybridge%2Fsetup-cli?label=Gitlab%20Canary)
+](https://gitlab.com/sweatybridge/setup-cli/-/pipelines)
 
-## Features
+[Supabase](https://supabase.io) is an open source Firebase alternative. We're building the features of Firebase using enterprise-grade open source tools.
 
-- **Contractor Sign-Up**: Professional registration form with industry and service area selection
-- **Lead Intake System**: Customer form for submitting service requests
-- **SMS Notifications**: Real-time SMS alerts via Twilio when new leads match contractor criteria
-- **Lead Claiming**: First-come, first-serve system with tokenized claim links
-- **Payment Processing**: Stripe integration for lead credit purchases ($10/lead, 3 free leads)
-- **Contractor Dashboard**: View claimed leads, credit balance, and purchase more credits
-- **Admin Dashboard**: Manage contractors, view all leads, reset credits
-- **Email Notifications**: SendGrid integration for signup confirmations
+This repository contains all the functionality for Supabase CLI.
 
-## Tech Stack
+- [x] Running Supabase locally
+- [x] Managing database migrations
+- [x] Creating and deploying Supabase Functions
+- [x] Generating types directly from your database schema
+- [x] Making authenticated HTTP requests to [Management API](https://supabase.com/docs/reference/api/introduction)
 
-- **Frontend**: React 18, TypeScript, Tailwind CSS, Vite
-- **Backend**: Netlify Functions (Node.js)
-- **Database**: Supabase (PostgreSQL)
-- **Payments**: Stripe
-- **SMS**: Twilio
-- **Email**: SendGrid
-- **Deployment**: Netlify with CI/CD from GitHub
+## Getting started
 
-## Quick Start
+### Install the CLI
 
-### Prerequisites
-
-- Node.js 18+
-- Supabase account
-- Twilio account
-- Stripe account
-- SendGrid account
-- Netlify account
-
-### Local Development
-
-1. **Clone the repository**
-   ```bash
-   git clone <repository-url>
-   cd custom-lead-match-netlify
-   ```
-
-2. **Install dependencies**
-   ```bash
-   npm install
-   cd netlify/functions && npm install && cd ../..
-   ```
-
-3. **Set up Supabase database**
-   - Create a new Supabase project
-   - Run the SQL schema from `database/schema.sql` in the Supabase SQL editor
-   - Get your project URL and anon key from Settings > API
-
-4. **Configure environment variables**
-   
-   Create `.env` file in the root directory:
-   ```env
-   VITE_SUPABASE_URL=your_supabase_project_url
-   VITE_SUPABASE_ANON_KEY=your_supabase_anon_key
-   VITE_STRIPE_PUBLISHABLE_KEY=pk_test_your_stripe_publishable_key
-   ```
-
-   Configure Netlify environment variables (for production):
-   ```env
-   # Supabase
-   SUPABASE_URL=your_supabase_project_url
-   SUPABASE_SERVICE_KEY=your_supabase_service_role_key
-   
-   # Twilio
-   TWILIO_ACCOUNT_SID=your_twilio_account_sid
-   TWILIO_AUTH_TOKEN=your_twilio_auth_token
-   TWILIO_PHONE_NUMBER=+1234567890
-   
-   # Stripe
-   STRIPE_SECRET_KEY=sk_test_your_stripe_secret_key
-   STRIPE_PUBLISHABLE_KEY=pk_test_your_stripe_publishable_key
-   STRIPE_WEBHOOK_SECRET=whsec_your_webhook_secret
-   
-   # SendGrid
-   SENDGRID_API_KEY=your_sendgrid_api_key
-   
-   # Admin
-   ADMIN_PASSWORD=your_secure_admin_password
-   
-   # Site URL
-   URL=https://your-netlify-site.netlify.app
-   ```
-
-5. **Start development server**
-   ```bash
-   npm run dev
-   ```
-
-   The app will be available at `http://localhost:5173`
-
-### Deployment
-
-#### Automatic Deployment (Recommended)
-
-1. **Push to GitHub**
-   ```bash
-   git add .
-   git commit -m "Initial commit"
-   git push origin main
-   ```
-
-2. **Connect to Netlify**
-   - Go to [Netlify](https://netlify.com)
-   - Click "New site from Git"
-   - Connect your GitHub repository
-   - Set build command: `npm run build`
-   - Set publish directory: `dist`
-   - Add all environment variables listed above
-
-3. **Configure Stripe Webhooks**
-   - In Stripe Dashboard, go to Webhooks
-   - Add endpoint: `https://your-site.netlify.app/.netlify/functions/stripe-webhook`
-   - Select events: `checkout.session.completed`
-   - Copy webhook secret to `STRIPE_WEBHOOK_SECRET` environment variable
-
-#### Manual Deployment
+Available via [NPM](https://www.npmjs.com) as dev dependency. To install:
 
 ```bash
-# Build the project
-npm run build
-
-# Deploy to Netlify (requires Netlify CLI)
-netlify deploy --prod --dir=dist
+npm i supabase --save-dev
 ```
 
-## API Endpoints
-
-### Public Endpoints
-- `GET /.netlify/functions/healthz` - Health check
-- `GET /.netlify/functions/industries` - Get available industries
-- `GET /.netlify/functions/sub-services?industry=<industry>` - Get sub-services for industry
-- `POST /.netlify/functions/contractors-signup` - Register new contractor
-- `POST /.netlify/functions/leads-submit` - Submit new lead
-- `GET /.netlify/functions/leads-claim-get?token=<token>` - Check lead availability
-- `POST /.netlify/functions/leads-claim-post` - Claim a lead
-- `GET /.netlify/functions/contractors-dashboard?contractor_id=<id>` - Get contractor dashboard
-- `POST /.netlify/functions/contractors-purchase-credits` - Purchase lead credits
-- `POST /.netlify/functions/stripe-webhook` - Stripe webhook handler
-
-### Admin Endpoints
-- `POST /.netlify/functions/admin-auth` - Admin authentication
-- `GET /.netlify/functions/admin-stats` - Get platform statistics
-- `GET /.netlify/functions/admin-contractors` - Get all contractors
-- `GET /.netlify/functions/admin-leads` - Get all leads
-- `POST /.netlify/functions/admin-reset-credits` - Reset contractor credits
-
-## Database Schema
-
-The platform uses Supabase (PostgreSQL) with the following tables:
-
-- **contractors**: Business information, service areas, lead credits
-- **leads**: Customer service requests and claim status
-- **claim_tokens**: Temporary tokens for lead claiming
-
-See `database/schema.sql` for the complete schema.
-
-## Key Features
-
-### Lead Matching Algorithm
-1. Customer submits service request
-2. System finds contractors matching:
-   - Same industry and sub-service
-   - Service area includes customer's ZIP code
-   - Has available lead credits
-   - Opted in for SMS notifications
-3. SMS sent to all matching contractors with claim link
-4. First contractor to claim gets the lead
-
-### Payment System
-- 3 free leads for new contractors
-- $10 per additional lead
-- Stripe Checkout integration
-- Automatic credit updates via webhooks
-
-### Admin Dashboard
-- Simple password authentication
-- View platform statistics
-- Manage contractors and leads
-- Reset contractor credits
-
-## Development
-
-### Project Structure
-```
-custom-lead-match-netlify/
-├── src/                    # React frontend source
-│   ├── components/         # React components
-│   ├── lib/               # Utilities and Supabase client
-│   └── ...
-├── netlify/functions/     # Serverless backend functions
-├── database/              # Database schema and migrations
-├── public/               # Static assets
-└── ...
-```
-
-### Adding New Features
-
-1. **Frontend**: Add components in `src/components/`
-2. **Backend**: Add functions in `netlify/functions/`
-3. **Database**: Update schema in `database/schema.sql`
-
-### Testing
+To install the beta release channel:
 
 ```bash
-# Run frontend tests
-npm test
+npm i supabase@beta --save-dev
+```
 
-# Local Development
+When installing with yarn 4, you need to disable experimental fetch with the following nodejs config.
 
-For local development with Netlify functions access, use:
+```
+NODE_OPTIONS=--no-experimental-fetch yarn add supabase
+```
+
+> **Note**
+For Bun versions below v1.0.17, you must add `supabase` as a [trusted dependency](https://bun.sh/guides/install/trusted) before running `bun add -D supabase`.
+
+<details>
+  <summary><b>macOS</b></summary>
+
+  Available via [Homebrew](https://brew.sh). To install:
+
+  ```sh
+  brew install supabase/tap/supabase
+  ```
+
+  To install the beta release channel:
+  
+  ```sh
+  brew install supabase/tap/supabase-beta
+  brew link --overwrite supabase-beta
+  ```
+  
+  To upgrade:
+
+  ```sh
+  brew upgrade supabase
+  ```
+</details>
+
+<details>
+  <summary><b>Windows</b></summary>
+
+  Available via [Scoop](https://scoop.sh). To install:
+
+  ```powershell
+  scoop bucket add supabase https://github.com/supabase/scoop-bucket.git
+  scoop install supabase
+  ```
+
+  To upgrade:
+
+  ```powershell
+  scoop update supabase
+  ```
+</details>
+
+<details>
+  <summary><b>Linux</b></summary>
+
+  Available via [Homebrew](https://brew.sh) and Linux packages.
+
+  #### via Homebrew
+
+  To install:
+
+  ```sh
+  brew install supabase/tap/supabase
+  ```
+
+  To upgrade:
+
+  ```sh
+  brew upgrade supabase
+  ```
+
+  #### via Linux packages
+
+  Linux packages are provided in [Releases](https://github.com/supabase/cli/releases). To install, download the `.apk`/`.deb`/`.rpm`/`.pkg.tar.zst` file depending on your package manager and run the respective commands.
+
+  ```sh
+  sudo apk add --allow-untrusted <...>.apk
+  ```
+
+  ```sh
+  sudo dpkg -i <...>.deb
+  ```
+
+  ```sh
+  sudo rpm -i <...>.rpm
+  ```
+
+  ```sh
+  sudo pacman -U <...>.pkg.tar.zst
+  ```
+</details>
+
+<details>
+  <summary><b>Other Platforms</b></summary>
+
+  You can also install the CLI via [go modules](https://go.dev/ref/mod#go-install) without the help of package managers.
+
+  ```sh
+  go install github.com/supabase/cli@latest
+  ```
+
+  Add a symlink to the binary in `$PATH` for easier access:
+
+  ```sh
+  ln -s "$(go env GOPATH)/bin/cli" /usr/bin/supabase
+  ```
+
+  This works on other non-standard Linux distros.
+</details>
+
+<details>
+  <summary><b>Community Maintained Packages</b></summary>
+
+  Available via [pkgx](https://pkgx.sh/). Package script [here](https://github.com/pkgxdev/pantry/blob/main/projects/supabase.com/cli/package.yml).
+  To install in your working directory:
+
+  ```bash
+  pkgx install supabase
+  ```
+
+  Available via [Nixpkgs](https://nixos.org/). Package script [here](https://github.com/NixOS/nixpkgs/blob/master/pkgs/development/tools/supabase-cli/default.nix).
+</details>
+
+### Run the CLI
+
 ```bash
-netlify dev
+supabase bootstrap
 ```
 
-This serves both the frontend and Netlify functions together on localhost:8888.
+Or using npx:
 
-**Important:** Do NOT use `npm run dev` for testing signup forms or other features that require Netlify functions, as it only serves the frontend via Vite and cannot access the functions. This will cause dropdown menus and form submissions to fail.
-
-## Test Netlify Functions locally
-netlify dev
-```
-
-## Development Safeguards Protocol
-
-This project implements comprehensive safeguards to prevent regressions and ensure code quality.
-
-### Automated Testing
-
-Run the full UI test suite:
 ```bash
-npm run test
+npx supabase bootstrap
 ```
 
-Run tests with UI (interactive mode):
-```bash
-npm run test:ui
+The bootstrap command will guide you through the process of setting up a Supabase project using one of the [starter](https://github.com/supabase-community/supabase-samples/blob/main/samples.json) templates.
+
+## Docs
+
+Command & config reference can be found [here](https://supabase.com/docs/reference/cli/about).
+
+## Breaking changes
+
+We follow semantic versioning for changes that directly impact CLI commands, flags, and configurations.
+
+However, due to dependencies on other service images, we cannot guarantee that schema migrations, seed.sql, and generated types will always work for the same CLI major version. If you need such guarantees, we encourage you to pin a specific version of CLI in package.json.
+
+## Developing
+
+To run from source:
+
+```sh
+# Go >= 1.22
+go run . help
 ```
-
-Run tests in headed mode (see browser):
-```bash
-npm run test:headed
-```
-
-### Pre-Commit QA Checklist
-
-Before committing any changes, follow the [QA Checklist](./QA_CHECKLIST.md):
-
-1. **Code Quality**: Run `npm run build` and `npm run lint`
-2. **Functionality**: Test locally with `netlify dev`
-3. **Automated Tests**: Run `npx playwright test`
-4. **Component Isolation**: Verify reusable components work correctly
-5. **Documentation**: Update docs if workflow changes
-
-### Rollback Procedures
-
-If issues arise after deployment, follow the [Rollback Procedures](./ROLLBACK_PROCEDURES.md):
-
-- **Emergency**: Use Netlify dashboard for immediate rollback
-- **Planned**: Follow systematic rollback process
-- **Component-specific**: Target specific functionality rollbacks
-
-### Reusable Components
-
-The project uses isolated, reusable components to prevent code duplication:
-
-- **IndustryDropdown**: Shared dropdown component for industry/sub-service selection
-- **useIndustryDropdowns**: Custom hook for dropdown data management
-
-### Commit Message Format
-
-Use the provided [commit message template](./.gitmessage):
-
-```
-feat: Add new feature
-
-- Detailed description of changes
-- Why the changes were made
-- Any breaking changes or migration notes
-
-Closes #issue-number
-```
-
-### Testing Strategy
-
-- **Unit Tests**: Component-level testing with isolated functionality
-- **Integration Tests**: Full user flow testing (signup, authentication, etc.)
-- **Mobile Testing**: Responsive design verification across viewports
-- **Regression Testing**: Automated prevention of functionality breaks
-
-## Troubleshooting
-
-### Common Issues
-
-1. **CORS Errors**: Ensure all Netlify Functions include proper CORS headers
-2. **Database Connection**: Verify Supabase URL and keys are correct
-3. **SMS Not Sending**: Check Twilio credentials and phone number format
-4. **Payments Failing**: Verify Stripe keys and webhook configuration
-
-### Environment Variables
-
-Make sure all required environment variables are set in both local `.env` file and Netlify dashboard.
-
-### Database Issues
-
-If you need to reset the database:
-1. Go to Supabase Dashboard > SQL Editor
-2. Run the schema from `database/schema.sql`
-
-## Support
-
-For issues and questions:
-1. Check the troubleshooting section above
-2. Review Netlify Function logs in Netlify Dashboard
-3. Check Supabase logs for database issues
-4. Verify all environment variables are set correctly
-
-## License
-
-This project is proprietary software for Custom Lead Match.
