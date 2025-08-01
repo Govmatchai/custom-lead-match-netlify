@@ -140,8 +140,6 @@ export const handler = async (event, context) => {
         claimed: true,
         claimed_by: contractor_id,
         claimed_at: new Date().toISOString(),
-        purchased_by: contractor_id,
-        purchased_at: new Date().toISOString(),
         is_archived: true
       })
       .eq('id', lead_id)
