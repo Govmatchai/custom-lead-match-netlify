@@ -10,7 +10,10 @@
     "test": "playwright test",
     "test:ui": "playwright test --ui",
     "test:headed": "playwright test --headed",
-    "verify-deployment": "bash scripts/verify-deployment.sh"
+    "verify-deployment": "bash scripts/verify-deployment.sh",
+    "domain-health": "node package-scripts/domain-health.js",
+    "monitor-domains": "node scripts/monitor-domain-health.js",
+    "check-ssl": "node scripts/ssl-certificate-monitor.js"
   },
   "dependencies": {
     "@radix-ui/react-alert-dialog": "^1.0.5",

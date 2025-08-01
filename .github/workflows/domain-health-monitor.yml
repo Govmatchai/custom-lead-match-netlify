@@ -1,0 +1,47 @@
+name: Domain Health Monitor
+
+on:
+  schedule:
+    - cron: '*/15 * * * *'  # Every 15 minutes
+  workflow_dispatch:  # Allow manual trigger
+
+jobs:
+  monitor-domains:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v3
+
+    - name: Setup Node.js
+      uses: actions/setup-node@v3
+      with:
+        node-version: '18'
+
+    - name: Run domain health check
+      run: node scripts/monitor-domain-health.js
+
+    - name: Check SSL certificate expiration
+      run: |
+        echo "=== SSL Certificate Expiration Check ==="
+        EXPIRY=$(echo | openssl s_client -connect customleadmatch.com:443 -servername customleadmatch.com 2>/dev/null | openssl x509 -noout -enddate 2>/dev/null | cut -d= -f2)
+        if [ -n "$EXPIRY" ]; then
+          EXPIRY_EPOCH=$(date -d "$EXPIRY" +%s)
+          CURRENT_EPOCH=$(date +%s)
+          DAYS_UNTIL_EXPIRY=$(( (EXPIRY_EPOCH - CURRENT_EPOCH) / 86400 ))
+          
+          echo "SSL certificate expires: $EXPIRY"
+          echo "Days until expiry: $DAYS_UNTIL_EXPIRY"
+          
+          if [ $DAYS_UNTIL_EXPIRY -lt 30 ]; then
+            echo "::warning::SSL certificate expires in $DAYS_UNTIL_EXPIRY days - consider renewal"
+          fi
+        else
+          echo "::error::Could not retrieve SSL certificate information"
+        fi
+
+    - name: Alert on failures
+      if: failure()
+      run: |
+        echo "::error::Domain health check failed - investigate SSL/domain configuration"
+        echo "Workaround: https://customleadmatch.netlify.app/ should still be accessible"

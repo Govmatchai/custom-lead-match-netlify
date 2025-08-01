@@ -55,3 +55,24 @@ jobs:
       env:
         NETLIFY_AUTH_TOKEN: ${{ secrets.NETLIFY_AUTH_TOKEN }}
         NETLIFY_SITE_ID: ${{ secrets.NETLIFY_SITE_ID }}
+
+    - name: Domain Health Check
+      run: |
+        echo "=== Checking domain health after deployment ==="
+        sleep 30  # Wait for deployment to propagate
+        
+        # Check custom domain
+        if curl -f --max-time 10 https://customleadmatch.com/ > /dev/null 2>&1; then
+          echo "✅ Custom domain https://customleadmatch.com/ is healthy"
+        else
+          echo "❌ Custom domain https://customleadmatch.com/ is failing"
+          echo "::warning::Custom domain SSL issue detected - check Netlify dashboard"
+        fi
+        
+        # Check Netlify subdomain (should always work)
+        if curl -f --max-time 10 https://customleadmatch.netlify.app/ > /dev/null 2>&1; then
+          echo "✅ Netlify subdomain is healthy"
+        else
+          echo "❌ Netlify subdomain is failing - critical deployment issue"
+          exit 1
+        fi
