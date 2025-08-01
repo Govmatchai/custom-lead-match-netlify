@@ -147,13 +147,18 @@ export const handler = async (event, context) => {
       .single()
 
     if (leadUpdateError) {
+      console.error('Lead update error:', leadUpdateError)
       return {
         statusCode: 500,
         headers: {
           'Content-Type': 'application/json',
           'Access-Control-Allow-Origin': '*'
         },
-        body: JSON.stringify({ success: false, message: 'Failed to purchase lead' })
+        body: JSON.stringify({ 
+          success: false, 
+          message: 'Failed to purchase lead',
+          error: leadUpdateError.message 
+        })
       }
     }
 
