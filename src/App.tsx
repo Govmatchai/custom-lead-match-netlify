@@ -25,6 +25,8 @@ function App() {
           <Route path="/dashboard" element={<ContractorDashboard />} />
           <Route path="/login" element={<ContractorLogin />} />
           <Route path="/admin" element={<AdminDashboard />} />
+          <Route path="/admin-login" element={<AdminDashboard />} />
+          <Route path="/admin-dashboard" element={<AdminDashboard />} />
           <Route path="/lead-intake" element={<LeadIntake />} />
           <Route path="/hvac" element={<HVACLanding />} />
           <Route path="/legal" element={<LegalLanding />} />

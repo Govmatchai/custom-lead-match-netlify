@@ -1,5 +1,5 @@
 import React, { useState } from 'react'
-import { Users, FileText, CheckCircle, Clock, Eye, EyeOff } from 'lucide-react'
+import { Users, FileText, CheckCircle, Clock, Eye, EyeOff, DollarSign, Settings, Plus, Download } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
@@ -44,6 +44,28 @@ interface Lead {
   created_at: string
 }
 
+interface Transaction {
+  id: string
+  contractor_id: string
+  lead_id: string
+  amount: number
+  purchased_at: string
+  contractors: {
+    business_name: string
+    contact_name: string
+  }
+  leads: {
+    customer_name: string
+    service_category: string
+    sub_service: string
+  }
+}
+
+interface PricingSettings {
+  current_price: number
+  default_price: number
+}
+
 const AdminDashboard = () => {
   const [isAuthenticated, setIsAuthenticated] = useState(false)
   const [password, setPassword] = useState('')
@@ -53,9 +75,17 @@ const AdminDashboard = () => {
   const [contractors, setContractors] = useState<Contractor[]>([])
   const [leads, setLeads] = useState<Lead[]>([])
   const [loading, setLoading] = useState(false)
-  const [activeTab, setActiveTab] = useState<'stats' | 'contractors' | 'leads' | 'lead-management'>('stats')
+  const [activeTab, setActiveTab] = useState<'stats' | 'contractors' | 'leads' | 'lead-management' | 'transactions' | 'pricing' | 'utilities'>('stats')
   const [statusFilter, setStatusFilter] = useState('all')
   const [industryFilter, setIndustryFilter] = useState('all')
+  const [transactions, setTransactions] = useState<Transaction[]>([])
+  const [totalRevenue, setTotalRevenue] = useState<string>('0.00')
+  const [pricing, setPricing] = useState<PricingSettings | null>(null)
+  const [newLeadPrice, setNewLeadPrice] = useState<string>('')
+  const [walletAdjustment, setWalletAdjustment] = useState({ contractor_id: '', amount: '', notes: '' })
+  const [newLead, setNewLead] = useState({
+    customer_name: '', phone: '', email: '', service_category: '', sub_service: '', zip_code: '', description: ''
+  })
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -87,10 +117,12 @@ const AdminDashboard = () => {
   const fetchAdminData = async () => {
     setLoading(true)
     try {
-      const [statsResponse, contractorsResponse, leadsResponse] = await Promise.all([
+      const [statsResponse, contractorsResponse, leadsResponse, transactionsResponse, pricingResponse] = await Promise.all([
         fetch('/.netlify/functions/admin-stats'),
         fetch('/.netlify/functions/admin-contractors'),
-        fetch('/.netlify/functions/admin-leads')
+        fetch('/.netlify/functions/admin-leads'),
+        fetch('/.netlify/functions/admin-transactions'),
+        fetch('/.netlify/functions/admin-pricing')
       ])
 
       if (statsResponse.ok) {
@@ -107,11 +139,103 @@ const AdminDashboard = () => {
         const leadsData = await leadsResponse.json()
         setLeads(leadsData)
       }
+
+      if (transactionsResponse.ok) {
+        const transactionsData = await transactionsResponse.json()
+        setTransactions(transactionsData.transactions || [])
+        setTotalRevenue(transactionsData.total_revenue || '0.00')
+      }
+
+      if (pricingResponse.ok) {
+        const pricingData = await pricingResponse.json()
+        setPricing(pricingData)
+        setNewLeadPrice(pricingData.current_price.toString())
+      }
     } catch (error) {
       console.error('Failed to fetch admin data:', error)
     } finally {
       setLoading(false)
     }
+  }
+
+  const handleUpdatePricing = async (e: React.FormEvent) => {
+    e.preventDefault()
+    try {
+      const response = await fetch('/.netlify/functions/admin-pricing', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ price: parseFloat(newLeadPrice) })
+      })
+      if (response.ok) {
+        fetchAdminData()
+      }
+    } catch (error) {
+      console.error('Failed to update pricing:', error)
+    }
+  }
+
+  const handleWalletAdjustment = async (e: React.FormEvent) => {
+    e.preventDefault()
+    try {
+      const response = await fetch('/.netlify/functions/admin-wallet-adjust', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(walletAdjustment)
+      })
+      if (response.ok) {
+        setWalletAdjustment({ contractor_id: '', amount: '', notes: '' })
+        fetchAdminData()
+      }
+    } catch (error) {
+      console.error('Failed to adjust wallet:', error)
+    }
+  }
+
+  const handleCreateLead = async (e: React.FormEvent) => {
+    e.preventDefault()
+    try {
+      const response = await fetch('/.netlify/functions/admin-utilities', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'create_lead', ...newLead })
+      })
+      if (response.ok) {
+        setNewLead({ customer_name: '', phone: '', email: '', service_category: '', sub_service: '', zip_code: '', description: '' })
+        fetchAdminData()
+      }
+    } catch (error) {
+      console.error('Failed to create lead:', error)
+    }
+  }
+
+  const handleSeedTestLeads = async () => {
+    try {
+      const response = await fetch('/.netlify/functions/admin-utilities', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'seed_test_leads' })
+      })
+      if (response.ok) {
+        fetchAdminData()
+      }
+    } catch (error) {
+      console.error('Failed to seed test leads:', error)
+    }
+  }
+
+  const handleExportCSV = (data: any[], filename: string) => {
+    const csv = [
+      Object.keys(data[0]).join(','),
+      ...data.map(row => Object.values(row).join(','))
+    ].join('\n')
+    
+    const blob = new Blob([csv], { type: 'text/csv' })
+    const url = window.URL.createObjectURL(blob)
+    const a = document.createElement('a')
+    a.href = url
+    a.download = filename
+    a.click()
+    window.URL.revokeObjectURL(url)
   }
 
   const handleResetCredits = async (contractorId: string) => {
@@ -226,6 +350,36 @@ const AdminDashboard = () => {
                 }`}
               >
                 Lead Management
+              </button>
+              <button
+                onClick={() => setActiveTab('transactions')}
+                className={`py-2 px-1 border-b-2 font-medium text-sm ${
+                  activeTab === 'transactions'
+                    ? 'border-blue-500 text-blue-600'
+                    : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                }`}
+              >
+                Transaction Logs
+              </button>
+              <button
+                onClick={() => setActiveTab('pricing')}
+                className={`py-2 px-1 border-b-2 font-medium text-sm ${
+                  activeTab === 'pricing'
+                    ? 'border-blue-500 text-blue-600'
+                    : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                }`}
+              >
+                Lead Pricing
+              </button>
+              <button
+                onClick={() => setActiveTab('utilities')}
+                className={`py-2 px-1 border-b-2 font-medium text-sm ${
+                  activeTab === 'utilities'
+                    ? 'border-blue-500 text-blue-600'
+                    : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                }`}
+              >
+                Admin Utilities
               </button>
             </nav>
           </div>
@@ -533,6 +687,235 @@ const AdminDashboard = () => {
               )}
             </CardContent>
           </Card>
+        )}
+
+        {activeTab === 'transactions' && (
+          <Card>
+            <CardHeader>
+              <CardTitle>Transaction Logs</CardTitle>
+              <CardDescription>View all lead purchase transactions and revenue</CardDescription>
+              <div className="flex justify-between items-center">
+                <div className="text-lg font-semibold">
+                  Total Revenue: <span className="text-green-600">${totalRevenue}</span>
+                </div>
+                <Button onClick={() => handleExportCSV(transactions, 'transactions.csv')} variant="outline">
+                  <Download className="w-4 h-4 mr-2" />
+                  Export CSV
+                </Button>
+              </div>
+            </CardHeader>
+            <CardContent>
+              {transactions.length === 0 ? (
+                <p className="text-gray-500 text-center py-8">No transactions found.</p>
+              ) : (
+                <div className="space-y-4">
+                  {transactions.map((transaction) => (
+                    <div key={transaction.id} className="border rounded-lg p-4">
+                      <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-3">
+                        <div>
+                          <span className="font-medium">Contractor:</span>
+                          <p>{transaction.contractors.business_name}</p>
+                        </div>
+                        <div>
+                          <span className="font-medium">Lead:</span>
+                          <p>{transaction.leads.customer_name}</p>
+                        </div>
+                        <div>
+                          <span className="font-medium">Service:</span>
+                          <p>{transaction.leads.service_category} - {transaction.leads.sub_service}</p>
+                        </div>
+                        <div>
+                          <span className="font-medium">Amount:</span>
+                          <p className="text-lg font-bold text-green-600">${transaction.amount}</p>
+                        </div>
+                      </div>
+                      <div className="text-sm text-gray-500">
+                        Purchased: {new Date(transaction.purchased_at).toLocaleDateString()}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </CardContent>
+          </Card>
+        )}
+
+        {activeTab === 'pricing' && pricing && (
+          <Card>
+            <CardHeader>
+              <CardTitle>Lead Pricing Control</CardTitle>
+              <CardDescription>Manage global lead pricing settings</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-6">
+                <div className="bg-blue-50 p-4 rounded-lg">
+                  <h4 className="font-semibold mb-2">Current Settings</h4>
+                  <p>Current Lead Price: <span className="font-bold text-blue-600">${pricing.current_price}</span></p>
+                  <p>Default Price: <span className="text-gray-600">${pricing.default_price}</span></p>
+                </div>
+                
+                <form onSubmit={handleUpdatePricing} className="space-y-4">
+                  <div>
+                    <label className="block text-sm font-medium mb-2">Update Lead Price</label>
+                    <Input
+                      type="number"
+                      step="0.01"
+                      min="0"
+                      value={newLeadPrice}
+                      onChange={(e) => setNewLeadPrice(e.target.value)}
+                      placeholder="Enter new price"
+                      required
+                    />
+                  </div>
+                  <Button type="submit">
+                    <DollarSign className="w-4 h-4 mr-2" />
+                    Update Pricing
+                  </Button>
+                </form>
+              </div>
+            </CardContent>
+          </Card>
+        )}
+
+        {activeTab === 'utilities' && (
+          <div className="space-y-6">
+            <Card>
+              <CardHeader>
+                <CardTitle>Contractor Management</CardTitle>
+                <CardDescription>Adjust contractor wallet balances</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <form onSubmit={handleWalletAdjustment} className="space-y-4">
+                  <div>
+                    <label className="block text-sm font-medium mb-2">Contractor</label>
+                    <Select value={walletAdjustment.contractor_id} onValueChange={(value) => setWalletAdjustment({...walletAdjustment, contractor_id: value})}>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select contractor" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {contractors.map((contractor) => (
+                          <SelectItem key={contractor.id} value={contractor.id}>
+                            {contractor.business_name} - {contractor.contact_name}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium mb-2">Amount (+ to add, - to subtract)</label>
+                    <Input
+                      type="number"
+                      step="0.01"
+                      value={walletAdjustment.amount}
+                      onChange={(e) => setWalletAdjustment({...walletAdjustment, amount: e.target.value})}
+                      placeholder="Enter amount"
+                      required
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium mb-2">Notes</label>
+                    <Input
+                      value={walletAdjustment.notes}
+                      onChange={(e) => setWalletAdjustment({...walletAdjustment, notes: e.target.value})}
+                      placeholder="Reason for adjustment"
+                    />
+                  </div>
+                  <Button type="submit">
+                    <Settings className="w-4 h-4 mr-2" />
+                    Adjust Balance
+                  </Button>
+                </form>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader>
+                <CardTitle>Lead Management</CardTitle>
+                <CardDescription>Create leads manually and manage test data</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-6">
+                  <div>
+                    <Button onClick={handleSeedTestLeads} variant="outline">
+                      <Plus className="w-4 h-4 mr-2" />
+                      Seed Test Leads
+                    </Button>
+                  </div>
+                  
+                  <form onSubmit={handleCreateLead} className="space-y-4">
+                    <h4 className="font-semibold">Create New Lead</h4>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <Input
+                        value={newLead.customer_name}
+                        onChange={(e) => setNewLead({...newLead, customer_name: e.target.value})}
+                        placeholder="Customer Name"
+                        required
+                      />
+                      <Input
+                        value={newLead.phone}
+                        onChange={(e) => setNewLead({...newLead, phone: e.target.value})}
+                        placeholder="Phone"
+                        required
+                      />
+                      <Input
+                        value={newLead.email}
+                        onChange={(e) => setNewLead({...newLead, email: e.target.value})}
+                        placeholder="Email"
+                        type="email"
+                      />
+                      <Input
+                        value={newLead.zip_code}
+                        onChange={(e) => setNewLead({...newLead, zip_code: e.target.value})}
+                        placeholder="Zip Code"
+                        required
+                      />
+                      <Input
+                        value={newLead.service_category}
+                        onChange={(e) => setNewLead({...newLead, service_category: e.target.value})}
+                        placeholder="Service Category"
+                        required
+                      />
+                      <Input
+                        value={newLead.sub_service}
+                        onChange={(e) => setNewLead({...newLead, sub_service: e.target.value})}
+                        placeholder="Sub Service"
+                        required
+                      />
+                    </div>
+                    <Input
+                      value={newLead.description}
+                      onChange={(e) => setNewLead({...newLead, description: e.target.value})}
+                      placeholder="Description"
+                      required
+                    />
+                    <Button type="submit">
+                      <Plus className="w-4 h-4 mr-2" />
+                      Create Lead
+                    </Button>
+                  </form>
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader>
+                <CardTitle>Data Export</CardTitle>
+                <CardDescription>Export platform data as CSV files</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="space-x-4">
+                  <Button onClick={() => handleExportCSV(contractors, 'contractors.csv')} variant="outline">
+                    <Download className="w-4 h-4 mr-2" />
+                    Export Contractors
+                  </Button>
+                  <Button onClick={() => handleExportCSV(leads, 'leads.csv')} variant="outline">
+                    <Download className="w-4 h-4 mr-2" />
+                    Export Leads
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
         )}
       </div>
     </div>

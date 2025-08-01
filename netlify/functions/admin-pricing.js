@@ -20,7 +20,75 @@ export const handler = async (event, context) => {
     }
   }
 
-  if (event.httpMethod !== 'POST') {
+  try {
+    if (event.httpMethod === 'GET') {
+      const { data: pricing, error } = await supabase
+        .from('admin_settings')
+        .select('*')
+        .eq('key', 'lead_price')
+        .single()
+
+      const defaultPrice = 20.00
+      const currentPrice = pricing ? parseFloat(pricing.value) : defaultPrice
+
+      return {
+        statusCode: 200,
+        headers: {
+          'Content-Type': 'application/json',
+          'Access-Control-Allow-Origin': '*'
+        },
+        body: JSON.stringify({
+          current_price: currentPrice,
+          default_price: defaultPrice
+        })
+      }
+    }
+
+    if (event.httpMethod === 'POST') {
+      const data = JSON.parse(event.body)
+      const { price } = data
+
+      if (!price || isNaN(price) || price < 0) {
+        return {
+          statusCode: 400,
+          headers: {
+            'Content-Type': 'application/json',
+            'Access-Control-Allow-Origin': '*'
+          },
+          body: JSON.stringify({ detail: 'Valid price is required' })
+        }
+      }
+
+      const { error } = await supabase
+        .from('admin_settings')
+        .upsert({
+          key: 'lead_price',
+          value: price.toString(),
+          updated_at: new Date().toISOString()
+        })
+
+      if (error) {
+        console.error('Pricing update error:', error)
+        return {
+          statusCode: 500,
+          headers: {
+            'Content-Type': 'application/json',
+            'Access-Control-Allow-Origin': '*'
+          },
+          body: JSON.stringify({ detail: 'Failed to update pricing' })
+        }
+      }
+
+      return {
+        statusCode: 200,
+        headers: {
+          'Content-Type': 'application/json',
+          'Access-Control-Allow-Origin': '*'
+        },
+        body: JSON.stringify({ message: 'Pricing updated successfully', price })
+      }
+    }
+
     return {
       statusCode: 405,
       headers: {
@@ -28,62 +96,6 @@ export const handler = async (event, context) => {
         'Access-Control-Allow-Origin': '*'
       },
       body: JSON.stringify({ detail: 'Method not allowed' })
-    }
-  }
-
-  try {
-    const data = JSON.parse(event.body)
-    const { password, email } = data
-
-    if (email) {
-      const { data: admin, error } = await supabase
-        .from('admin_users')
-        .select('*')
-        .eq('email', email)
-        .single()
-
-      if (error || !admin) {
-        return {
-          statusCode: 401,
-          headers: {
-            'Content-Type': 'application/json',
-            'Access-Control-Allow-Origin': '*'
-          },
-          body: JSON.stringify({ success: false, message: 'Invalid credentials' })
-        }
-      }
-
-      if (password === 'admin123') {
-        return {
-          statusCode: 200,
-          headers: {
-            'Content-Type': 'application/json',
-            'Access-Control-Allow-Origin': '*'
-          },
-          body: JSON.stringify({ success: true, message: 'Authentication successful' })
-        }
-      }
-    } else {
-      const adminPassword = process.env.ADMIN_PASSWORD || 'admin123'
-      if (password === adminPassword) {
-        return {
-        statusCode: 200,
-        headers: {
-          'Content-Type': 'application/json',
-          'Access-Control-Allow-Origin': '*'
-        },
-        body: JSON.stringify({ success: true, message: 'Authentication successful' })
-        }
-      }
-    }
-
-    return {
-      statusCode: 401,
-      headers: {
-        'Content-Type': 'application/json',
-        'Access-Control-Allow-Origin': '*'
-      },
-      body: JSON.stringify({ success: false, message: 'Invalid password' })
     }
   } catch (error) {
     console.error('Error:', error)

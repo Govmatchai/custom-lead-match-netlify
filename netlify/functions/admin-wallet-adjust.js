@@ -15,7 +15,7 @@ export const handler = async (event, context) => {
       headers: {
         'Access-Control-Allow-Origin': '*',
         'Access-Control-Allow-Headers': 'Content-Type',
-        'Access-Control-Allow-Methods': 'GET, POST, OPTIONS'
+        'Access-Control-Allow-Methods': 'POST, OPTIONS'
       }
     }
   }
@@ -33,57 +33,47 @@ export const handler = async (event, context) => {
 
   try {
     const data = JSON.parse(event.body)
-    const { password, email } = data
+    const { contractor_id, amount, notes } = data
 
-    if (email) {
-      const { data: admin, error } = await supabase
-        .from('admin_users')
-        .select('*')
-        .eq('email', email)
-        .single()
-
-      if (error || !admin) {
-        return {
-          statusCode: 401,
-          headers: {
-            'Content-Type': 'application/json',
-            'Access-Control-Allow-Origin': '*'
-          },
-          body: JSON.stringify({ success: false, message: 'Invalid credentials' })
-        }
-      }
-
-      if (password === 'admin123') {
-        return {
-          statusCode: 200,
-          headers: {
-            'Content-Type': 'application/json',
-            'Access-Control-Allow-Origin': '*'
-          },
-          body: JSON.stringify({ success: true, message: 'Authentication successful' })
-        }
-      }
-    } else {
-      const adminPassword = process.env.ADMIN_PASSWORD || 'admin123'
-      if (password === adminPassword) {
-        return {
-        statusCode: 200,
+    if (!contractor_id || amount === undefined || isNaN(amount)) {
+      return {
+        statusCode: 400,
         headers: {
           'Content-Type': 'application/json',
           'Access-Control-Allow-Origin': '*'
         },
-        body: JSON.stringify({ success: true, message: 'Authentication successful' })
-        }
+        body: JSON.stringify({ detail: 'Contractor ID and valid amount are required' })
+      }
+    }
+
+    const { error } = await supabase
+      .from('transactions')
+      .insert({
+        contractor_id,
+        amount: parseFloat(amount),
+        source: 'admin_adjustment',
+        notes: notes || 'Admin wallet balance adjustment'
+      })
+
+    if (error) {
+      console.error('Wallet adjustment error:', error)
+      return {
+        statusCode: 500,
+        headers: {
+          'Content-Type': 'application/json',
+          'Access-Control-Allow-Origin': '*'
+        },
+        body: JSON.stringify({ detail: 'Failed to adjust wallet balance' })
       }
     }
 
     return {
-      statusCode: 401,
+      statusCode: 200,
       headers: {
         'Content-Type': 'application/json',
         'Access-Control-Allow-Origin': '*'
       },
-      body: JSON.stringify({ success: false, message: 'Invalid password' })
+      body: JSON.stringify({ message: 'Wallet balance adjusted successfully' })
     }
   } catch (error) {
     console.error('Error:', error)
