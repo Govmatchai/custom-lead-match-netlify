@@ -94,9 +94,9 @@ export const handler = async (event, context) => {
       }
     }
 
-    const activePurchasedLeads = purchasedLeads.filter(lead => !lead.leads?.is_archived && (lead.status === 'active' || !lead.status))
+    const activePurchasedLeads = purchasedLeads.filter(lead => lead.status === 'active' || !lead.status)
     const archivedPurchasedLeads = purchasedLeads.filter(lead => lead.leads?.is_archived)
-    const completedLeads = purchasedLeads.filter(lead => !lead.leads?.is_archived && lead.status === 'completed')
+    const completedLeads = purchasedLeads.filter(lead => lead.status === 'completed')
 
     return {
       statusCode: 200,
