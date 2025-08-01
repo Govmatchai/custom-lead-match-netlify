@@ -51,7 +51,15 @@ If above steps don't work:
 - SSL certificate valid until: Oct 30 2025
 - Issue is infrastructure/configuration, not code-related
 
-## Status
+## Status - CRITICAL PATTERN IDENTIFIED
 - Code deployment is working correctly (Netlify subdomain accessible)
 - Custom domain SSL configuration requires Netlify dashboard access
-- This is an infrastructure issue, not a code issue
+- **RECURRING ISSUE**: SSL breaks after git commits/deployments
+- Pattern observed: SSL works → Devin makes commits → SSL fails again
+- Recent commits that may have triggered issue:
+  - 92e88ee: "fix: Use user's exact logo file from attachments"
+  - b5b3443: "feat: Update logo with fallback styling and www domain redirects"
+
+## IMMEDIATE WORKAROUND
+- Direct all users to: https://customleadmatch.netlify.app/
+- This subdomain is stable and unaffected by SSL issues
