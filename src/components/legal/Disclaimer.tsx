@@ -8,10 +8,18 @@ export const Disclaimer = () => {
           <CardHeader>
             <CardTitle className="text-3xl text-center">Disclaimer</CardTitle>
           </CardHeader>
-          <CardContent>
-            <div className="disclaimer-content">
-              <p className="text-gray-600 text-center py-8">
-                Disclaimer content coming soon. We will provide clear information about our services and limitations.
+          <CardContent className="prose max-w-none">
+            <div className="disclaimer-content space-y-6">
+              <p>
+                The information provided by Custom Lead Match is for general informational and operational purposes only. While we strive to provide quality lead data, we make no guarantees as to the accuracy, timeliness, or completeness of any leads or information delivered through our platform.
+              </p>
+
+              <p>
+                You acknowledge and agree that the use of the platform is at your own risk, and Custom Lead Match assumes no liability or responsibility for any outcome related to customer interactions, project estimates, or services rendered.
+              </p>
+
+              <p>
+                All leads are provided "as-is" and do not constitute a binding guarantee of income or contract work.
               </p>
             </div>
           </CardContent>

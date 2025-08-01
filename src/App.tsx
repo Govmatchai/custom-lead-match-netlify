@@ -44,7 +44,7 @@ function App() {
           <Route path="/privacy-policy" element={<PrivacyPolicy />} />
           <Route path="/terms-of-service" element={<TermsOfService />} />
           <Route path="/disclaimer" element={<Disclaimer />} />
-          <Route path="/tcpa" element={<TCPACompliance />} />
+          <Route path="/tcpa-notice" element={<TCPACompliance />} />
           <Route path="/about" element={<ContractorSignup />} />
           <Route path="/how-it-works" element={<ContractorSignup />} />
         </Routes>

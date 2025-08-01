@@ -17,7 +17,7 @@ export const Footer = () => {
               <Link to="/privacy-policy" className="block text-gray-300 hover:text-white">Privacy Policy</Link>
               <Link to="/terms-of-service" className="block text-gray-300 hover:text-white">Terms of Service</Link>
               <Link to="/disclaimer" className="block text-gray-300 hover:text-white">Disclaimer</Link>
-              <Link to="/tcpa" className="block text-gray-300 hover:text-white">TCPA Compliance</Link>
+              <Link to="/tcpa-notice" className="block text-gray-300 hover:text-white">TCPA Notice</Link>
             </div>
           </div>
           <div>

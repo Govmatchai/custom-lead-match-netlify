@@ -8,10 +8,22 @@ export const TCPACompliance = () => {
           <CardHeader>
             <CardTitle className="text-3xl text-center">TCPA Compliance Notice</CardTitle>
           </CardHeader>
-          <CardContent>
-            <div className="tcpa-compliance-content">
-              <p className="text-gray-600 text-center py-8">
-                TCPA Compliance Notice content coming soon. We are committed to following all telecommunications regulations and will provide detailed compliance information.
+          <CardContent className="prose max-w-none">
+            <div className="tcpa-compliance-content space-y-6">
+              <p>
+                By submitting your contact information through Custom Lead Match, you expressly consent to receive phone calls, emails, and SMS/text messages from Custom Lead Match and its service providers at the phone number and email address provided.
+              </p>
+
+              <p>
+                This consent includes communication related to lead notifications, account activity, and service updates. Standard carrier rates may apply.
+              </p>
+
+              <p>
+                Your consent is not a condition of any purchase. You may opt out at any time by replying "STOP" to any message or contacting support@customleadmatch.com.
+              </p>
+
+              <p>
+                Custom Lead Match is committed to maintaining full compliance with the Telephone Consumer Protection Act (TCPA).
               </p>
             </div>
           </CardContent>
