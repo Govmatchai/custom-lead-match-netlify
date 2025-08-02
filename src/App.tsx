@@ -18,6 +18,8 @@ import { PrivacyPolicy } from './components/legal/PrivacyPolicy'
 import { TermsOfService } from './components/legal/TermsOfService'
 import { Disclaimer } from './components/legal/Disclaimer'
 import { TCPACompliance } from './components/legal/TCPACompliance'
+import AboutUs from './components/AboutUs'
+import HowItWorks from './components/HowItWorks'
 
 function App() {
   return (
@@ -47,8 +49,8 @@ function App() {
           <Route path="/terms-of-service" element={<TermsOfService />} />
           <Route path="/disclaimer" element={<Disclaimer />} />
           <Route path="/tcpa-notice" element={<TCPACompliance />} />
-          <Route path="/about" element={<ContractorSignup />} />
-          <Route path="/how-it-works" element={<ContractorSignup />} />
+          <Route path="/about-us" element={<AboutUs />} />
+          <Route path="/how-it-works" element={<HowItWorks />} />
         </Routes>
       </div>
     </Router>
