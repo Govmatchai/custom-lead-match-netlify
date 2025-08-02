@@ -6,12 +6,14 @@ import { Input } from './ui/input'
 import { Label } from './ui/label'
 import { Loader2, AlertCircle, Eye, EyeOff } from 'lucide-react'
 import { Logo } from './ui/Logo'
+import { ForgotPasswordModal } from './ForgotPasswordModal'
 
 export default function ContractorLogin() {
   const navigate = useNavigate()
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
   const [showPassword, setShowPassword] = useState(false)
+  const [showForgotPassword, setShowForgotPassword] = useState(false)
   const [formData, setFormData] = useState({
     username: '',
     password: ''
@@ -125,7 +127,14 @@ export default function ContractorLogin() {
             </Button>
           </form>
 
-          <div className="mt-4 text-center">
+          <div className="mt-4 text-center space-y-2">
+            <button
+              type="button"
+              onClick={() => setShowForgotPassword(true)}
+              className="text-sm text-blue-600 hover:text-blue-800 underline"
+            >
+              Forgot your password?
+            </button>
             <p className="text-sm text-gray-600">
               Don't have an account?{' '}
               <button
@@ -138,6 +147,12 @@ export default function ContractorLogin() {
           </div>
         </CardContent>
       </Card>
+      
+      <ForgotPasswordModal
+        isOpen={showForgotPassword}
+        onClose={() => setShowForgotPassword(false)}
+        userType="contractor"
+      />
     </div>
   )
 }

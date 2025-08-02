@@ -6,6 +6,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Alert, AlertDescription } from '@/components/ui/alert'
 import { Logo } from '@/components/ui/Logo'
+import { ForgotPasswordModal } from './ForgotPasswordModal'
 
 interface AdminStats {
   total_contractors: number
@@ -84,6 +85,7 @@ const AdminDashboard = () => {
   const [pricing, setPricing] = useState<PricingSettings | null>(null)
   const [categoryPrices, setCategoryPrices] = useState<{ [key: string]: string }>({})
   const [walletAdjustment, setWalletAdjustment] = useState({ contractor_id: '', amount: '', notes: '' })
+  const [showForgotPassword, setShowForgotPassword] = useState(false)
   const [newLead, setNewLead] = useState({
     customer_name: '', phone: '', email: '', service_category: '', sub_service: '', zip_code: '', description: ''
   })
@@ -309,8 +311,24 @@ const AdminDashboard = () => {
                 {loading ? 'Logging in...' : 'Login'}
               </Button>
             </form>
+            
+            <div className="mt-4 text-center">
+              <button
+                type="button"
+                onClick={() => setShowForgotPassword(true)}
+                className="text-sm text-blue-600 hover:text-blue-800 underline"
+              >
+                Forgot your password?
+              </button>
+            </div>
           </CardContent>
         </Card>
+        
+        <ForgotPasswordModal
+          isOpen={showForgotPassword}
+          onClose={() => setShowForgotPassword(false)}
+          userType="admin"
+        />
       </div>
     )
   }

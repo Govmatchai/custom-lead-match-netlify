@@ -3,6 +3,7 @@ import ContractorSignup from './components/ContractorSignup'
 import ClaimLead from './components/ClaimLead'
 import ContractorDashboard from './components/ContractorDashboard'
 import AdminDashboard from './components/AdminDashboard'
+import ResetPassword from './components/ResetPassword'
 import LeadIntake from './components/LeadIntake'
 import { HVACLanding } from './components/industry-pages/HVACLanding'
 import { LegalLanding } from './components/industry-pages/LegalLanding'
@@ -41,6 +42,7 @@ function App() {
           <Route path="/auto" element={<AutoLanding />} />
           <Route path="/welcome" element={<WelcomePage />} />
           <Route path="/contractor-login" element={<ContractorLogin />} />
+          <Route path="/reset-password" element={<ResetPassword />} />
           <Route path="/privacy-policy" element={<PrivacyPolicy />} />
           <Route path="/terms-of-service" element={<TermsOfService />} />
           <Route path="/disclaimer" element={<Disclaimer />} />
