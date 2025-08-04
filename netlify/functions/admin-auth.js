@@ -53,7 +53,8 @@ export const handler = async (event, context) => {
         }
       }
 
-      if (password === 'admin123') {
+      const adminPassword = process.env.ADMIN_PASSWORD || 'admin123'
+      if (password === adminPassword) {
         return {
           statusCode: 200,
           headers: {
