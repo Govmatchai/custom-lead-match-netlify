@@ -8,11 +8,15 @@ export const validateLead = async (leadData, clientIP) => {
   const validationFlags = {}
   let status = 'valid'
 
+  console.log(`🔍 Validating lead for phone: ${leadData.phone}`)
+
   try {
     const phoneNumber = await twilioClient.lookups.v1.phoneNumbers(leadData.phone).fetch()
     validationFlags.phone_valid = true
     validationFlags.phone_carrier = phoneNumber.carrier?.name || 'unknown'
+    console.log(`✅ Phone validation passed for ${leadData.phone}`)
   } catch (error) {
+    console.log(`❌ Phone validation failed for ${leadData.phone}:`, error.message)
     validationFlags.phone_valid = false
     validationFlags.phone_error = error.message
     status = 'invalid'
@@ -53,12 +57,16 @@ export const validateLead = async (leadData, clientIP) => {
   const hasSpamContent = spamKeywords.some(keyword => description.includes(keyword))
   
   if (hasSpamContent || description.length < 10 || description.split(' ').length < 3) {
+    console.log(`❌ Content validation failed: hasSpamContent=${hasSpamContent}, length=${description.length}, words=${description.split(' ').length}`)
     validationFlags.content_invalid = true
     status = 'invalid'
   }
 
   validationFlags.validation_timestamp = new Date().toISOString()
   validationFlags.client_ip = clientIP
+
+  console.log(`🎯 Final validation status: ${status}`)
+  console.log(`📋 Validation flags:`, validationFlags)
 
   return { status, validationFlags }
 }

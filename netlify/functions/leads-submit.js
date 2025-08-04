@@ -41,6 +41,16 @@ export const handler = async (event, context) => {
     const { customer_name, service_category, sub_service, zip_code, phone, email, description } = data
     const clientIP = event.headers['x-forwarded-for'] || event.headers['x-real-ip'] || 'unknown'
 
+    console.log('🔍 Lead submission received:')
+    console.log('- customer_name:', customer_name)
+    console.log('- service_category:', service_category)
+    console.log('- sub_service:', sub_service)
+    console.log('- zip_code:', zip_code)
+    console.log('- phone:', phone)
+    console.log('- email:', email)
+    console.log('- description:', description)
+    console.log('Raw body:', event.body)
+
     const { status, validationFlags } = await validateLead(data, clientIP)
 
     const { data: lead, error: leadError } = await supabase
