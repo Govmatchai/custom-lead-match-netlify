@@ -87,8 +87,10 @@ interface DashboardData {
 }
 
 const ContractorDashboard = () => {
-  const { contractorId } = useParams<{ contractorId: string }>()
+  const { contractorId: urlContractorId } = useParams<{ contractorId: string }>()
   const navigate = useNavigate()
+  
+  const contractorId = urlContractorId || localStorage.getItem('contractor_id')
   const [dashboardData, setDashboardData] = useState<DashboardData | null>(null)
   const [loading, setLoading] = useState(true)
   const [errorMessage, setErrorMessage] = useState('')
@@ -112,12 +114,23 @@ const ContractorDashboard = () => {
   const [categoryPricing, setCategoryPricing] = useState<{ [key: string]: number }>({})
 
   useEffect(() => {
+    console.log('ContractorDashboard useEffect triggered')
+    console.log('URL Contractor ID:', urlContractorId)
+    console.log('Final Contractor ID (URL or localStorage):', contractorId)
+    
     if (contractorId) {
+      console.log('Calling checkAuthAndFetchData...')
       checkAuthAndFetchData()
+    } else {
+      console.log('No contractor ID found, redirecting to login')
+      navigate('/contractor-login')
+      return
     }
     
     const urlParams = new URLSearchParams(window.location.search)
     const paymentStatus = urlParams.get('payment')
+    
+    console.log('Payment status from URL:', paymentStatus)
     
     if (paymentStatus === 'success') {
       setFundAmount('')
@@ -132,16 +145,24 @@ const ContractorDashboard = () => {
     if (paymentStatus) {
       window.history.replaceState({}, document.title, window.location.pathname)
     }
-  }, [contractorId])
+  }, [contractorId, urlContractorId])
 
   const checkAuthAndFetchData = async () => {
+    console.log('checkAuthAndFetchData called')
     const sessionToken = localStorage.getItem('contractor_session_token')
     const storedContractorId = localStorage.getItem('contractor_id')
     
-    if (!sessionToken || storedContractorId !== contractorId) {
+    console.log('Session token from localStorage:', sessionToken)
+    console.log('Stored contractor ID:', storedContractorId)
+    console.log('Current contractor ID:', contractorId)
+    
+    if (!sessionToken || !storedContractorId || storedContractorId !== contractorId) {
+      console.log('Auth check failed, redirecting to login')
       navigate('/contractor-login')
       return
     }
+    
+    console.log('Auth check passed, proceeding...')
 
     try {
       const authResponse = await fetch('/.netlify/functions/contractor-auth-check', {
@@ -169,13 +190,24 @@ const ContractorDashboard = () => {
   const fetchDashboardData = async () => {
     const sessionToken = localStorage.getItem('contractor_session_token')
     
+    console.log('Starting fetchDashboardData...')
+    console.log('Contractor ID:', contractorId)
+    console.log('Session Token:', sessionToken)
+    
     try {
+      console.log('Making API calls...')
       const [dashboardResponse, availableResponse, purchasedResponse, pricingResponse] = await Promise.all([
         fetch(`/.netlify/functions/contractors-dashboard?contractor_id=${contractorId}&session_token=${sessionToken}`),
         fetch(`/.netlify/functions/contractors-available-leads?contractor_id=${contractorId}&session_token=${sessionToken}`),
         fetch(`/.netlify/functions/get-purchased-leads?contractor_id=${contractorId}&session_token=${sessionToken}`),
         fetch('/.netlify/functions/get-category-pricing')
       ])
+      
+      console.log('API responses received:')
+      console.log('Dashboard response status:', dashboardResponse.status)
+      console.log('Available response status:', availableResponse.status)
+      console.log('Purchased response status:', purchasedResponse.status)
+      console.log('Pricing response status:', pricingResponse.status)
       
       const [dashboardData, availableData, purchasedData, pricingData] = await Promise.all([
         dashboardResponse.json(),
@@ -184,11 +216,18 @@ const ContractorDashboard = () => {
         pricingResponse.json()
       ])
       
+      console.log('Parsed JSON data:')
+      console.log('Dashboard data:', dashboardData)
+      console.log('Available data:', availableData)
+      console.log('Purchased data:', purchasedData)
+      console.log('Pricing data:', pricingData)
+      
       if (dashboardResponse.ok && availableResponse.ok && purchasedResponse.ok) {
+        console.log('All responses OK, processing data...')
         const archivedLeads = dashboardData.claimed_leads.filter((lead: Lead) => lead.is_archived)
         const activeClaimedLeads = dashboardData.claimed_leads.filter((lead: Lead) => !lead.is_archived)
         
-        setDashboardData({
+        const newDashboardData = {
           contractor: dashboardData.contractor,
           claimed_leads: activeClaimedLeads,
           available_leads: availableData.available_leads,
@@ -203,17 +242,29 @@ const ContractorDashboard = () => {
           total_archived_purchased: purchasedData.archived_leads?.length || 0,
           total_completed: purchasedData.completed_leads?.length || 0,
           wallet_balance: dashboardData.wallet_balance
-        })
+        }
+        
+        console.log('Setting dashboard data:', newDashboardData)
+        setDashboardData(newDashboardData)
+      } else {
+        console.log('Some responses failed:')
+        console.log('Dashboard OK:', dashboardResponse.ok)
+        console.log('Available OK:', availableResponse.ok)
+        console.log('Purchased OK:', purchasedResponse.ok)
+        setErrorMessage(dashboardData.detail || availableData.detail || purchasedData.message || 'Failed to load dashboard data')
       }
 
       if (pricingResponse.ok) {
+        console.log('Setting category pricing...')
         setCategoryPricing(pricingData.pricing || {})
-      }else {
-        setErrorMessage(dashboardData.detail || availableData.detail || purchasedData.message || 'Failed to load dashboard data')
+      } else {
+        console.log('Pricing response failed:', pricingResponse.status)
       }
     } catch (error) {
+      console.error('fetchDashboardData error:', error)
       setErrorMessage('Network error. Please try again.')
     } finally {
+      console.log('Setting loading to false')
       setLoading(false)
     }
   }
