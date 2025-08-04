@@ -88,6 +88,11 @@ export const handler = async (event, context) => {
           .gt('lead_credits', 0)
           .eq('sms_opt_in', true)
 
+        console.log(`Found ${matchingContractors?.length || 0} matching contractors for ${service_category}/${sub_service} in ${zip_code}`)
+        if (contractorError) {
+          console.error('Contractor query error:', contractorError)
+        }
+
         let contractorsNotified = 0
         if (status === 'valid' && matchingContractors && matchingContractors.length > 0) {
           for (const contractor of matchingContractors) {
@@ -178,14 +183,32 @@ export const handler = async (event, context) => {
       
       for (const contractor of matchingContractors) {
         try {
+          let formattedPhone = contractor.phone
+          
+          if (!contractor.phone.startsWith('+')) {
+            formattedPhone = contractor.phone.replace(/\D/g, '') // Remove all non-digits
+            if (formattedPhone.length === 10) {
+              formattedPhone = '+1' + formattedPhone // Add US country code
+            } else if (formattedPhone.length === 11 && formattedPhone.startsWith('1')) {
+              formattedPhone = '+' + formattedPhone // Add + prefix
+            } else {
+              console.error(`Invalid phone number format for contractor ${contractor.id}: ${contractor.phone}`)
+              continue
+            }
+          }
+          
+          console.log(`Attempting to send SMS to contractor ${contractor.id} at ${formattedPhone} (original: ${contractor.phone})`)
+          
           await twilioClient.messages.create({
             body: `🔥 New ${service_category} Lead: ${zip_code} - ${sub_service}. Pre-screened & validated. Click to claim: ${claimUrl}`,
             from: process.env.TWILIO_PHONE_NUMBER,
-            to: contractor.phone
+            to: formattedPhone
           })
           contractorsNotified++
+          console.log(`✅ SMS sent successfully to contractor ${contractor.id} at ${formattedPhone}`)
         } catch (smsError) {
-          console.error('SMS error for contractor', contractor.id, ':', smsError)
+          console.error(`❌ SMS error for contractor ${contractor.id}:`, smsError.message)
+          console.error('Error code:', smsError.code)
         }
       }
     }
