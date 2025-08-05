@@ -39,7 +39,11 @@ export const handler = async (event, context) => {
   try {
     const data = JSON.parse(event.body)
     const { customer_name, service_category, sub_service, zip_code, phone, email, description } = data
-    const clientIP = event.headers['x-forwarded-for'] || event.headers['x-real-ip'] || 'unknown'
+    
+    let clientIP = event.headers['x-forwarded-for'] || event.headers['x-real-ip'] || 'unknown'
+    if (clientIP !== 'unknown' && clientIP.includes(',')) {
+      clientIP = clientIP.split(',')[0].trim()
+    }
 
     console.log('🔍 Lead submission received:')
     console.log('- customer_name:', customer_name)
