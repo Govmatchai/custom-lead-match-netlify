@@ -6,9 +6,11 @@ import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
 import { Card, CardContent } from '@/components/ui/card'
 import { Alert, AlertDescription } from '@/components/ui/alert'
+import { useNavigate } from 'react-router-dom'
 import { getApiUrl } from '@/lib/api'
 
 const PlumbingLanding = () => {
+  const navigate = useNavigate()
   const [formData, setFormData] = useState({
     customer_name: '',
     service_category: 'home_services',
@@ -61,15 +63,11 @@ const PlumbingLanding = () => {
       const data = await response.json()
 
       if (response.ok) {
-        setSuccessMessage('Your plumbing request has been submitted! Licensed professionals in your area will contact you shortly.')
-        setFormData({
-          customer_name: '',
-          service_category: 'home_services',
-          sub_service: 'plumbing',
-          zip_code: '',
-          phone: '',
-          email: '',
-          description: ''
+        navigate('/thank-you', { 
+          state: { 
+            service: 'plumbing',
+            customerName: formData.customer_name 
+          } 
         })
       } else {
         setErrorMessage(data.detail || data.message || 'An error occurred while submitting your request')

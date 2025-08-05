@@ -13,6 +13,7 @@ import { InsuranceLanding } from './components/industry-pages/InsuranceLanding'
 import { HealthcareLanding } from './components/industry-pages/HealthcareLanding'
 import { AutoLanding } from './components/industry-pages/AutoLanding'
 import PlumbingLanding from './components/services/PlumbingLanding'
+import ThankYou from './components/ThankYou'
 import WelcomePage from './components/WelcomePage'
 import ContractorLogin from './components/ContractorLogin'
 import { PrivacyPolicy } from './components/legal/PrivacyPolicy'
@@ -44,6 +45,7 @@ function App() {
           <Route path="/healthcare" element={<HealthcareLanding />} />
           <Route path="/auto" element={<AutoLanding />} />
           <Route path="/services/plumbing" element={<PlumbingLanding />} />
+          <Route path="/thank-you" element={<ThankYou />} />
           <Route path="/welcome" element={<WelcomePage />} />
           <Route path="/contractor-login" element={<ContractorLogin />} />
           <Route path="/reset-password" element={<ResetPassword />} />
