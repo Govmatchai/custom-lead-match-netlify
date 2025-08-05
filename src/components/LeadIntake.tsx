@@ -7,6 +7,7 @@ import { Textarea } from '@/components/ui/textarea'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Alert, AlertDescription } from '@/components/ui/alert'
 import { IndustryDropdown } from '@/components/shared/IndustryDropdown'
+import { getApiUrl } from '@/lib/api'
 
 const LeadIntake = () => {
   const [formData, setFormData] = useState({
@@ -51,7 +52,7 @@ const LeadIntake = () => {
     setSuccessMessage('')
 
     try {
-      const response = await fetch('/.netlify/functions/leads-submit', {
+      const response = await fetch(getApiUrl('leads-submit'), {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

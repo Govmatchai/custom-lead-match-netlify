@@ -6,6 +6,7 @@ import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
 import { Card, CardContent } from '@/components/ui/card'
 import { Alert, AlertDescription } from '@/components/ui/alert'
+import { getApiUrl } from '@/lib/api'
 
 const PlumbingLanding = () => {
   const [formData, setFormData] = useState({
@@ -49,7 +50,7 @@ const PlumbingLanding = () => {
     setSuccessMessage('')
 
     try {
-      const response = await fetch('/.netlify/functions/leads-submit', {
+      const response = await fetch(getApiUrl('leads-submit'), {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

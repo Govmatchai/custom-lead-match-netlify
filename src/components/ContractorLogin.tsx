@@ -7,6 +7,7 @@ import { Label } from './ui/label'
 import { Loader2, AlertCircle, Eye, EyeOff } from 'lucide-react'
 import { Logo } from './ui/Logo'
 import { ForgotPasswordModal } from './ForgotPasswordModal'
+import { getApiUrl } from '@/lib/api'
 
 export default function ContractorLogin() {
   const navigate = useNavigate()
@@ -32,7 +33,7 @@ export default function ContractorLogin() {
     setError('')
 
     try {
-      const response = await fetch('/.netlify/functions/contractor-login', {
+      const response = await fetch(getApiUrl('contractor-login'), {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

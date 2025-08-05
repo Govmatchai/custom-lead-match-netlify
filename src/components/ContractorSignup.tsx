@@ -8,6 +8,7 @@ import { Alert, AlertDescription } from '@/components/ui/alert'
 import { IndustryDropdown } from '@/components/shared/IndustryDropdown'
 import { Footer } from './Footer'
 import { Logo } from '@/components/ui/Logo'
+import { getApiUrl } from '@/lib/api'
 
 const ContractorSignup = () => {
   const [formData, setFormData] = useState({
@@ -103,7 +104,7 @@ const ContractorSignup = () => {
       console.log('Request body being sent:', requestBody)
       console.log('Request body length:', requestBody.length)
       
-      const response = await fetch('/.netlify/functions/contractors-signup', {
+      const response = await fetch(getApiUrl('contractors-signup'), {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

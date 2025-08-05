@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react'
+import { getApiUrl } from '@/lib/api'
 
 interface Industry {
   value: string
@@ -20,7 +21,7 @@ export const useIndustryDropdowns = () => {
     try {
       setIsLoading(true)
       setError(null)
-      const response = await fetch('/.netlify/functions/industries')
+      const response = await fetch(getApiUrl('industries'))
       if (!response.ok) throw new Error('Failed to fetch industries')
       const data = await response.json()
       setIndustries(data)
@@ -36,7 +37,7 @@ export const useIndustryDropdowns = () => {
     try {
       setIsLoading(true)
       setError(null)
-      const response = await fetch(`/.netlify/functions/sub-services?industry=${industry}`)
+      const response = await fetch(`${getApiUrl('sub-services')}?industry=${industry}`)
       if (!response.ok) throw new Error('Failed to fetch sub-services')
       const data = await response.json()
       setSubServices(data)

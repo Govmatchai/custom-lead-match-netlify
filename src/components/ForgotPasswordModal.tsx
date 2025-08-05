@@ -4,6 +4,7 @@ import { Button } from './ui/button'
 import { Input } from './ui/input'
 import { Label } from './ui/label'
 import { Loader2, AlertCircle, CheckCircle, Mail } from 'lucide-react'
+import { getApiUrl } from '@/lib/api'
 
 interface ForgotPasswordModalProps {
   isOpen: boolean
@@ -23,7 +24,7 @@ export function ForgotPasswordModal({ isOpen, onClose, userType }: ForgotPasswor
     setError('')
 
     try {
-      const response = await fetch(`/.netlify/functions/forgot-password`, {
+      const response = await fetch(getApiUrl('forgot-password'), {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
