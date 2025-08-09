@@ -22,6 +22,7 @@ import { Disclaimer } from './components/legal/Disclaimer'
 import { TCPACompliance } from './components/legal/TCPACompliance'
 import AboutUs from './components/AboutUs'
 import HowItWorks from './components/HowItWorks'
+import PredictiveScoring from './components/help/PredictiveScoring'
 
 function App() {
   return (
@@ -55,6 +56,7 @@ function App() {
           <Route path="/tcpa-notice" element={<TCPACompliance />} />
           <Route path="/about-us" element={<AboutUs />} />
           <Route path="/how-it-works" element={<HowItWorks />} />
+          <Route path="/help/predictive-scoring" element={<PredictiveScoring />} />
         </Routes>
       </div>
     </Router>
