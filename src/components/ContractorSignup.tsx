@@ -1,157 +1,15 @@
 import { useState } from 'react'
 import { CheckCircle, Zap, Star, DollarSign, Phone, Lock } from 'lucide-react'
 import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
-import { Label } from '@/components/ui/label'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { Alert, AlertDescription } from '@/components/ui/alert'
-import { IndustryDropdown } from '@/components/shared/IndustryDropdown'
+import { Card, CardContent } from '@/components/ui/card'
 import { Footer } from './Footer'
 import { Logo } from '@/components/ui/Logo'
-import { getApiUrl } from '@/lib/api'
 import { AnimatedStats } from './AnimatedStats'
 import { TestimonialsCarousel } from './TestimonialsCarousel'
 
 const ContractorSignup = () => {
-  const [formData, setFormData] = useState({
-    business_name: '',
-    contact_name: '',
-    email: '',
-    phone: '',
-    username: '',
-    password: '',
-    confirm_password: '',
-    industry: '',
-    sub_service: '',
-    zip_codes: '',
-    sms_opt_in: true
-  })
-
-  const [isSubmitting, setIsSubmitting] = useState(false)
-  const [successMessage, setSuccessMessage] = useState('')
-  const [errorMessage, setErrorMessage] = useState('')
   const [showMobileMenu, setShowMobileMenu] = useState(false)
   const [stickyCtaDismissed, setStickyCtaDismissed] = useState(localStorage.getItem('dismiss_sticky_signup') === 'true')
-
-  const handleInputChange = (field: string, value: string | boolean) => {
-    console.log(`Field ${field} changed to:`, value)
-    
-    setFormData(prev => ({
-      ...prev,
-      [field]: value
-    }))
-  }
-
-  const handleIndustryChange = (value: string) => {
-    setFormData(prev => ({
-      ...prev,
-      industry: value,
-      sub_service: ''
-    }))
-  }
-
-  const handleSubServiceChange = (value: string) => {
-    setFormData(prev => ({
-      ...prev,
-      sub_service: value
-    }))
-  }
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
-    setIsSubmitting(true)
-    setErrorMessage('')
-    setSuccessMessage('')
-
-    console.log('Form data on submit:', {
-      ...formData,
-      password: formData.password ? '[REDACTED]' : 'MISSING',
-      confirm_password: formData.confirm_password ? '[REDACTED]' : 'MISSING'
-    })
-    console.log('Password field value:', formData.password ? 'HAS_VALUE' : 'EMPTY')
-    console.log('Confirm password field value:', formData.confirm_password ? 'HAS_VALUE' : 'EMPTY')
-    console.log('Full formData keys:', Object.keys(formData))
-    console.log('Current industry value:', formData.industry)
-    console.log('Current sub_service value:', formData.sub_service)
-
-    if (!formData.business_name || !formData.contact_name || !formData.email || !formData.phone || !formData.username || !formData.password || !formData.industry || !formData.sub_service || !formData.zip_codes) {
-      console.log('Missing fields:', {
-        business_name: !formData.business_name,
-        contact_name: !formData.contact_name,
-        email: !formData.email,
-        phone: !formData.phone,
-        username: !formData.username,
-        password: !formData.password,
-        industry: !formData.industry,
-        sub_service: !formData.sub_service,
-        zip_codes: !formData.zip_codes
-      })
-      setErrorMessage('Please fill in all required fields')
-      setIsSubmitting(false)
-      return
-    }
-
-    if (formData.password !== formData.confirm_password) {
-      setErrorMessage('Passwords do not match')
-      setIsSubmitting(false)
-      return
-    }
-
-    if (formData.password.length < 8) {
-      setErrorMessage('Password must be at least 8 characters long')
-      setIsSubmitting(false)
-      return
-    }
-
-    try {
-      const requestBody = JSON.stringify(formData)
-      console.log('Request body being sent:', requestBody)
-      console.log('Request body length:', requestBody.length)
-      
-      const response = await fetch(getApiUrl('contractors-signup'), {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: requestBody
-      })
-
-      const data = await response.json()
-
-      if (response.ok) {
-        if (data.contractor_id && data.session_token) {
-          localStorage.setItem("contractor_id", data.contractor_id);
-          localStorage.setItem("contractor_session_token", data.session_token);
-        }
-        
-        if (data.redirect_url) {
-          console.log('Redirecting to:', data.redirect_url)
-          window.location.href = data.redirect_url
-        } else {
-          setSuccessMessage('✅ You\'re In! You\'ll receive a text when your first matching lead comes in.')
-          setFormData({
-            business_name: '',
-            contact_name: '',
-            email: '',
-            phone: '',
-            username: '',
-            password: '',
-            confirm_password: '',
-            industry: '',
-            sub_service: '',
-            zip_codes: '',
-            sms_opt_in: true
-          })
-        }
-      } else {
-        setErrorMessage(data.detail || data.message || 'An error occurred during signup')
-      }
-    } catch (error) {
-      setErrorMessage('Network error. Please try again.')
-    } finally {
-      setIsSubmitting(false)
-    }
-  }
 
 
 
@@ -211,24 +69,6 @@ const ContractorSignup = () => {
     }
   ]
 
-  if (successMessage) {
-    return (
-      <div className="min-h-screen bg-gradient-to-br from-green-50 to-blue-100 flex items-center justify-center p-4">
-        <Card className="w-full max-w-md">
-          <CardHeader className="text-center">
-            <CheckCircle className="w-16 h-16 text-green-500 mx-auto mb-4" />
-            <CardTitle className="text-2xl text-green-700">Welcome to Custom Lead Match!</CardTitle>
-          </CardHeader>
-          <CardContent className="text-center">
-            <p className="text-lg mb-4">{successMessage}</p>
-            <Button onClick={() => setSuccessMessage('')} className="w-full">
-              Sign Up Another Contractor
-            </Button>
-          </CardContent>
-        </Card>
-      </div>
-    )
-  }
 
   return (
     <div className="min-h-screen bg-white font-['Inter',_'Roboto',_'Open_Sans',_sans-serif]">
@@ -248,7 +88,7 @@ const ContractorSignup = () => {
                 Login
               </Button>
               <Button 
-                onClick={() => document.getElementById('signup-form')?.scrollIntoView({ behavior: 'smooth' })}
+                onClick={() => window.location.href = '/signup'}
                 aria-label="Contractor Sign Up"
                 className="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white transition-all duration-200 transform hover:scale-102 shadow-lg"
               >
@@ -278,7 +118,7 @@ const ContractorSignup = () => {
                 </Button>
                 <Button 
                   className="w-full justify-center bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white"
-                  onClick={() => document.getElementById('signup-form')?.scrollIntoView({ behavior: 'smooth' })}
+                  onClick={() => window.location.href = '/signup'}
                   aria-label="Contractor Sign Up"
                 >
                   Sign Up Free
@@ -307,7 +147,7 @@ const ContractorSignup = () => {
             <div className="flex flex-col sm:flex-row gap-4 justify-center items-center mb-8">
               <Button 
                 size="lg"
-                onClick={() => document.getElementById('signup-form')?.scrollIntoView({ behavior: 'smooth' })}
+                onClick={() => window.location.href = '/signup'}
                 className="bg-white text-blue-600 hover:bg-gray-100 px-8 py-4 text-xl font-bold transition-all duration-300 transform hover:scale-105 shadow-lg"
               >
                 Sign Up Free
@@ -622,7 +462,7 @@ const ContractorSignup = () => {
           <div className="flex flex-col sm:flex-row gap-4 justify-center items-center mb-8">
             <Button 
               size="lg"
-              onClick={() => document.getElementById('signup-form')?.scrollIntoView({ behavior: 'smooth' })}
+              onClick={() => window.location.href = '/signup'}
               className="bg-white text-blue-600 hover:bg-gray-100 px-8 py-4 text-xl font-bold transition-all duration-300 transform hover:scale-105 shadow-lg"
             >
               Sign Up Free
@@ -850,7 +690,7 @@ const ContractorSignup = () => {
                 
                 <Button 
                   size="lg"
-                  onClick={() => document.getElementById('signup-form')?.scrollIntoView({ behavior: 'smooth' })}
+                  onClick={() => window.location.href = '/signup'}
                   className="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white px-8 py-4 text-xl font-bold transition-all duration-200 transform hover:scale-105"
                 >
                   Get Leads Now
@@ -874,154 +714,56 @@ const ContractorSignup = () => {
           </div>
         </div>
 
-        <Card id="signup-form" className="max-w-2xl mx-auto border-2 shadow-lg">
-          <CardHeader>
-            <CardTitle className="text-2xl text-center">Create My Free Account</CardTitle>
-            <CardDescription className="text-center">
-              Start receiving exclusive leads in your area today
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            {errorMessage && (
-              <Alert className="mb-6 border-red-200 bg-red-50">
-                <AlertDescription className="text-red-700">{errorMessage}</AlertDescription>
-              </Alert>
-            )}
-
-            <form onSubmit={handleSubmit} className="space-y-6">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
-                  <Label htmlFor="contact_name">Name *</Label>
-                  <Input
-                    id="contact_name"
-                    type="text"
-                    required
-                    value={formData.contact_name}
-                    onChange={(e) => handleInputChange('contact_name', e.target.value)}
-                    placeholder="John Smith"
-                  />
-                </div>
-                <div>
-                  <Label htmlFor="business_name">Company *</Label>
-                  <Input
-                    id="business_name"
-                    type="text"
-                    required
-                    value={formData.business_name}
-                    onChange={(e) => handleInputChange('business_name', e.target.value)}
-                    placeholder="Smith Construction LLC"
-                  />
-                </div>
+        {/* Strong CTA Section */}
+        <div className="max-w-4xl mx-auto text-center">
+          <Card className="border-2 shadow-xl bg-gradient-to-br from-blue-50 to-indigo-50">
+            <CardContent className="p-12">
+              <h2 className="text-4xl font-bold text-gray-900 mb-6">
+                Your Next Job Is Waiting — Claim It Today
+              </h2>
+              <p className="text-xl text-gray-700 mb-8 max-w-2xl mx-auto">
+                Join thousands of contractors who are growing their business with exclusive, high-quality leads.
+              </p>
+              
+              <div className="flex flex-col sm:flex-row gap-6 justify-center items-center mb-8">
+                <Button 
+                  size="lg"
+                  onClick={() => window.location.href = '/signup'}
+                  className="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white px-12 py-6 text-2xl font-bold transition-all duration-300 transform hover:scale-105 shadow-xl hover:shadow-2xl"
+                >
+                  Sign Up Free
+                </Button>
+                <Button 
+                  size="lg"
+                  variant="outline"
+                  onClick={() => window.location.href = '/contractor-login'}
+                  className="border-2 border-blue-600 text-blue-600 hover:bg-blue-600 hover:text-white px-12 py-6 text-2xl font-bold transition-all duration-300 shadow-lg"
+                >
+                  Login
+                </Button>
               </div>
-
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
-                  <Label htmlFor="email">Email *</Label>
-                  <Input
-                    id="email"
-                    type="email"
-                    required
-                    value={formData.email}
-                    onChange={(e) => handleInputChange('email', e.target.value)}
-                    placeholder="john@smithconstruction.com"
-                  />
+              
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-6 text-center">
+                <div className="flex items-center justify-center space-x-2">
+                  <CheckCircle className="w-6 h-6 text-green-500" />
+                  <span className="text-lg font-semibold text-gray-700">No Setup Fees</span>
                 </div>
-                <div>
-                  <Label htmlFor="phone">Phone *</Label>
-                  <Input
-                    id="phone"
-                    type="tel"
-                    required
-                    value={formData.phone}
-                    onChange={(e) => handleInputChange('phone', e.target.value)}
-                    placeholder="(555) 123-4567"
-                  />
+                <div className="flex items-center justify-center space-x-2">
+                  <CheckCircle className="w-6 h-6 text-green-500" />
+                  <span className="text-lg font-semibold text-gray-700">Exclusive Leads</span>
+                </div>
+                <div className="flex items-center justify-center space-x-2">
+                  <CheckCircle className="w-6 h-6 text-green-500" />
+                  <span className="text-lg font-semibold text-gray-700">Instant Notifications</span>
                 </div>
               </div>
-
-              <IndustryDropdown
-                industryValue={formData.industry}
-                subServiceValue={formData.sub_service}
-                onIndustryChange={handleIndustryChange}
-                onSubServiceChange={handleSubServiceChange}
-                required={true}
-              />
-
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
-                  <Label htmlFor="username">Username *</Label>
-                  <Input
-                    id="username"
-                    type="text"
-                    required
-                    value={formData.username}
-                    onChange={(e) => handleInputChange('username', e.target.value)}
-                    placeholder="Choose a unique username"
-                  />
-                </div>
-                <div>
-                  <Label htmlFor="password">Password *</Label>
-                  <Input
-                    id="password"
-                    type="password"
-                    required
-                    value={formData.password}
-                    onChange={(e) => handleInputChange('password', e.target.value)}
-                    placeholder="Enter secure password"
-                  />
-                </div>
-              </div>
-
-              <div>
-                <Label htmlFor="confirm_password">Confirm Password *</Label>
-                <Input
-                  id="confirm_password"
-                  type="password"
-                  required
-                  value={formData.confirm_password}
-                  onChange={(e) => handleInputChange('confirm_password', e.target.value)}
-                  placeholder="Confirm your password"
-                />
-              </div>
-
-              <div>
-                <Label htmlFor="zip_codes">ZIP Codes (comma-separated) *</Label>
-                <Input
-                  id="zip_codes"
-                  type="text"
-                  required
-                  value={formData.zip_codes}
-                  onChange={(e) => handleInputChange('zip_codes', e.target.value)}
-                  placeholder="12345, 12346, 12347"
-                />
-                <p className="text-sm text-gray-500 mt-1">
-                  Enter the ZIP codes where you provide services, separated by commas
-                </p>
-              </div>
-
-              <div className="flex items-center space-x-2">
-                <input
-                  type="checkbox"
-                  id="sms_opt_in"
-                  checked={formData.sms_opt_in}
-                  onChange={(e) => handleInputChange('sms_opt_in', e.target.checked)}
-                  className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500"
-                />
-                <Label htmlFor="sms_opt_in" className="text-sm">
-                  Yes, send me SMS alerts for new leads
-                </Label>
-              </div>
-
-              <Button 
-                type="submit" 
-                className="w-full bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white py-4 text-xl font-bold rounded-lg shadow-lg hover:shadow-xl transition-all duration-200 transform hover:scale-105"
-                disabled={isSubmitting}
-              >
-                {isSubmitting ? 'Creating Account...' : 'Create My Free Account'}
-              </Button>
-            </form>
-          </CardContent>
-        </Card>
+              
+              <p className="text-sm text-gray-600 mt-8">
+                Questions? Call us at <span className="font-semibold">(555) 123-4567</span>
+              </p>
+            </CardContent>
+          </Card>
+        </div>
       </div>
       
       {/* Sticky Mobile CTA */}
@@ -1030,7 +772,7 @@ const ContractorSignup = () => {
           <div className="flex items-center justify-between">
             <Button 
               className="flex-1 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-bold py-3 text-lg"
-              onClick={() => document.getElementById('signup-form')?.scrollIntoView({ behavior: 'smooth' })}
+              onClick={() => window.location.href = '/signup'}
               aria-label="Contractor Sign Up"
             >
               Get Leads Now

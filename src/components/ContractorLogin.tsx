@@ -139,7 +139,7 @@ export default function ContractorLogin() {
             <p className="text-sm text-gray-600">
               Don't have an account?{' '}
               <button
-                onClick={() => navigate('/')}
+                onClick={() => navigate('/signup')}
                 className="text-blue-600 hover:text-blue-800 underline"
               >
                 Sign up here

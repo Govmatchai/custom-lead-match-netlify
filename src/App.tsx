@@ -22,6 +22,7 @@ import { Disclaimer } from './components/legal/Disclaimer'
 import { TCPACompliance } from './components/legal/TCPACompliance'
 import AboutUs from './components/AboutUs'
 import HowItWorks from './components/HowItWorks'
+import Signup from './pages/Signup'
 
 function App() {
   return (
@@ -29,6 +30,8 @@ function App() {
       <div className="min-h-screen bg-gray-50">
         <Routes>
           <Route path="/" element={<ContractorSignup />} />
+          <Route path="/signup" element={<Signup />} />
+          <Route path="/contractors/signup" element={<Signup />} />
           <Route path="/claim/:token" element={<ClaimLead />} />
           <Route path="/contractor/:contractorId" element={<ContractorDashboard />} />
           <Route path="/dashboard" element={<ContractorDashboard />} />
