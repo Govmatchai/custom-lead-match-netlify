@@ -35,7 +35,7 @@ export const handler = async (event, context) => {
     const { data: leadsToScore, error } = await supabase
       .from('leads')
       .select('*')
-      .or(`lead_score.is.null,lead_score_updated_at.lt.${twentyFourHoursAgo}`)
+      .or(`lead_score.is.null,lead_score_reason.is.null,lead_score_updated_at.lt.${twentyFourHoursAgo}`)
       .eq('status', 'valid')
       .limit(100)
 
