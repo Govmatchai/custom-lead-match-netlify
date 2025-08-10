@@ -184,7 +184,7 @@ export default function WelcomePage() {
                 <div className="space-y-3">
                   <div className="flex items-center space-x-2">
                     <CheckCircle className="w-4 h-4 text-green-600" />
-                    <span className="text-sm">Phone numbers verified for validity</span>
+                    <span className="text-sm">Contact information verified for validity</span>
                   </div>
                   <div className="flex items-center space-x-2">
                     <CheckCircle className="w-4 h-4 text-green-600" />
