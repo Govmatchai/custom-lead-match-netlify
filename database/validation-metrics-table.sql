@@ -1,4 +1,6 @@
-CREATE TABLE IF NOT EXISTS validation_metrics (
+DROP TABLE IF EXISTS validation_metrics CASCADE;
+
+CREATE TABLE validation_metrics (
     id UUID DEFAULT uuid_generate_v4() PRIMARY KEY,
     lead_id UUID REFERENCES leads(id) ON DELETE SET NULL,
     status VARCHAR(50) NOT NULL,
@@ -15,10 +17,10 @@ CREATE TABLE IF NOT EXISTS validation_metrics (
     email_domain VARCHAR(255)
 );
 
-CREATE INDEX IF NOT EXISTS idx_validation_metrics_timestamp ON validation_metrics(validation_timestamp);
-CREATE INDEX IF NOT EXISTS idx_validation_metrics_status ON validation_metrics(status);
-CREATE INDEX IF NOT EXISTS idx_validation_metrics_service_category ON validation_metrics(service_category);
-CREATE INDEX IF NOT EXISTS idx_validation_metrics_lead_id ON validation_metrics(lead_id);
+CREATE INDEX idx_validation_metrics_timestamp ON validation_metrics(validation_timestamp);
+CREATE INDEX idx_validation_metrics_status ON validation_metrics(status);
+CREATE INDEX idx_validation_metrics_service_category ON validation_metrics(service_category);
+CREATE INDEX idx_validation_metrics_lead_id ON validation_metrics(lead_id);
 
 ALTER TABLE validation_metrics ENABLE ROW LEVEL SECURITY;
 
