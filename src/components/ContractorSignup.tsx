@@ -9,6 +9,8 @@ import { IndustryDropdown } from '@/components/shared/IndustryDropdown'
 import { Footer } from './Footer'
 import { Logo } from '@/components/ui/Logo'
 import { getApiUrl } from '@/lib/api'
+import { AnimatedStats } from './AnimatedStats'
+import { TestimonialsCarousel } from './TestimonialsCarousel'
 
 const ContractorSignup = () => {
   const [formData, setFormData] = useState({
@@ -229,10 +231,9 @@ const ContractorSignup = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-white via-blue-50 to-indigo-50 font-['Inter',_'Roboto',_'Open_Sans',_sans-serif]">
-      {/* Navigation Header */}
-      <nav className="bg-white border-b border-gray-200 sticky top-0 z-50">
-        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+    <div className="min-h-screen bg-white font-['Inter',_'Roboto',_'Open_Sans',_sans-serif]">
+      <nav className="bg-white border-b border-gray-200 sticky top-0 z-50 shadow-sm">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-16">
             <div className="flex items-center">
               <Logo className="max-w-xs" width={150} height={45} />
@@ -241,17 +242,17 @@ const ContractorSignup = () => {
               <Button 
                 variant="outline" 
                 onClick={() => window.location.href = '/contractor-login'}
+                className="hover:bg-gray-50 border-gray-300"
                 aria-label="Contractor Login"
-                className="hover:bg-gray-50"
               >
-                Access Dashboard
+                Login
               </Button>
               <Button 
                 onClick={() => document.getElementById('signup-form')?.scrollIntoView({ behavior: 'smooth' })}
                 aria-label="Contractor Sign Up"
-                className="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white transition-all duration-200 transform hover:scale-102"
+                className="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white transition-all duration-200 transform hover:scale-102 shadow-lg"
               >
-                Get Leads Now
+                Sign Up Free
               </Button>
             </div>
             <div className="md:hidden">
@@ -273,77 +274,382 @@ const ContractorSignup = () => {
                   onClick={() => window.location.href = '/contractor-login'}
                   aria-label="Contractor Login"
                 >
-                  Access Dashboard
+                  Login
                 </Button>
                 <Button 
                   className="w-full justify-center bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white"
                   onClick={() => document.getElementById('signup-form')?.scrollIntoView({ behavior: 'smooth' })}
                   aria-label="Contractor Sign Up"
                 >
-                  Get Leads Now
+                  Sign Up Free
                 </Button>
               </div>
             </div>
           )}
         </div>
       </nav>
-      <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-        <div className="text-center mb-12">
-          <div className="flex justify-center mb-6">
-            <Logo className="max-w-md w-full h-auto" width={400} height={120} />
+
+      <div 
+        className="relative min-h-screen bg-cover bg-center bg-no-repeat flex items-center"
+        style={{
+          backgroundImage: `linear-gradient(rgba(59, 130, 246, 0.8), rgba(99, 102, 241, 0.8)), url('https://images.unsplash.com/photo-1581578731548-c64695cc6952?ixlib=rb-4.0.3&auto=format&fit=crop&w=2070&q=80')`
+        }}
+      >
+        <div className="container mx-auto px-4 py-20 text-center text-white relative z-10">
+          <div className="max-w-4xl mx-auto">
+            <h1 className="text-5xl md:text-7xl font-bold mb-6 animate-fade-in">
+              More High-Quality Leads. Less Hassle.
+            </h1>
+            <p className="text-xl md:text-2xl mb-8 max-w-3xl mx-auto opacity-90">
+              Connect directly with ready-to-hire customers — no shared leads, no wasted time.
+            </p>
+            
+            <div className="flex flex-col sm:flex-row gap-4 justify-center items-center mb-8">
+              <Button 
+                size="lg"
+                onClick={() => document.getElementById('signup-form')?.scrollIntoView({ behavior: 'smooth' })}
+                className="bg-white text-blue-600 hover:bg-gray-100 px-8 py-4 text-xl font-bold transition-all duration-300 transform hover:scale-105 shadow-lg"
+              >
+                Sign Up Free
+              </Button>
+              <Button 
+                size="lg"
+                variant="outline"
+                onClick={() => window.location.href = '/contractor-login'}
+                className="border-2 border-white text-white hover:bg-white hover:text-blue-600 px-8 py-4 text-xl font-bold transition-all duration-300"
+              >
+                Login
+              </Button>
+            </div>
           </div>
-          <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
-            Get 3 Free Leads — Instantly Connect with High-Intent Customers in Your Industry
-          </h2>
-          <p className="text-xl text-gray-600 max-w-2xl mx-auto mb-6">
-            Join thousands of contractors who get exclusive leads delivered directly to their phone. 
-            No monthly fees, no contracts — just real customers ready to hire.
+        </div>
+      </div>
+
+      <div className="bg-white py-16">
+        <div className="container mx-auto px-4">
+          <div className="flex flex-wrap justify-center items-center gap-8 mb-12 opacity-60">
+            <div className="text-gray-600 font-semibold">BBB Accredited</div>
+            <div className="text-gray-600 font-semibold">Google Partner</div>
+            <div className="text-gray-600 font-semibold">Verified Leads Guaranteed</div>
+            <div className="text-gray-600 font-semibold">SSL Secured</div>
+          </div>
+          
+          <div className="text-center mb-8">
+            <p className="text-gray-600 mb-6">Trusted by thousands of contractors nationwide</p>
+            <div className="flex flex-wrap justify-center items-center gap-8 opacity-50">
+              <div className="w-24 h-12 bg-gray-200 rounded flex items-center justify-center text-xs font-semibold text-gray-500">LOGO</div>
+              <div className="w-24 h-12 bg-gray-200 rounded flex items-center justify-center text-xs font-semibold text-gray-500">LOGO</div>
+              <div className="w-24 h-12 bg-gray-200 rounded flex items-center justify-center text-xs font-semibold text-gray-500">LOGO</div>
+              <div className="w-24 h-12 bg-gray-200 rounded flex items-center justify-center text-xs font-semibold text-gray-500">LOGO</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <AnimatedStats />
+
+      <TestimonialsCarousel />
+
+      <div className="py-20 bg-white">
+        <div className="container mx-auto px-4">
+          <h2 className="text-4xl font-bold text-center mb-16">How It Works</h2>
+          
+          <div className="max-w-6xl mx-auto">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-12">
+              <div className="text-center relative">
+                <div className="w-24 h-24 bg-gradient-to-r from-blue-500 to-indigo-600 text-white rounded-full flex items-center justify-center text-3xl font-bold mx-auto mb-6 shadow-lg">
+                  <span>📝</span>
+                </div>
+                <h3 className="text-2xl font-bold mb-4">Sign Up & Create Profile</h3>
+                <p className="text-gray-600 text-lg">Set up your contractor profile with your services, coverage areas, and preferences in minutes.</p>
+                <div className="hidden md:block absolute top-12 left-full w-12 h-0.5 bg-gray-300 transform -translate-y-1/2"></div>
+              </div>
+              
+              <div className="text-center relative">
+                <div className="w-24 h-24 bg-gradient-to-r from-blue-500 to-indigo-600 text-white rounded-full flex items-center justify-center text-3xl font-bold mx-auto mb-6 shadow-lg">
+                  <span>🤝</span>
+                </div>
+                <h3 className="text-2xl font-bold mb-4">Get Matched With Exclusive Leads</h3>
+                <p className="text-gray-600 text-lg">Our AI matches you with high-quality leads in your area. No bidding wars - each lead goes to one contractor.</p>
+                <div className="hidden md:block absolute top-12 left-full w-12 h-0.5 bg-gray-300 transform -translate-y-1/2"></div>
+              </div>
+              
+              <div className="text-center">
+                <div className="w-24 h-24 bg-gradient-to-r from-blue-500 to-indigo-600 text-white rounded-full flex items-center justify-center text-3xl font-bold mx-auto mb-6 shadow-lg">
+                  <span>📈</span>
+                </div>
+                <h3 className="text-2xl font-bold mb-4">Close More Jobs & Grow</h3>
+                <p className="text-gray-600 text-lg">Focus on what you do best - completing quality work and growing your business with consistent leads.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div className="py-20 bg-gradient-to-br from-blue-50 to-indigo-50">
+        <div className="container mx-auto px-4">
+          <h2 className="text-4xl font-bold text-center mb-16">Why Choose Custom Lead Match</h2>
+          
+          <div className="max-w-6xl mx-auto grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+            <Card className="border-0 shadow-lg hover:shadow-xl transition-shadow duration-300">
+              <CardContent className="p-8 text-center">
+                <div className="w-16 h-16 bg-gradient-to-r from-green-400 to-green-600 text-white rounded-full flex items-center justify-center text-2xl font-bold mx-auto mb-6">
+                  🎯
+                </div>
+                <h3 className="text-xl font-bold mb-4">AI-Powered Lead Matching</h3>
+                <p className="text-gray-600">Our smart algorithm matches you with leads that fit your expertise and location perfectly.</p>
+              </CardContent>
+            </Card>
+            
+            <Card className="border-0 shadow-lg hover:shadow-xl transition-shadow duration-300">
+              <CardContent className="p-8 text-center">
+                <div className="w-16 h-16 bg-gradient-to-r from-blue-400 to-blue-600 text-white rounded-full flex items-center justify-center text-2xl font-bold mx-auto mb-6">
+                  🛡️
+                </div>
+                <h3 className="text-xl font-bold mb-4">Exclusive Leads Only</h3>
+                <p className="text-gray-600">No bidding wars. Each lead is sold to only one contractor, giving you the best chance to close.</p>
+              </CardContent>
+            </Card>
+            
+            <Card className="border-0 shadow-lg hover:shadow-xl transition-shadow duration-300">
+              <CardContent className="p-8 text-center">
+                <div className="w-16 h-16 bg-gradient-to-r from-purple-400 to-purple-600 text-white rounded-full flex items-center justify-center text-2xl font-bold mx-auto mb-6">
+                  📱
+                </div>
+                <h3 className="text-xl font-bold mb-4">Direct Customer Contact</h3>
+                <p className="text-gray-600">Get customer contact info immediately. No middleman, no delays - just direct communication.</p>
+              </CardContent>
+            </Card>
+            
+            <Card className="border-0 shadow-lg hover:shadow-xl transition-shadow duration-300">
+              <CardContent className="p-8 text-center">
+                <div className="w-16 h-16 bg-gradient-to-r from-yellow-400 to-yellow-600 text-white rounded-full flex items-center justify-center text-2xl font-bold mx-auto mb-6">
+                  ⚡
+                </div>
+                <h3 className="text-xl font-bold mb-4">Faster Close Times</h3>
+                <p className="text-gray-600">Get leads in real-time with instant notifications, so you can respond within minutes.</p>
+              </CardContent>
+            </Card>
+            
+            <Card className="border-0 shadow-lg hover:shadow-xl transition-shadow duration-300">
+              <CardContent className="p-8 text-center">
+                <div className="w-16 h-16 bg-gradient-to-r from-red-400 to-red-600 text-white rounded-full flex items-center justify-center text-2xl font-bold mx-auto mb-6">
+                  🎛️
+                </div>
+                <h3 className="text-xl font-bold mb-4">Job-Type & Location Filters</h3>
+                <p className="text-gray-600">Set your preferences for job types, budget ranges, and service areas to get perfect matches.</p>
+              </CardContent>
+            </Card>
+            
+            <Card className="border-0 shadow-lg hover:shadow-xl transition-shadow duration-300">
+              <CardContent className="p-8 text-center">
+                <div className="w-16 h-16 bg-gradient-to-r from-indigo-400 to-indigo-600 text-white rounded-full flex items-center justify-center text-2xl font-bold mx-auto mb-6">
+                  📊
+                </div>
+                <h3 className="text-xl font-bold mb-4">Mobile-Friendly Dashboard</h3>
+                <p className="text-gray-600">Manage your leads, track performance, and update your profile from anywhere with our mobile app.</p>
+              </CardContent>
+            </Card>
+          </div>
+        </div>
+      </div>
+
+      <div className="py-20 bg-white">
+        <div className="container mx-auto px-4">
+          <h2 className="text-4xl font-bold text-center mb-16">How We Compare</h2>
+          
+          <div className="max-w-6xl mx-auto overflow-x-auto">
+            <table className="w-full border-collapse bg-white shadow-xl rounded-lg overflow-hidden">
+              <thead>
+                <tr className="bg-gradient-to-r from-blue-600 to-indigo-600 text-white">
+                  <th className="p-4 text-left font-bold">Feature</th>
+                  <th className="p-4 text-center font-bold">Custom Lead Match</th>
+                  <th className="p-4 text-center font-bold">Angi</th>
+                  <th className="p-4 text-center font-bold">HomeAdvisor</th>
+                  <th className="p-4 text-center font-bold">Thumbtack</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr className="border-b border-gray-200 hover:bg-gray-50">
+                  <td className="p-4 font-semibold">Exclusive Leads</td>
+                  <td className="p-4 text-center"><span className="text-green-500 text-2xl">✓</span></td>
+                  <td className="p-4 text-center"><span className="text-red-500 text-2xl">✗</span></td>
+                  <td className="p-4 text-center"><span className="text-red-500 text-2xl">✗</span></td>
+                  <td className="p-4 text-center"><span className="text-red-500 text-2xl">✗</span></td>
+                </tr>
+                <tr className="border-b border-gray-200 hover:bg-gray-50">
+                  <td className="p-4 font-semibold">No Monthly Fees</td>
+                  <td className="p-4 text-center"><span className="text-green-500 text-2xl">✓</span></td>
+                  <td className="p-4 text-center"><span className="text-red-500 text-2xl">✗</span></td>
+                  <td className="p-4 text-center"><span className="text-red-500 text-2xl">✗</span></td>
+                  <td className="p-4 text-center"><span className="text-green-500 text-2xl">✓</span></td>
+                </tr>
+                <tr className="border-b border-gray-200 hover:bg-gray-50">
+                  <td className="p-4 font-semibold">AI Lead Scoring</td>
+                  <td className="p-4 text-center"><span className="text-green-500 text-2xl">✓</span></td>
+                  <td className="p-4 text-center"><span className="text-red-500 text-2xl">✗</span></td>
+                  <td className="p-4 text-center"><span className="text-red-500 text-2xl">✗</span></td>
+                  <td className="p-4 text-center"><span className="text-red-500 text-2xl">✗</span></td>
+                </tr>
+                <tr className="border-b border-gray-200 hover:bg-gray-50">
+                  <td className="p-4 font-semibold">Real-Time Notifications</td>
+                  <td className="p-4 text-center"><span className="text-green-500 text-2xl">✓</span></td>
+                  <td className="p-4 text-center"><span className="text-green-500 text-2xl">✓</span></td>
+                  <td className="p-4 text-center"><span className="text-green-500 text-2xl">✓</span></td>
+                  <td className="p-4 text-center"><span className="text-green-500 text-2xl">✓</span></td>
+                </tr>
+                <tr className="border-b border-gray-200 hover:bg-gray-50">
+                  <td className="p-4 font-semibold">Direct Customer Contact</td>
+                  <td className="p-4 text-center"><span className="text-green-500 text-2xl">✓</span></td>
+                  <td className="p-4 text-center"><span className="text-yellow-500 text-2xl">~</span></td>
+                  <td className="p-4 text-center"><span className="text-yellow-500 text-2xl">~</span></td>
+                  <td className="p-4 text-center"><span className="text-green-500 text-2xl">✓</span></td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <div className="py-20 bg-gradient-to-br from-gray-900 to-blue-900 text-white">
+        <div className="container mx-auto px-4 text-center">
+          <h2 className="text-4xl font-bold mb-8">See How It Works</h2>
+          <p className="text-xl mb-12 max-w-2xl mx-auto opacity-90">
+            Watch how contractors like you are growing their business with Custom Lead Match
           </p>
           
-          {/* Hero CTAs */}
+          <div className="max-w-4xl mx-auto">
+            <div className="relative bg-gray-800 rounded-lg overflow-hidden shadow-2xl aspect-video flex items-center justify-center">
+              <div className="text-center">
+                <div className="w-20 h-20 bg-white bg-opacity-20 rounded-full flex items-center justify-center mx-auto mb-4">
+                  <div className="w-0 h-0 border-l-8 border-l-white border-t-6 border-t-transparent border-b-6 border-b-transparent ml-1"></div>
+                </div>
+                <p className="text-lg opacity-75">Video Coming Soon</p>
+                <p className="text-sm opacity-50">45-60 second explainer video</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div className="py-20 bg-white">
+        <div className="container mx-auto px-4">
+          <div className="max-w-6xl mx-auto">
+            <div className="text-center mb-16">
+              <h2 className="text-4xl font-bold mb-6">Predictive Lead Scoring – Powered by AI</h2>
+              <p className="text-xl text-gray-600 max-w-3xl mx-auto">
+                Our AI rates each lead on how well it fits your expertise and service area — so you spend time on jobs you'll actually win.
+              </p>
+            </div>
+            
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
+              <div className="text-center">
+                <div className="relative w-64 h-64 mx-auto mb-8">
+                  <svg className="w-full h-full transform -rotate-90" viewBox="0 0 100 100">
+                    <circle cx="50" cy="50" r="45" fill="none" stroke="#e5e7eb" strokeWidth="8"/>
+                    <circle 
+                      cx="50" 
+                      cy="50" 
+                      r="45" 
+                      fill="none" 
+                      stroke="url(#gradient)" 
+                      strokeWidth="8"
+                      strokeDasharray="283"
+                      strokeDashoffset="85"
+                      className="transition-all duration-1000"
+                    />
+                    <defs>
+                      <linearGradient id="gradient" x1="0%" y1="0%" x2="100%" y2="0%">
+                        <stop offset="0%" stopColor="#ef4444" />
+                        <stop offset="50%" stopColor="#f59e0b" />
+                        <stop offset="100%" stopColor="#10b981" />
+                      </linearGradient>
+                    </defs>
+                  </svg>
+                  <div className="absolute inset-0 flex items-center justify-center">
+                    <div className="text-center">
+                      <div className="text-4xl font-bold text-gray-900">85</div>
+                      <div className="text-sm text-gray-600">Lead Score</div>
+                    </div>
+                  </div>
+                </div>
+                <p className="text-gray-600">Circular gauge graphic showing 0–100 scoring</p>
+              </div>
+              
+              <div className="space-y-8">
+                <div className="flex items-start space-x-4">
+                  <div className="w-12 h-12 bg-green-500 text-white rounded-full flex items-center justify-center flex-shrink-0">
+                    <CheckCircle className="w-6 h-6" />
+                  </div>
+                  <div>
+                    <h3 className="text-xl font-bold mb-2">Work Smarter, Not Harder</h3>
+                    <p className="text-gray-600">Our AI instantly analyzes every incoming lead to predict its likelihood of becoming a paying job.</p>
+                  </div>
+                </div>
+                
+                <div className="flex items-start space-x-4">
+                  <div className="w-12 h-12 bg-blue-500 text-white rounded-full flex items-center justify-center flex-shrink-0">
+                    <Zap className="w-6 h-6" />
+                  </div>
+                  <div>
+                    <h3 className="text-xl font-bold mb-2">See the Score, Make the Call</h3>
+                    <p className="text-gray-600">Each lead is tagged as Hot, Warm, or Cold so you know exactly where to focus your time.</p>
+                  </div>
+                </div>
+                
+                <div className="flex items-start space-x-4">
+                  <div className="w-12 h-12 bg-purple-500 text-white rounded-full flex items-center justify-center flex-shrink-0">
+                    <DollarSign className="w-6 h-6" />
+                  </div>
+                  <div>
+                    <h3 className="text-xl font-bold mb-2">Maximize ROI</h3>
+                    <p className="text-gray-600">Spend less time chasing low-quality jobs and more time closing the high-value work.</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div className="py-20 bg-gradient-to-r from-blue-600 to-indigo-600 text-white">
+        <div className="container mx-auto px-4 text-center">
+          <h2 className="text-4xl font-bold mb-6">Your Next Job Is Waiting — Claim It Today</h2>
+          <p className="text-xl mb-8 max-w-2xl mx-auto opacity-90">
+            Join thousands of contractors who are growing their business with exclusive, high-quality leads.
+          </p>
+          
           <div className="flex flex-col sm:flex-row gap-4 justify-center items-center mb-8">
             <Button 
               size="lg"
               onClick={() => document.getElementById('signup-form')?.scrollIntoView({ behavior: 'smooth' })}
-              aria-label="Contractor Sign Up"
-              className="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white px-8 py-4 text-xl font-bold transition-all duration-200 transform hover:scale-105"
+              className="bg-white text-blue-600 hover:bg-gray-100 px-8 py-4 text-xl font-bold transition-all duration-300 transform hover:scale-105 shadow-lg"
             >
-              Get Leads Now
+              Sign Up Free
             </Button>
             <Button 
               size="lg"
               variant="outline"
               onClick={() => window.location.href = '/contractor-login'}
-              aria-label="Contractor Login"
-              className="px-8 py-4 text-lg font-semibold hover:bg-gray-50"
+              className="border-2 border-white text-white hover:bg-white hover:text-blue-600 px-8 py-4 text-xl font-bold transition-all duration-300"
             >
               Access Dashboard
             </Button>
           </div>
           
-          <div className="mb-8 p-4 bg-green-50 border-2 border-green-200 rounded-lg max-w-2xl mx-auto">
-            <h3 className="text-lg font-semibold text-green-800 mb-2 text-center">🔥 Lead Quality Guarantee</h3>
-            <p className="text-green-700 text-center mb-3">
-              Every lead is manually and programmatically screened for validity before being sent to you. We reject spam, invalid numbers, duplicates, and junk leads—so you only get high-quality opportunities that convert better.
-            </p>
-            <div className="text-sm text-green-600 space-y-1">
-              <div>✅ All phone numbers are screened for validity before delivery</div>
-              <div>✅ Email format validation and deliverability checks</div>
-              <div>✅ Duplicate detection (30-day window)</div>
-              <div>✅ Content filtering for spam and junk submissions</div>
-              <div>✅ IP rate limiting to prevent abuse and fake leads</div>
-              <div>✅ Each lead is sold only once - exclusive to you</div>
-            </div>
-            <div className="mt-4 p-3 bg-blue-50 border border-blue-200 rounded">
-              <h4 className="font-semibold text-blue-800 mb-2">💰 Why Clean Data Matters:</h4>
-              <div className="text-sm text-blue-700 space-y-1">
-                <div>• Higher conversion rates from valid contacts</div>
-                <div>• Less time wasted on bad leads</div>
-                <div>• Better ROI on your lead investment</div>
-                <div>• Direct, actionable customer contact information</div>
-              </div>
-            </div>
-          </div>
+          <p className="text-sm opacity-75">
+            Questions? Call us at <span className="font-semibold">(555) 123-4567</span>
+          </p>
+        </div>
+      </div>
+      <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12" id="signup-form">
+        <div className="text-center mb-12">
+          <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
+            Ready to Get Started?
+          </h2>
+          <p className="text-xl text-gray-600 max-w-2xl mx-auto">
+            Join thousands of contractors who are growing their business with exclusive, high-quality leads.
+          </p>
         </div>
 
         {/* About Us Section */}
