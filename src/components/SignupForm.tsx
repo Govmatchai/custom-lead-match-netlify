@@ -86,7 +86,7 @@ export const SignupForm = ({ prefilledData }: SignupFormProps) => {
       if (response.ok) {
         if (result.contractor_id && result.session_token) {
           localStorage.setItem("contractor_id", result.contractor_id);
-          localStorage.setItem("session_token", result.session_token);
+          localStorage.setItem("contractor_session_token", result.session_token);
         }
         
         if (result.redirect_url) {
