@@ -28,6 +28,8 @@ const ContractorSignup = () => {
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [successMessage, setSuccessMessage] = useState('')
   const [errorMessage, setErrorMessage] = useState('')
+  const [showMobileMenu, setShowMobileMenu] = useState(false)
+  const [stickyCtaDismissed, setStickyCtaDismissed] = useState(localStorage.getItem('dismiss_sticky_signup') === 'true')
 
   const handleInputChange = (field: string, value: string | boolean) => {
     console.log(`Field ${field} changed to:`, value)
@@ -228,6 +230,63 @@ const ContractorSignup = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-white via-blue-50 to-indigo-50 font-['Inter',_'Roboto',_'Open_Sans',_sans-serif]">
+      {/* Navigation Header */}
+      <nav className="bg-white border-b border-gray-200 sticky top-0 z-50">
+        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex justify-between items-center h-16">
+            <div className="flex items-center">
+              <Logo className="max-w-xs" width={150} height={45} />
+            </div>
+            <div className="hidden md:flex items-center space-x-4">
+              <Button 
+                variant="outline" 
+                onClick={() => window.location.href = '/contractor-login'}
+                aria-label="Contractor Login"
+                className="hover:bg-gray-50"
+              >
+                Access Dashboard
+              </Button>
+              <Button 
+                onClick={() => document.getElementById('signup-form')?.scrollIntoView({ behavior: 'smooth' })}
+                aria-label="Contractor Sign Up"
+                className="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white transition-all duration-200 transform hover:scale-102"
+              >
+                Get Leads Now
+              </Button>
+            </div>
+            <div className="md:hidden">
+              <Button 
+                variant="outline" 
+                size="sm"
+                onClick={() => setShowMobileMenu(!showMobileMenu)}
+              >
+                Menu
+              </Button>
+            </div>
+          </div>
+          {showMobileMenu && (
+            <div className="md:hidden py-4 border-t border-gray-200">
+              <div className="space-y-2">
+                <Button 
+                  variant="outline" 
+                  className="w-full justify-center"
+                  onClick={() => window.location.href = '/contractor-login'}
+                  aria-label="Contractor Login"
+                >
+                  Access Dashboard
+                </Button>
+                <Button 
+                  className="w-full justify-center bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white"
+                  onClick={() => document.getElementById('signup-form')?.scrollIntoView({ behavior: 'smooth' })}
+                  aria-label="Contractor Sign Up"
+                >
+                  Get Leads Now
+                </Button>
+              </div>
+            </div>
+          )}
+        </div>
+      </nav>
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
         <div className="text-center mb-12">
           <div className="flex justify-center mb-6">
@@ -240,6 +299,27 @@ const ContractorSignup = () => {
             Join thousands of contractors who get exclusive leads delivered directly to their phone. 
             No monthly fees, no contracts — just real customers ready to hire.
           </p>
+          
+          {/* Hero CTAs */}
+          <div className="flex flex-col sm:flex-row gap-4 justify-center items-center mb-8">
+            <Button 
+              size="lg"
+              onClick={() => document.getElementById('signup-form')?.scrollIntoView({ behavior: 'smooth' })}
+              aria-label="Contractor Sign Up"
+              className="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white px-8 py-4 text-xl font-bold transition-all duration-200 transform hover:scale-105"
+            >
+              Get Leads Now
+            </Button>
+            <Button 
+              size="lg"
+              variant="outline"
+              onClick={() => window.location.href = '/contractor-login'}
+              aria-label="Contractor Login"
+              className="px-8 py-4 text-lg font-semibold hover:bg-gray-50"
+            >
+              Access Dashboard
+            </Button>
+          </div>
           
           <div className="mb-8 p-4 bg-green-50 border-2 border-green-200 rounded-lg max-w-2xl mx-auto">
             <h3 className="text-lg font-semibold text-green-800 mb-2 text-center">🔥 Lead Quality Guarantee</h3>
@@ -371,6 +451,109 @@ const ContractorSignup = () => {
           </div>
         </div>
 
+        {/* Predictive Lead Scoring Section */}
+        <div className="mb-16 bg-gradient-to-r from-blue-50 to-white p-8 rounded-xl">
+          <div className="max-w-4xl mx-auto">
+            <h3 className="text-3xl font-bold text-center text-gray-900 mb-4">
+              Predictive Lead Scoring – Powered by AI
+            </h3>
+            <p className="text-xl text-center text-gray-700 mb-8 max-w-2xl mx-auto">
+              "Stop chasing dead-end leads. Focus on the ones that close."
+            </p>
+            
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
+              {/* Left: Mock Dashboard Visual */}
+              <div className="bg-white rounded-lg shadow-lg p-6 border">
+                <div className="mb-4">
+                  <h4 className="font-semibold text-gray-900 mb-3">Available Leads</h4>
+                  <div className="space-y-3">
+                    <div className="flex items-center justify-between p-3 bg-gray-50 rounded">
+                      <div>
+                        <span className="font-medium">Kitchen Renovation</span>
+                        <p className="text-sm text-gray-600">ZIP: 12345</p>
+                      </div>
+                      <div className="flex items-center space-x-2">
+                        <span className="text-lg font-bold">85</span>
+                        <span className="px-2 py-1 bg-red-100 text-red-800 text-xs font-semibold rounded-full" style={{backgroundColor: '#28a745', color: 'white'}}>
+                          🔥 Hot
+                        </span>
+                      </div>
+                    </div>
+                    <div className="flex items-center justify-between p-3 bg-gray-50 rounded">
+                      <div>
+                        <span className="font-medium">Bathroom Repair</span>
+                        <p className="text-sm text-gray-600">ZIP: 12346</p>
+                      </div>
+                      <div className="flex items-center space-x-2">
+                        <span className="text-lg font-bold">65</span>
+                        <span className="px-2 py-1 text-xs font-semibold rounded-full" style={{backgroundColor: '#ffc107', color: '#000'}}>
+                          👍 Warm
+                        </span>
+                      </div>
+                    </div>
+                    <div className="flex items-center justify-between p-3 bg-gray-50 rounded">
+                      <div>
+                        <span className="font-medium">General Maintenance</span>
+                        <p className="text-sm text-gray-600">ZIP: 12347</p>
+                      </div>
+                      <div className="flex items-center space-x-2">
+                        <span className="text-lg font-bold">25</span>
+                        <span className="px-2 py-1 text-xs font-semibold rounded-full" style={{backgroundColor: '#dc3545', color: 'white'}}>
+                          💤 Cold
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                <p className="text-xs text-gray-500 text-center">
+                  Contractor dashboard showing AI Predictive Lead Scores for incoming leads.
+                </p>
+              </div>
+              
+              {/* Right: Benefits + CTA */}
+              <div>
+                <div className="space-y-6 mb-8">
+                  <div className="flex items-start space-x-4">
+                    <div className="w-8 h-8 bg-blue-500 text-white rounded-full flex items-center justify-center flex-shrink-0 mt-1">
+                      <CheckCircle className="w-5 h-5" />
+                    </div>
+                    <div>
+                      <h4 className="font-bold text-lg mb-2">Work Smarter, Not Harder</h4>
+                      <p className="text-gray-700">Our AI instantly analyzes every incoming lead to predict its likelihood of becoming a paying job.</p>
+                    </div>
+                  </div>
+                  <div className="flex items-start space-x-4">
+                    <div className="w-8 h-8 bg-blue-500 text-white rounded-full flex items-center justify-center flex-shrink-0 mt-1">
+                      <Zap className="w-5 h-5" />
+                    </div>
+                    <div>
+                      <h4 className="font-bold text-lg mb-2">See the Score, Make the Call</h4>
+                      <p className="text-gray-700">Each lead is tagged as Hot, Warm, or Cold so you know exactly where to focus your time.</p>
+                    </div>
+                  </div>
+                  <div className="flex items-start space-x-4">
+                    <div className="w-8 h-8 bg-blue-500 text-white rounded-full flex items-center justify-center flex-shrink-0 mt-1">
+                      <DollarSign className="w-5 h-5" />
+                    </div>
+                    <div>
+                      <h4 className="font-bold text-lg mb-2">Maximize ROI</h4>
+                      <p className="text-gray-700">Spend less time chasing low-quality jobs and more time closing the high-value work.</p>
+                    </div>
+                  </div>
+                </div>
+                
+                <Button 
+                  size="lg"
+                  onClick={() => document.getElementById('signup-form')?.scrollIntoView({ behavior: 'smooth' })}
+                  className="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white px-8 py-4 text-xl font-bold transition-all duration-200 transform hover:scale-105"
+                >
+                  Get Leads Now
+                </Button>
+              </div>
+            </div>
+          </div>
+        </div>
+
         <div className="mb-12 bg-gray-50 p-8 rounded-lg">
           <h3 className="text-2xl font-bold text-center text-gray-900 mb-6">
             Why Contractors Choose Custom Lead Match
@@ -385,7 +568,7 @@ const ContractorSignup = () => {
           </div>
         </div>
 
-        <Card className="max-w-2xl mx-auto border-2 shadow-lg">
+        <Card id="signup-form" className="max-w-2xl mx-auto border-2 shadow-lg">
           <CardHeader>
             <CardTitle className="text-2xl text-center">Create My Free Account</CardTitle>
             <CardDescription className="text-center">
@@ -534,6 +717,33 @@ const ContractorSignup = () => {
           </CardContent>
         </Card>
       </div>
+      
+      {/* Sticky Mobile CTA */}
+      {!stickyCtaDismissed && (
+        <div className="fixed bottom-0 left-0 right-0 z-50 md:hidden bg-white border-t border-gray-200 p-4 shadow-lg">
+          <div className="flex items-center justify-between">
+            <Button 
+              className="flex-1 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-bold py-3 text-lg"
+              onClick={() => document.getElementById('signup-form')?.scrollIntoView({ behavior: 'smooth' })}
+              aria-label="Contractor Sign Up"
+            >
+              Get Leads Now
+            </Button>
+            <Button 
+              variant="ghost" 
+              size="sm"
+              onClick={() => {
+                localStorage.setItem('dismiss_sticky_signup', 'true')
+                setStickyCtaDismissed(true)
+              }}
+              className="ml-2 text-gray-500 hover:text-gray-700"
+            >
+              ✕
+            </Button>
+          </div>
+        </div>
+      )}
+      
       <Footer />
     </div>
   )
