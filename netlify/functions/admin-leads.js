@@ -34,7 +34,7 @@ export const handler = async (event, context) => {
   try {
     const { data: leads, error } = await supabase
       .from('leads')
-      .select('*')
+      .select('*, lead_score, lead_score_band, lead_score_reason, lead_score_updated_at')
       .order('created_at', { ascending: false })
 
     if (error) {

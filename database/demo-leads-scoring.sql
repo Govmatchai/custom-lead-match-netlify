@@ -1,0 +1,16 @@
+INSERT INTO leads (customer_name, service_category, sub_service, zip_code, phone, email, description, status, validation_flags) VALUES
+('High Score Lead', 'Home Services', 'Plumbing', '12345', '555-0301', 'high@example.com', 'Emergency pipe burst, need immediate help!', 'valid', '{"phone_valid": true, "email_format_valid": true, "is_duplicate": false}'),
+('Medium Score Lead', 'Home Services', 'HVAC', '12346', '555-0302', 'medium@example.com', 'AC not working, need repair soon', 'valid', '{"phone_valid": true, "email_format_valid": true, "is_duplicate": false}'),
+('Low Score Lead', 'Auto', 'Auto Repair', '12347', '555-0303', 'low@badexample.com', 'Car needs fixing', 'valid', '{"phone_valid": false, "email_format_valid": true, "is_duplicate": true}'),
+('Another High Lead', 'Legal', 'Personal Injury', '12345', '555-0304', 'legal@example.com', 'Car accident case, need representation urgently', 'valid', '{"phone_valid": true, "email_format_valid": true, "is_duplicate": false}'),
+('Weekend Lead', 'Home Services', 'Electrical', '12346', '555-0305', 'weekend@example.com', 'Power outage issue', 'valid', '{"phone_valid": true, "email_format_valid": true, "is_duplicate": false}'),
+('Business Hours Lead', 'Home Services', 'Plumbing', '12345', '555-0306', 'business@example.com', 'Toilet repair needed', 'valid', '{"phone_valid": true, "email_format_valid": true, "is_duplicate": false}'),
+('Duplicate Risk Lead', 'Home Services', 'HVAC', '12346', '555-0307', 'duplicate@example.com', 'AC repair needed', 'valid', '{"phone_valid": true, "email_format_valid": true, "is_duplicate": true}'),
+('Invalid Phone Lead', 'Legal', 'Family Law', '12345', '555-0308', 'invalidphone@example.com', 'Divorce case consultation', 'valid', '{"phone_valid": false, "email_format_valid": true, "is_duplicate": false}'),
+('Perfect Lead', 'Home Services', 'Roofing', '12345', '555-0309', 'perfect@example.com', 'Roof leak repair urgent', 'valid', '{"phone_valid": true, "email_format_valid": true, "is_duplicate": false}'),
+('Low Category Lead', 'Finance', 'Tax Services', '12347', '555-0310', 'finance@example.com', 'Tax preparation help', 'valid', '{"phone_valid": true, "email_format_valid": true, "is_duplicate": false}'),
+('Evening Lead', 'Home Services', 'Electrical', '12346', '555-0311', 'evening@example.com', 'Electrical outlet not working', 'valid', '{"phone_valid": true, "email_format_valid": true, "is_duplicate": false}'),
+('Temp Email Lead', 'Home Services', 'Plumbing', '12345', '555-0312', 'user@tempmail.com', 'Sink clogged', 'valid', '{"phone_valid": true, "email_format_valid": true, "is_duplicate": false}'),
+('Premium Lead', 'Legal', 'Business Law', '12345', '555-0313', 'premium@example.com', 'Contract review needed urgently', 'valid', '{"phone_valid": true, "email_format_valid": true, "is_duplicate": false}'),
+('Standard Lead', 'Home Services', 'Landscaping', '12346', '555-0314', 'standard@example.com', 'Lawn maintenance service', 'valid', '{"phone_valid": true, "email_format_valid": true, "is_duplicate": false}'),
+('Mixed Quality Lead', 'Home Services', 'Painting', '12347', '555-0315', 'mixed@example.com', 'Interior painting job', 'valid', '{"phone_valid": false, "email_format_valid": true, "is_duplicate": false}');

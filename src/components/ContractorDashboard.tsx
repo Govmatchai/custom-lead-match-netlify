@@ -1,11 +1,15 @@
 import { useState, useEffect } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
-import { CreditCard, MapPin, Phone, Calendar, User, Building, Eye, ShoppingCart, Edit } from 'lucide-react'
+import { CreditCard, MapPin, Phone, Calendar, User, Building, Eye, ShoppingCart, Edit, Info, ArrowUpDown } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog'
+import { TooltipProvider, Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
 import { EditProfileModal } from './EditProfileModal'
 import { Logo } from '@/components/ui/Logo'
+import { ScoreBadge } from './ScoreBadge'
+import { PredictiveScoringHelpModal } from './PredictiveScoringHelpModal'
+import { PredictiveScoringBanner } from './PredictiveScoringBanner'
 
 interface Lead {
   id: string
@@ -21,6 +25,10 @@ interface Lead {
   claimed_at?: string
   is_archived?: boolean
   created_at: string
+  lead_score?: number
+  lead_score_band?: 'A' | 'B' | 'C'
+  lead_score_reason?: string
+  lead_score_updated_at?: string
 }
 
 interface Contractor {
@@ -112,6 +120,9 @@ const ContractorDashboard = () => {
   const [totalPages, setTotalPages] = useState(1)
   const [totalRecords, setTotalRecords] = useState(0)
   const [categoryPricing, setCategoryPricing] = useState<{ [key: string]: number }>({})
+  const [sortBy, setSortBy] = useState<'date' | 'score'>('date')
+  const [showScoringHelp, setShowScoringHelp] = useState(false)
+  const [scoreBandFilter, setScoreBandFilter] = useState<'all' | 'A' | 'B' | 'C'>('all')
 
   useEffect(() => {
     console.log('ContractorDashboard useEffect triggered')
@@ -448,6 +459,28 @@ const ContractorDashboard = () => {
     setTimeout(() => setSuccessMessage(''), 5000)
   }
 
+  const sortLeads = (leads: Lead[]) => {
+    let filtered = leads
+    if (scoreBandFilter !== 'all') {
+      filtered = leads.filter(lead => lead.lead_score_band === scoreBandFilter)
+    }
+    
+    if (sortBy === 'score') {
+      return [...filtered].sort((a, b) => (b.lead_score || 0) - (a.lead_score || 0))
+    }
+    return [...filtered].sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
+  }
+
+  const handleSortByScore = () => {
+    setSortBy('score')
+  }
+
+  const getScoreLabel = (score: number): 'hot' | 'warm' | 'cold' => {
+    if (score >= 80) return 'hot'
+    if (score >= 50) return 'warm'
+    return 'cold'
+  }
+
   const fetchPurchaseHistory = async (page = 1) => {
     const sessionToken = localStorage.getItem('contractor_session_token')
     
@@ -750,11 +783,63 @@ const ContractorDashboard = () => {
           <CardContent>
             {activeTab === 'available' && (
               <div>
-                {available_leads.length === 0 ? (
-                  <p className="text-gray-500 text-center py-8">No available leads matching your services and location.</p>
+                <div className="flex gap-4 mb-4">
+                  <Button
+                    variant={sortBy === 'score' ? 'default' : 'outline'}
+                    size="sm"
+                    onClick={handleSortByScore}
+                    className="flex items-center gap-2"
+                  >
+                    <ArrowUpDown className="h-4 w-4" />
+                    Sort by Score
+                  </Button>
+                  <Button
+                    variant={sortBy === 'date' ? 'default' : 'outline'}
+                    size="sm"
+                    onClick={() => setSortBy('date')}
+                    className="flex items-center gap-2"
+                  >
+                    <Calendar className="h-4 w-4" />
+                    Sort by Date
+                  </Button>
+                  <select
+                    value={scoreBandFilter}
+                    onChange={(e) => setScoreBandFilter(e.target.value as 'all' | 'A' | 'B' | 'C')}
+                    className="px-3 py-1 border rounded-md text-sm"
+                  >
+                    <option value="all">All Bands</option>
+                    <option value="A">A Band (80-100)</option>
+                    <option value="B">B Band (60-79)</option>
+                    <option value="C">C Band (0-59)</option>
+                  </select>
+                  <TooltipProvider>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => setShowScoringHelp(true)}
+                        >
+                          <Info className="h-4 w-4" />
+                        </Button>
+                      </TooltipTrigger>
+                      <TooltipContent>
+                        <p>Learn about Predictive Lead Scoring</p>
+                      </TooltipContent>
+                    </Tooltip>
+                  </TooltipProvider>
+                </div>
+                <PredictiveScoringBanner />
+                {sortLeads(available_leads).length === 0 ? (
+                  <p className="text-gray-500 text-center py-8">
+                    {scoreBandFilter !== 'all' 
+                      ? `No ${scoreBandFilter} band leads available at this time.`
+                      : 'No available leads matching your services and location.'
+                    }
+                  </p>
                 ) : (
                   <div className="space-y-4">
-                    {available_leads.map((lead) => {
+                    {sortLeads(available_leads).map((lead) => {
                       const leadPrice = categoryPricing?.[lead.service_category] || 20.00
                       const walletBalance = parseFloat(dashboardData?.wallet_balance || '0')
                       const canPurchase = walletBalance >= leadPrice
@@ -766,6 +851,14 @@ const ContractorDashboard = () => {
                               <User className="w-4 h-4 text-gray-500" />
                               <span className="font-medium">Customer:</span>
                               <span>New Lead</span>
+                              {lead.lead_score !== undefined && (
+                                <ScoreBadge 
+                                  score={lead.lead_score} 
+                                  label={getScoreLabel(lead.lead_score)}
+                                  showTooltip={true}
+                                  reason={lead.lead_score_reason}
+                                />
+                              )}
                             </div>
                             <div className="flex items-center space-x-2">
                               <MapPin className="w-4 h-4 text-gray-500" />
@@ -1480,6 +1573,11 @@ const ContractorDashboard = () => {
           onClose={() => setIsEditProfileOpen(false)}
           contractor={contractor}
           onSuccess={handleProfileUpdateSuccess}
+        />
+        
+        <PredictiveScoringHelpModal
+          isOpen={showScoringHelp}
+          onClose={() => setShowScoringHelp(false)}
         />
       </div>
     </div>

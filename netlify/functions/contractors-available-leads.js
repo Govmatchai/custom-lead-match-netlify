@@ -83,14 +83,14 @@ export const handler = async (event, context) => {
 
     const { data: availableLeads, error: leadsError } = await supabase
       .from('leads')
-      .select('*')
+      .select('*, lead_score, lead_score_band, lead_score_reason, lead_score_updated_at')
       .eq('claimed', false)
       .eq('is_archived', false)
       .eq('status', 'valid')
       .ilike('service_category', contractor.industry.replace(/_/g, ' '))
       .ilike('sub_service', contractor.sub_service.replace(/_/g, ' '))
       .in('zip_code', contractor.zip_codes)
-      .order('created_at', { ascending: false })
+      .order('lead_score', { ascending: false })
 
     if (leadsError) {
       console.error('Available leads query error:', leadsError)

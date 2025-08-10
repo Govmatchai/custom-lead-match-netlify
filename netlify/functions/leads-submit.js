@@ -75,6 +75,19 @@ export const handler = async (event, context) => {
       .select()
       .single()
 
+    if (lead && status === 'valid') {
+      try {
+        const scoreResponse = await fetch(`${process.env.URL || 'https://customleadmatch.netlify.app'}/.netlify/functions/score-lead`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ lead_id: lead.id })
+        })
+        console.log('Lead scored:', lead.id)
+      } catch (scoreError) {
+        console.error('Scoring error:', scoreError)
+      }
+    }
+
     if (leadError) {
       console.error('Lead creation error:', leadError)
       

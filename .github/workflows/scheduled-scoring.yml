@@ -1,0 +1,21 @@
+name: Scheduled Lead Scoring
+
+on:
+  schedule:
+    - cron: '0 * * * *'  # Every hour
+  workflow_dispatch:  # Allow manual trigger
+
+jobs:
+  score-leads:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Trigger bulk scoring
+      run: |
+        curl -X POST https://customleadmatch.netlify.app/.netlify/functions/score-leads \
+          -H "Content-Type: application/json" \
+          -d '{}'
+    
+    - name: Log completion
+      run: |
+        echo "Scheduled lead scoring completed at $(date)"

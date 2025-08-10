@@ -44,6 +44,10 @@ interface Lead {
   claimed_at?: string
   is_archived: boolean
   created_at: string
+  lead_score?: number
+  lead_score_band?: string
+  lead_score_reason?: string
+  lead_score_updated_at?: string
 }
 
 interface Transaction {
