@@ -146,6 +146,9 @@ export const handler = async (event, context) => {
         claimed: true,
         claimed_by: contractor_id,
         claimed_at: new Date().toISOString(),
+        purchased_by: contractor_id,
+        purchased_at: new Date().toISOString(),
+        status: 'purchased',
         is_archived: true
       })
       .eq('id', lead_id)
@@ -186,7 +189,9 @@ export const handler = async (event, context) => {
       .insert({
         contractor_id,
         lead_id,
-        amount_paid: leadPrice
+        price_paid: leadPrice,
+        zip_code: lead.zip_code,
+        status: 'active'
       })
 
     if (purchasedLeadError) {

@@ -24,8 +24,38 @@ export const validateLead = async (leadData, clientIP) => {
 
   const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
   validationFlags.email_format_valid = emailRegex.test(leadData.email || '')
-  if (leadData.email && !validationFlags.email_format_valid) {
-    status = 'invalid'
+  
+  if (leadData.email) {
+    const emailDomain = leadData.email.split('@')[1]?.toLowerCase()
+    
+    const disposableEmailDomains = [
+      '10minutemail.com', 'tempmail.org', 'guerrillamail.com', 'mailinator.com',
+      'throwaway.email', 'temp-mail.org', 'yopmail.org', 'yopmail.com', 'maildrop.cc',
+      'sharklasers.com', 'grr.la', 'guerrillamailblock.com', 'dispostable.com',
+      'mailnesia.com', 'mailinator.net', 'trashmail.com', 'trashmail.net',
+      'spamgourmet.com', 'tempinbox.com', 'fakeinbox.com', 'mytrashmail.com',
+      'incognitomail.com', 'getairmail.com', 'getnada.com'
+    ]
+    
+    const highRiskDomains = [
+      'mail.ru', 'protonmail.com', 'cock.li', 'tutanota.com', 'tutanota.de',
+      'protonmail.ch', 'qq.com', 'aol.com'
+    ]
+    
+    validationFlags.email_deliverable = !disposableEmailDomains.includes(emailDomain)
+    validationFlags.email_domain = emailDomain
+    validationFlags.email_high_risk = highRiskDomains.includes(emailDomain)
+    
+    console.log(`📧 Email validation for ${leadData.email}:`)
+    console.log(`- Format valid: ${validationFlags.email_format_valid}`)
+    console.log(`- Domain: ${emailDomain}`)
+    console.log(`- Deliverable: ${validationFlags.email_deliverable}`)
+    console.log(`- High risk: ${validationFlags.email_high_risk}`)
+    
+    if (!validationFlags.email_format_valid || !validationFlags.email_deliverable) {
+      status = 'invalid'
+      console.log(`❌ Email validation failed for ${leadData.email}`)
+    }
   }
 
   const thirtyDaysAgo = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000)
@@ -53,7 +83,17 @@ export const validateLead = async (leadData, clientIP) => {
   }
 
   const description = leadData.description.toLowerCase()
-  const spamKeywords = ['test', 'spam', 'fake', 'asdf', 'qwerty', 'lorem ipsum', 'testing']
+  const spamKeywords = [
+    'test', 'spam', 'fake', 'asdf', 'qwerty', 'lorem ipsum', 'testing',
+    'click here', 'free money', 'make money fast', 'work from home',
+    'viagra', 'casino', 'lottery', 'winner', 'congratulations',
+    'urgent', 'act now', 'limited time', 'call now', 'buy now',
+    'sdfgh', 'hjkl', 'zxcv', 'mnbv', 'poiu', 'lkjh', 'gfds',
+    'aaaaa', 'bbbbb', 'ccccc', 'ddddd', 'eeee', 'ffff', 'gggg',
+    'hello world', 'sample text', 'example', 'placeholder', 'dummy',
+    'gibberish', 'nonsense', 'random text', 'blah blah', 'xyz',
+    'abcdef', '123456', 'qazwsx', 'zxcvbn', 'poiuyt'
+  ]
   const hasSpamContent = spamKeywords.some(keyword => description.includes(keyword))
   
   if (hasSpamContent || description.length < 10 || description.split(' ').length < 3) {

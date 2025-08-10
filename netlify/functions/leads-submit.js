@@ -56,6 +56,18 @@ export const handler = async (event, context) => {
     console.log('Raw body:', event.body)
 
     const { status, validationFlags } = await validateLead(data, clientIP)
+    
+    try {
+      const { logValidationMetrics } = await import('./validation-metrics.js')
+      await logValidationMetrics({
+        status,
+        validationFlags,
+        serviceCategory: service_category,
+        zipCode: zip_code
+      })
+    } catch (metricsError) {
+      console.error('Error logging validation metrics:', metricsError)
+    }
 
     const { data: lead, error: leadError } = await supabase
       .from('leads')
@@ -76,6 +88,19 @@ export const handler = async (event, context) => {
       .single()
 
     if (lead && status === 'valid') {
+      try {
+        const { logValidationMetrics } = await import('./validation-metrics.js')
+        await logValidationMetrics({
+          status,
+          validationFlags,
+          leadId: lead.id,
+          serviceCategory: service_category,
+          zipCode: zip_code
+        })
+      } catch (metricsError) {
+        console.error('Error logging validation metrics with lead ID:', metricsError)
+      }
+      
       try {
         const scoreResponse = await fetch(`${process.env.URL || 'https://customleadmatch.netlify.app'}/.netlify/functions/score-lead`, {
           method: 'POST',
