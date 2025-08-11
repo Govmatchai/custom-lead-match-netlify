@@ -171,7 +171,7 @@ export const LeadForm: React.FC<LeadFormProps> = ({ industry, defaultSubService,
                 required
                 value={formData.phone}
                 onChange={(e) => handleInputChange('phone', e.target.value)}
-                placeholder="(555) 123-4567"
+                placeholder="Enter your phone number"
               />
             </div>
           </div>

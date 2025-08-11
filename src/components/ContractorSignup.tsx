@@ -478,7 +478,7 @@ const ContractorSignup = () => {
           </div>
           
           <p className="text-sm opacity-75">
-            Questions? Call us at <span className="font-semibold">(555) 123-4567</span>
+            Questions? Contact us through our support portal
           </p>
         </div>
       </div>
@@ -759,7 +759,7 @@ const ContractorSignup = () => {
               </div>
               
               <p className="text-sm text-gray-600 mt-8">
-                Questions? Call us at <span className="font-semibold">(555) 123-4567</span>
+                Questions? Contact us through our support portal
               </p>
             </CardContent>
           </Card>
