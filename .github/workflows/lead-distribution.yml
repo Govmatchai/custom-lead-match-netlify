@@ -1,0 +1,16 @@
+name: Lead Distribution
+
+on:
+  schedule:
+    - cron: '0 * * * *'  # Run every hour
+  workflow_dispatch:  # Allow manual trigger
+
+jobs:
+  distribute-leads:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Trigger Lead Distribution
+        run: |
+          curl -X POST "https://customleadmatch.netlify.app/.netlify/functions/distribute-leads" \
+            -H "Content-Type: application/json" \
+            -d '{}'

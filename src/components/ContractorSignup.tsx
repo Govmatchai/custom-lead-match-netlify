@@ -198,7 +198,7 @@ const ContractorSignup = () => {
             <div className="grid grid-cols-1 md:grid-cols-3 gap-12">
               <div className="text-center relative">
                 <div className="w-24 h-24 bg-gradient-to-r from-blue-500 to-indigo-600 text-white rounded-full flex items-center justify-center text-3xl font-bold mx-auto mb-6 shadow-lg">
-                  <span>📝</span>
+                  <span>{'📝'}</span>
                 </div>
                 <h3 className="text-2xl font-bold mb-4">Sign Up & Create Profile</h3>
                 <p className="text-gray-600 text-lg">Set up your contractor profile with your services, coverage areas, and preferences in minutes.</p>
@@ -216,7 +216,7 @@ const ContractorSignup = () => {
               
               <div className="text-center">
                 <div className="w-24 h-24 bg-gradient-to-r from-blue-500 to-indigo-600 text-white rounded-full flex items-center justify-center text-3xl font-bold mx-auto mb-6 shadow-lg">
-                  <span>📈</span>
+                  <span>{'📈'}</span>
                 </div>
                 <h3 className="text-2xl font-bold mb-4">Close More Jobs & Grow</h3>
                 <p className="text-gray-600 text-lg">Focus on what you do best - completing quality work and growing your business with consistent leads.</p>
@@ -274,7 +274,7 @@ const ContractorSignup = () => {
             <Card className="border-0 shadow-lg hover:shadow-xl transition-shadow duration-300">
               <CardContent className="p-8 text-center">
                 <div className="w-16 h-16 bg-gradient-to-r from-red-400 to-red-600 text-white rounded-full flex items-center justify-center text-2xl font-bold mx-auto mb-6">
-                  🎛️
+                  {'🎛️'}
                 </div>
                 <h3 className="text-xl font-bold mb-4">Job-Type & Location Filters</h3>
                 <p className="text-gray-600">Set your preferences for job types, budget ranges, and service areas to get perfect matches.</p>
@@ -325,7 +325,7 @@ const ContractorSignup = () => {
                   <td className="p-4 text-center"><span className="text-green-500 text-2xl">✓</span></td>
                 </tr>
                 <tr className="border-b border-gray-200 hover:bg-gray-50">
-                  <td className="p-4 font-semibold">AI Lead Scoring</td>
+                  <td className="p-4 font-semibold">Smart Matching</td>
                   <td className="p-4 text-center"><span className="text-green-500 text-2xl">✓</span></td>
                   <td className="p-4 text-center"><span className="text-red-500 text-2xl">✗</span></td>
                   <td className="p-4 text-center"><span className="text-red-500 text-2xl">✗</span></td>
@@ -376,9 +376,9 @@ const ContractorSignup = () => {
         <div className="container mx-auto px-4">
           <div className="max-w-6xl mx-auto">
             <div className="text-center mb-16">
-              <h2 className="text-4xl font-bold mb-6">Predictive Lead Scoring – Powered by AI</h2>
+              <h2 className="text-4xl font-bold mb-6">AI-Powered Matching</h2>
               <p className="text-xl text-gray-600 max-w-3xl mx-auto">
-                Our AI rates each lead on how well it fits your expertise and service area — so you spend time on jobs you'll actually win.
+                Our advanced AI engine analyzes every lead to match it with the right contractor, in the right location, at the right time.
               </p>
             </div>
             
@@ -408,12 +408,12 @@ const ContractorSignup = () => {
                   </svg>
                   <div className="absolute inset-0 flex items-center justify-center">
                     <div className="text-center">
-                      <div className="text-4xl font-bold text-gray-900">85</div>
-                      <div className="text-sm text-gray-600">Lead Score</div>
+                      <div className="text-4xl font-bold text-gray-900">🎯</div>
+                      <div className="text-sm text-gray-600">Smart Match</div>
                     </div>
                   </div>
                 </div>
-                <p className="text-gray-600">Circular gauge graphic showing 0–100 scoring</p>
+                <p className="text-gray-600">AI-powered matching technology in action</p>
               </div>
               
               <div className="space-y-8">
@@ -422,8 +422,8 @@ const ContractorSignup = () => {
                     <CheckCircle className="w-6 h-6" />
                   </div>
                   <div>
-                    <h3 className="text-xl font-bold mb-2">Work Smarter, Not Harder</h3>
-                    <p className="text-gray-600">Our AI instantly analyzes every incoming lead to predict its likelihood of becoming a paying job.</p>
+                    <h3 className="text-xl font-bold mb-2">Smart Matching Technology</h3>
+                    <p className="text-gray-600">Our AI analyzes lead quality and matches you with opportunities that fit your expertise and location perfectly.</p>
                   </div>
                 </div>
                 
@@ -432,8 +432,8 @@ const ContractorSignup = () => {
                     <Zap className="w-6 h-6" />
                   </div>
                   <div>
-                    <h3 className="text-xl font-bold mb-2">See the Score, Make the Call</h3>
-                    <p className="text-gray-600">Each lead is tagged as Hot, Warm, or Cold so you know exactly where to focus your time.</p>
+                    <h3 className="text-xl font-bold mb-2">Priority Matching</h3>
+                    <p className="text-gray-600">Our AI prioritizes leads based on quality and fit, so you get the best opportunities first.</p>
                   </div>
                 </div>
                 
@@ -597,14 +597,14 @@ const ContractorSignup = () => {
           </div>
         </div>
 
-        {/* Predictive Lead Scoring Section */}
+        {/* Smart Matching Section */}
         <div className="mb-16 bg-gradient-to-r from-blue-50 to-white p-8 rounded-xl">
           <div className="max-w-4xl mx-auto">
             <h3 className="text-3xl font-bold text-center text-gray-900 mb-4">
-              Predictive Lead Scoring – Powered by AI
+              Smart Matching – Powered by AI
             </h3>
             <p className="text-xl text-center text-gray-700 mb-8 max-w-2xl mx-auto">
-              "Stop chasing dead-end leads. Focus on the ones that close."
+              "Get matched with leads that fit your expertise and location perfectly."
             </p>
             
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
@@ -652,7 +652,7 @@ const ContractorSignup = () => {
                   </div>
                 </div>
                 <p className="text-xs text-gray-500 text-center">
-                  Contractor dashboard showing AI Predictive Lead Scores for incoming leads.
+                  Contractor dashboard showing smart-matched leads for your area and expertise.
                 </p>
               </div>
               
@@ -665,7 +665,7 @@ const ContractorSignup = () => {
                     </div>
                     <div>
                       <h4 className="font-bold text-lg mb-2">Work Smarter, Not Harder</h4>
-                      <p className="text-gray-700">Our AI instantly analyzes every incoming lead to predict its likelihood of becoming a paying job.</p>
+                      <p className="text-gray-700">Our AI analyzes every incoming lead to match it with contractors who have the right expertise and location.</p>
                     </div>
                   </div>
                   <div className="flex items-start space-x-4">

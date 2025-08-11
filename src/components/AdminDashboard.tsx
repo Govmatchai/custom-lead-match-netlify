@@ -2,6 +2,7 @@ import React, { useState } from 'react'
 import { Users, FileText, CheckCircle, Clock, Eye, EyeOff, DollarSign, Settings, Plus, Download } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
+import { Label } from '@/components/ui/label'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Alert, AlertDescription } from '@/components/ui/alert'
@@ -81,7 +82,7 @@ const AdminDashboard = () => {
   const [contractors, setContractors] = useState<Contractor[]>([])
   const [leads, setLeads] = useState<Lead[]>([])
   const [loading, setLoading] = useState(false)
-  const [activeTab, setActiveTab] = useState<'stats' | 'contractors' | 'leads' | 'lead-management' | 'transactions' | 'pricing' | 'utilities'>('stats')
+  const [activeTab, setActiveTab] = useState<'stats' | 'contractors' | 'leads' | 'lead-management' | 'scoring-config' | 'transactions' | 'pricing' | 'utilities'>('stats')
   const [statusFilter, setStatusFilter] = useState('all')
   const [industryFilter, setIndustryFilter] = useState('all')
   const [transactions, setTransactions] = useState<Transaction[]>([])
@@ -412,6 +413,16 @@ const AdminDashboard = () => {
                 Lead Pricing
               </button>
               <button
+                onClick={() => setActiveTab('scoring-config')}
+                className={`py-2 px-1 border-b-2 font-medium text-sm ${
+                  activeTab === 'scoring-config'
+                    ? 'border-blue-500 text-blue-600'
+                    : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                }`}
+              >
+                Scoring Config
+              </button>
+              <button
                 onClick={() => setActiveTab('utilities')}
                 className={`py-2 px-1 border-b-2 font-medium text-sm ${
                   activeTab === 'utilities'
@@ -604,8 +615,8 @@ const AdminDashboard = () => {
         {activeTab === 'lead-management' && (
           <Card>
             <CardHeader>
-              <CardTitle>Lead Management & Validation</CardTitle>
-              <CardDescription>View leads with validation status and manage quality</CardDescription>
+              <CardTitle>Lead Management & Scoring</CardTitle>
+              <CardDescription>View leads with AI scores, validation status and manage quality</CardDescription>
               <div className="flex gap-4 mt-4">
                 <Select value={statusFilter} onValueChange={setStatusFilter}>
                   <SelectTrigger className="w-48">
@@ -635,6 +646,9 @@ const AdminDashboard = () => {
                     <SelectItem value="Auto">Auto</SelectItem>
                   </SelectContent>
                 </Select>
+                <Button onClick={() => handleExportCSV(leads, `leads-with-scores-${new Date().toISOString().split('T')[0]}.csv`)} variant="outline">
+                  Export CSV with Scores
+                </Button>
               </div>
             </CardHeader>
             <CardContent>
@@ -647,10 +661,19 @@ const AdminDashboard = () => {
                     .filter(lead => industryFilter === 'all' || lead.service_category === industryFilter)
                     .map((lead) => (
                     <div key={lead.id} className="border rounded-lg p-4">
-                      <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-3">
+                      <div className="grid grid-cols-1 md:grid-cols-5 gap-4 mb-3">
                         <div>
                           <span className="font-medium">Customer:</span>
                           <p>{lead.customer_name}</p>
+                        </div>
+                        <div>
+                          <span className="font-medium">Score:</span>
+                          <p className={`font-bold ${
+                            (lead.lead_score || 0) >= 80 ? 'text-green-600' :
+                            (lead.lead_score || 0) >= 60 ? 'text-amber-600' : 'text-gray-600'
+                          }`}>
+                            {lead.lead_score || 'N/A'} ({lead.lead_score_band || 'N/A'})
+                          </p>
                         </div>
                         <div>
                           <span className="font-medium">Phone:</span>
@@ -836,6 +859,67 @@ const AdminDashboard = () => {
                     ))}
                   </div>
                 </div>
+              </div>
+            </CardContent>
+          </Card>
+        )}
+
+        {activeTab === 'scoring-config' && (
+          <Card>
+            <CardHeader>
+              <CardTitle>Lead Distribution Configuration</CardTitle>
+              <CardDescription>Adjust scoring thresholds and timing rules for internal lead distribution</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <div>
+                  <Label htmlFor="high-threshold">High Priority Threshold (≥)</Label>
+                  <Input 
+                    id="high-threshold"
+                    type="number" 
+                    defaultValue="85" 
+                    className="mt-1"
+                  />
+                  <p className="text-sm text-gray-500 mt-1">
+                    Instant/exclusive release to top contractors
+                  </p>
+                </div>
+                <div>
+                  <Label htmlFor="medium-threshold">Medium Priority Threshold (≥)</Label>
+                  <Input 
+                    id="medium-threshold"
+                    type="number" 
+                    defaultValue="70" 
+                    className="mt-1"
+                  />
+                  <p className="text-sm text-gray-500 mt-1">
+                    2-4 hour delay before distribution
+                  </p>
+                </div>
+                <div>
+                  <Label htmlFor="low-delay">Low Priority Delay (hours)</Label>
+                  <Input 
+                    id="low-delay"
+                    type="number" 
+                    defaultValue="12" 
+                    className="mt-1"
+                  />
+                  <p className="text-sm text-gray-500 mt-1">
+                    12-24 hour delay or bundled offers
+                  </p>
+                </div>
+              </div>
+              <div className="mt-6">
+                <Button className="mr-4">Save Configuration</Button>
+                <Button variant="outline">Reset to Defaults</Button>
+              </div>
+              <div className="mt-6 p-4 bg-blue-50 rounded-lg">
+                <h4 className="font-semibold text-blue-900 mb-2">Distribution Rules</h4>
+                <ul className="text-sm text-blue-800 space-y-1">
+                  <li>• High-score leads (≥85%): Instant release to verified contractors with 1-2 hour exclusivity</li>
+                  <li>• Medium-score leads (70-84%): Released after 2-4 hour delay to all matching contractors</li>
+                  <li>• Low-score leads (&lt;70%): Released after 12-24 hours or included in bundled offers</li>
+                </ul>
               </div>
             </CardContent>
           </Card>

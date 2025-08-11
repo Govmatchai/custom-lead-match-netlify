@@ -182,11 +182,11 @@ export const handler = async (event, context) => {
             'Access-Control-Allow-Origin': '*'
           },
           body: JSON.stringify({
-            message: `Lead processed successfully! ${contractorsNotified} contractors have been notified via SMS.`,
+            message: `Lead processed successfully! Smart matching contractors will be notified based on quality and timing.`,
             lead_id: mockLead.id,
             status,
-            contractors_notified: contractorsNotified,
-            note: 'SMS notifications sent despite database trigger issue'
+            contractors_notified: 0,
+            note: 'Distribution will be handled by scheduled function'
           })
         }
       }
@@ -201,69 +201,7 @@ export const handler = async (event, context) => {
       }
     }
 
-    const { data: matchingContractors, error: contractorError } = await supabase
-      .from('contractors')
-      .select('*')
-      .eq('industry', service_category)
-      .eq('sub_service', sub_service)
-      .contains('zip_codes', [zip_code])
-      .gt('lead_credits', 0)
-      .eq('sms_opt_in', true)
-
-    if (contractorError) {
-      console.error('Contractor query error:', contractorError)
-    }
-
-    let contractorsNotified = 0
-    if (status === 'valid' && matchingContractors && matchingContractors.length > 0) {
-      const token = randomBytes(16).toString('hex')
-      const expiresAt = new Date(Date.now() + 24 * 60 * 60 * 1000)
-
-      const { error: tokenError } = await supabase
-        .from('claim_tokens')
-        .insert([{
-          token,
-          lead_id: lead.id,
-          expires_at: expiresAt.toISOString()
-        }])
-
-      if (tokenError) {
-        console.error('Token creation error:', tokenError)
-      }
-
-      const claimUrl = `${process.env.URL || 'https://customleadmatch.netlify.app'}/claim/${token}`
-      
-      for (const contractor of matchingContractors) {
-        try {
-          let formattedPhone = contractor.phone
-          
-          if (!contractor.phone.startsWith('+')) {
-            formattedPhone = contractor.phone.replace(/\D/g, '') // Remove all non-digits
-            if (formattedPhone.length === 10) {
-              formattedPhone = '+1' + formattedPhone // Add US country code
-            } else if (formattedPhone.length === 11 && formattedPhone.startsWith('1')) {
-              formattedPhone = '+' + formattedPhone // Add + prefix
-            } else {
-              console.error(`Invalid phone number format for contractor ${contractor.id}: ${contractor.phone}`)
-              continue
-            }
-          }
-          
-          console.log(`Attempting to send SMS to contractor ${contractor.id} at ${formattedPhone} (original: ${contractor.phone})`)
-          
-          await twilioClient.messages.create({
-            body: `🔥 New ${service_category} Lead: ${zip_code} - ${sub_service}. Pre-screened & validated. Click to claim: ${claimUrl}`,
-            from: process.env.TWILIO_PHONE_NUMBER,
-            to: formattedPhone
-          })
-          contractorsNotified++
-          console.log(`✅ SMS sent successfully to contractor ${contractor.id} at ${formattedPhone}`)
-        } catch (smsError) {
-          console.error(`❌ SMS error for contractor ${contractor.id}:`, smsError.message)
-          console.error('Error code:', smsError.code)
-        }
-      }
-    }
+    console.log(`Lead ${lead.id} created successfully. Distribution will be handled by scheduled function based on score: ${lead.lead_score || 'pending'}`)
 
     return {
       statusCode: 200,
