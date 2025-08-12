@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { CheckCircle, Zap, Star, DollarSign, Phone, Lock } from 'lucide-react'
+import { CheckCircle, Star, DollarSign, Phone, Lock } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
 import { Footer } from './Footer'
@@ -13,14 +13,6 @@ const ContractorSignup = () => {
 
 
 
-  const benefits = [
-    "3 Free Leads — No Strings Attached",
-    "Exclusive Leads (Only One Contractor Can Claim)",
-    "SMS Notifications for Instant Alerts",
-    "Industry & Service-Type Matching",
-    "First-Come, First-Serve Claim System",
-    "Pre-Screened & Validated Leads Only — No Spam or Junk"
-  ]
 
 
   const trustBadges = [
@@ -179,7 +171,7 @@ const ContractorSignup = () => {
               
               <div className="text-center">
                 <div className="w-24 h-24 bg-gradient-to-r from-blue-500 to-indigo-600 text-white rounded-full flex items-center justify-center text-3xl font-bold mx-auto mb-6 shadow-lg">
-                  📈
+                  <span>📈</span>
                 </div>
                 <h3 className="text-2xl font-bold mb-4">Close More Jobs & Grow</h3>
                 <p className="text-gray-600 text-lg">Focus on what you do best - completing quality work and growing your business with consistent leads.</p>
@@ -237,7 +229,7 @@ const ContractorSignup = () => {
             <Card className="border-0 shadow-lg hover:shadow-xl transition-shadow duration-300">
               <CardContent className="p-8 text-center">
                 <div className="w-16 h-16 bg-gradient-to-r from-red-400 to-red-600 text-white rounded-full flex items-center justify-center text-2xl font-bold mx-auto mb-6">
-                  🎛️
+                  <span>🎛️</span>
                 </div>
                 <h3 className="text-xl font-bold mb-4">Job-Type & Location Filters</h3>
                 <p className="text-gray-600">Set your preferences for job types, budget ranges, and service areas to get perfect matches.</p>
@@ -314,106 +306,6 @@ const ContractorSignup = () => {
         </div>
       </div>
 
-      <div className="py-20 bg-gradient-to-br from-gray-900 to-blue-900 text-white">
-        <div className="container mx-auto px-4 text-center">
-          <h2 className="text-4xl font-bold mb-8">See How It Works</h2>
-          <p className="text-xl mb-12 max-w-2xl mx-auto opacity-90">
-            Watch how contractors like you are growing their business with Custom Lead Match
-          </p>
-          
-          <div className="max-w-4xl mx-auto">
-            <div className="relative bg-gray-800 rounded-lg overflow-hidden shadow-2xl aspect-video flex items-center justify-center">
-              <div className="text-center">
-                <div className="w-20 h-20 bg-white bg-opacity-20 rounded-full flex items-center justify-center mx-auto mb-4">
-                  <div className="w-0 h-0 border-l-8 border-l-white border-t-6 border-t-transparent border-b-6 border-b-transparent ml-1"></div>
-                </div>
-                <p className="text-lg opacity-75">Video Coming Soon</p>
-                <p className="text-sm opacity-50">45-60 second explainer video</p>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <div className="py-20 bg-white">
-        <div className="container mx-auto px-4">
-          <div className="max-w-6xl mx-auto">
-            <div className="text-center mb-16">
-              <h2 className="text-4xl font-bold mb-6">AI-Powered Matching</h2>
-              <p className="text-xl text-gray-600 max-w-3xl mx-auto">
-                Our advanced AI engine analyzes every lead to match it with the right contractor, in the right location, at the right time.
-              </p>
-            </div>
-            
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
-              <div className="text-center">
-                <div className="relative w-64 h-64 mx-auto mb-8">
-                  <svg className="w-full h-full transform -rotate-90" viewBox="0 0 100 100">
-                    <circle cx="50" cy="50" r="45" fill="none" stroke="#e5e7eb" strokeWidth="8"/>
-                    <circle 
-                      cx="50" 
-                      cy="50" 
-                      r="45" 
-                      fill="none" 
-                      stroke="url(#gradient)" 
-                      strokeWidth="8"
-                      strokeDasharray="283"
-                      strokeDashoffset="85"
-                      className="transition-all duration-1000"
-                    />
-                    <defs>
-                      <linearGradient id="gradient" x1="0%" y1="0%" x2="100%" y2="0%">
-                        <stop offset="0%" stopColor="#ef4444" />
-                        <stop offset="50%" stopColor="#f59e0b" />
-                        <stop offset="100%" stopColor="#10b981" />
-                      </linearGradient>
-                    </defs>
-                  </svg>
-                  <div className="absolute inset-0 flex items-center justify-center">
-                    <div className="text-center">
-                      <div className="text-4xl font-bold text-gray-900">🎯</div>
-                      <div className="text-sm text-gray-600">Smart Match</div>
-                    </div>
-                  </div>
-                </div>
-                <p className="text-gray-600">AI-powered matching technology in action</p>
-              </div>
-              
-              <div className="space-y-8">
-                <div className="flex items-start space-x-4">
-                  <div className="w-12 h-12 bg-green-500 text-white rounded-full flex items-center justify-center flex-shrink-0">
-                    <CheckCircle className="w-6 h-6" />
-                  </div>
-                  <div>
-                    <h3 className="text-xl font-bold mb-2">Smart Matching Technology</h3>
-                    <p className="text-gray-600">Our AI analyzes lead quality and matches you with opportunities that fit your expertise and location perfectly.</p>
-                  </div>
-                </div>
-                
-                <div className="flex items-start space-x-4">
-                  <div className="w-12 h-12 bg-blue-500 text-white rounded-full flex items-center justify-center flex-shrink-0">
-                    <Zap className="w-6 h-6" />
-                  </div>
-                  <div>
-                    <h3 className="text-xl font-bold mb-2">Priority Matching</h3>
-                    <p className="text-gray-600">Our AI prioritizes leads based on quality and fit, so you get the best opportunities first.</p>
-                  </div>
-                </div>
-                
-                <div className="flex items-start space-x-4">
-                  <div className="w-12 h-12 bg-purple-500 text-white rounded-full flex items-center justify-center flex-shrink-0">
-                    <DollarSign className="w-6 h-6" />
-                  </div>
-                  <div>
-                    <h3 className="text-xl font-bold mb-2">Maximize ROI</h3>
-                    <p className="text-gray-600">Spend less time chasing low-quality jobs and more time closing the high-value work.</p>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
 
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12" id="signup-form">
 
@@ -484,19 +376,6 @@ const ContractorSignup = () => {
 
 
 
-        <div className="mb-12 bg-gray-50 p-8 rounded-lg">
-          <h3 className="text-2xl font-bold text-center text-gray-900 mb-6">
-            Why Contractors Choose Custom Lead Match
-          </h3>
-          <div className="space-y-3">
-            {benefits.map((benefit, index) => (
-              <div key={index} className="flex items-center">
-                <CheckCircle className="w-5 h-5 text-green-500 mr-3 flex-shrink-0" />
-                <span className="text-lg text-gray-700">{benefit}</span>
-              </div>
-            ))}
-          </div>
-        </div>
 
         {/* Strong CTA Section */}
         <div className="max-w-4xl mx-auto text-center">
