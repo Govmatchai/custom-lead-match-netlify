@@ -6,7 +6,6 @@ import { Label } from './ui/label'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from './ui/card'
 import { Alert, AlertDescription } from './ui/alert'
 import { Footer } from './Footer'
-import { Logo } from './ui/Logo'
 
 export const Contact = () => {
   const [formData, setFormData] = useState({
@@ -65,20 +64,11 @@ export const Contact = () => {
           --header-height: 72px;
         }
         
-        html, body {
-          scroll-padding-top: var(--header-height);
-        }
-        
-        body {
-          padding-top: env(safe-area-inset-top, 0);
-        }
-        
         .contact-header {
           overflow: visible;
         }
         
         .contact-hero {
-          overflow: visible;
           padding-top: calc(var(--header-height) + 24px);
         }
         
@@ -87,53 +77,11 @@ export const Contact = () => {
             padding-top: calc(var(--header-height) + 16px);
           }
         }
-        
-        .contact-brand,
-        .brand-badge {
-          overflow: visible !important;
-          margin-top: 0 !important;
-          position: static !important;
-          transform: none !important;
-        }
-        
-        .contact-brand {
-          display: flex;
-          justify-content: center;
-        }
-        
-        .brand-badge {
-          display: inline-flex;
-          align-items: center;
-          justify-content: center;
-          padding: 10px 14px;
-          border-radius: 16px;
-          background: linear-gradient(90deg, #2563eb, #22c55e);
-          box-shadow: 0 10px 24px rgba(2, 6, 23, 0.18);
-          overflow: visible;
-        }
-        
-        .brand-badge img {
-          display: block;
-          height: 44px;
-          max-width: 100%;
-          object-fit: contain;
-        }
-        
-        @media (max-width: 640px) {
-          .brand-badge img {
-            height: 40px;
-          }
-        }
       `}</style>
       
       <header className="contact-header bg-white border-b border-gray-200 sticky top-0 z-50 shadow-sm" style={{ height: 'var(--header-height)' }}>
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-full">
-          <div className="flex justify-between items-center h-full">
-            <div className="contact-brand">
-              <div className="brand-badge">
-                <Logo className="max-w-xs" width={250} height={75} withBadge={true} withTagline={true} clickable={false} />
-              </div>
-            </div>
+          <div className="flex justify-end items-center h-full">
             <div className="flex items-center space-x-4">
               <Button variant="outline" onClick={() => window.location.href = '/'}>
                 Home
