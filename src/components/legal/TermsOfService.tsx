@@ -1,10 +1,14 @@
 import { Card, CardContent, CardHeader, CardTitle } from '../ui/card'
 import { Button } from '../ui/button'
+import { Logo } from '../ui/Logo'
 
 export const TermsOfService = () => {
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 to-blue-50 py-12">
       <div className="max-w-4xl mx-auto px-4">
+        <div className="text-center mb-8">
+          <Logo className="max-w-xs mx-auto" width={200} height={60} withBadge={true} clickable={false} />
+        </div>
         <Card>
           <CardHeader>
             <CardTitle className="text-3xl text-center">Terms of Service</CardTitle>

@@ -61,7 +61,7 @@ export const Contact = () => {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-16">
             <div className="flex items-center">
-              <Logo className="max-w-xs" width={150} height={45} />
+              <Logo className="max-w-xs" width={250} height={75} withBadge={true} withTagline={true} clickable={false} />
             </div>
             <div className="flex items-center space-x-4">
               <Button variant="outline" onClick={() => window.location.href = '/'}>

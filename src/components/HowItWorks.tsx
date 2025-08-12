@@ -36,7 +36,7 @@ export default function HowItWorks() {
       <div className="max-w-4xl mx-auto px-4 py-8">
         <div className="text-center mb-8">
           <div className="flex justify-center mb-6">
-            <Logo className="max-w-xs" width={250} height={75} />
+            <Logo className="max-w-xs" width={250} height={75} withBadge={true} withTagline={true} clickable={false} />
           </div>
           <Button 
             onClick={() => navigate('/')}

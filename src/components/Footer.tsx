@@ -8,7 +8,7 @@ export const Footer = () => {
         <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
           <div className="col-span-1 md:col-span-2">
             <div className="mb-4">
-              <Logo className="max-w-xs" width={250} height={75} />
+              <Logo className="max-w-xs" width={200} height={60} withBadge={true} clickable={true} />
             </div>
             <p className="text-gray-300 mb-4">
               Real-time lead matching for contractors. No subscriptions, no competition - just quality leads delivered directly to you.

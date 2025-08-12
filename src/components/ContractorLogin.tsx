@@ -68,7 +68,7 @@ export default function ContractorLogin() {
       <Card className="w-full max-w-md">
         <CardHeader>
           <div className="flex justify-center mb-4">
-            <Logo className="max-w-xs" width={250} height={75} />
+            <Logo className="max-w-xs" width={250} height={75} withBadge={true} withTagline={true} clickable={false} />
           </div>
           <CardTitle className="text-2xl text-center">Contractor Login Portal</CardTitle>
         </CardHeader>
