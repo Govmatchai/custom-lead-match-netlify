@@ -377,56 +377,6 @@ const ContractorSignup = () => {
 
 
 
-        {/* Strong CTA Section */}
-        <div className="max-w-4xl mx-auto text-center">
-          <Card className="border-2 shadow-xl bg-gradient-to-br from-blue-50 to-indigo-50">
-            <CardContent className="p-12">
-              <h2 className="text-4xl font-bold text-gray-900 mb-6">
-                Your Next Job Is Waiting — Claim It Today
-              </h2>
-              <p className="text-xl text-gray-700 mb-8 max-w-2xl mx-auto">
-                Join thousands of contractors who are growing their business with exclusive, high-quality leads.
-              </p>
-              
-              <div className="flex flex-col sm:flex-row gap-6 justify-center items-center mb-8">
-                <Button 
-                  size="lg"
-                  onClick={() => window.location.href = '/signup'}
-                  className="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white px-12 py-6 text-2xl font-bold transition-all duration-300 transform hover:scale-105 shadow-xl hover:shadow-2xl"
-                >
-                  Sign Up Free
-                </Button>
-                <Button 
-                  size="lg"
-                  variant="outline"
-                  onClick={() => window.location.href = '/contractor-login'}
-                  className="border-2 border-blue-600 text-blue-600 hover:bg-blue-600 hover:text-white px-12 py-6 text-2xl font-bold transition-all duration-300 shadow-lg"
-                >
-                  Login
-                </Button>
-              </div>
-              
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-6 text-center">
-                <div className="flex items-center justify-center space-x-2">
-                  <CheckCircle className="w-6 h-6 text-green-500" />
-                  <span className="text-lg font-semibold text-gray-700">No Setup Fees</span>
-                </div>
-                <div className="flex items-center justify-center space-x-2">
-                  <CheckCircle className="w-6 h-6 text-green-500" />
-                  <span className="text-lg font-semibold text-gray-700">Exclusive Leads</span>
-                </div>
-                <div className="flex items-center justify-center space-x-2">
-                  <CheckCircle className="w-6 h-6 text-green-500" />
-                  <span className="text-lg font-semibold text-gray-700">Instant Notifications</span>
-                </div>
-              </div>
-              
-              <p className="text-sm text-gray-600 mt-8">
-                Questions? Contact us through our support portal
-              </p>
-            </CardContent>
-          </Card>
-        </div>
       </div>
       
       {/* Sticky Mobile CTA */}
