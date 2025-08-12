@@ -65,6 +65,14 @@ export const Contact = () => {
           --header-height: 72px;
         }
         
+        html, body {
+          scroll-padding-top: var(--header-height);
+        }
+        
+        body {
+          padding-top: env(safe-area-inset-top, 0);
+        }
+        
         .contact-header {
           overflow: visible;
         }
@@ -80,25 +88,41 @@ export const Contact = () => {
           }
         }
         
+        .contact-brand,
+        .brand-badge {
+          overflow: visible !important;
+          margin-top: 0 !important;
+          position: static !important;
+          transform: none !important;
+        }
+        
         .contact-brand {
           display: flex;
           justify-content: center;
-          margin-top: 24px;
         }
         
-        .logo-card {
-          background: #fff;
-          padding: 12px 16px;
+        .brand-badge {
+          display: inline-flex;
+          align-items: center;
+          justify-content: center;
+          padding: 10px 14px;
           border-radius: 16px;
-          box-shadow: 0 8px 24px rgba(2,6,23,0.12);
+          background: linear-gradient(90deg, #2563eb, #22c55e);
+          box-shadow: 0 10px 24px rgba(2, 6, 23, 0.18);
           overflow: visible;
         }
         
-        .logo-card img {
+        .brand-badge img {
           display: block;
-          height: 64px;
+          height: 44px;
           max-width: 100%;
           object-fit: contain;
+        }
+        
+        @media (max-width: 640px) {
+          .brand-badge img {
+            height: 40px;
+          }
         }
       `}</style>
       
@@ -106,7 +130,7 @@ export const Contact = () => {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-full">
           <div className="flex justify-between items-center h-full">
             <div className="contact-brand">
-              <div className="logo-card">
+              <div className="brand-badge">
                 <Logo className="max-w-xs" width={250} height={75} withBadge={true} withTagline={true} clickable={false} />
               </div>
             </div>
