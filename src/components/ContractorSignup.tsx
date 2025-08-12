@@ -153,7 +153,7 @@ const ContractorSignup = () => {
             <div className="grid grid-cols-1 md:grid-cols-3 gap-12">
               <div className="text-center relative">
                 <div className="w-24 h-24 bg-gradient-to-r from-blue-500 to-indigo-600 text-white rounded-full flex items-center justify-center text-3xl font-bold mx-auto mb-6 shadow-lg">
-                  📝
+                  <span>📝</span>
                 </div>
                 <h3 className="text-2xl font-bold mb-4">Sign Up & Create Profile</h3>
                 <p className="text-gray-600 text-lg">Set up your contractor profile with your services, coverage areas, and preferences in minutes.</p>
