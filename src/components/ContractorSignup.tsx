@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { CheckCircle, Star, DollarSign, Phone, Lock } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
@@ -10,10 +10,21 @@ import { TestimonialsCarousel } from './TestimonialsCarousel'
 const ContractorSignup = () => {
   const [showMobileMenu, setShowMobileMenu] = useState(false)
   const [stickyCtaDismissed, setStickyCtaDismissed] = useState(localStorage.getItem('dismiss_sticky_signup') === 'true')
+  const [isScrolled, setIsScrolled] = useState(false)
 
 
 
 
+
+  useEffect(() => {
+    const handleScroll = () => {
+      const scrollTop = window.scrollY
+      setIsScrolled(scrollTop > 100)
+    }
+
+    window.addEventListener('scroll', handleScroll)
+    return () => window.removeEventListener('scroll', handleScroll)
+  }, [])
 
   const trustBadges = [
     { icon: CheckCircle, text: "TCPA Compliant" },
@@ -31,7 +42,14 @@ const ContractorSignup = () => {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-16">
             <div className="flex items-center">
-              <Logo className="max-w-sm md:max-w-md" width={220} height={66} />
+              <Logo 
+                className="max-w-sm md:max-w-md transition-all duration-300" 
+                width={286} 
+                height={85} 
+                withBadge={true}
+                withTagline={true}
+                isSticky={isScrolled}
+              />
             </div>
             <div className="hidden md:flex items-center space-x-4">
               <Button 
@@ -108,9 +126,26 @@ const ContractorSignup = () => {
       >
         <div className="container mx-auto px-4 py-20 text-center text-white relative z-10">
           <div className="max-w-4xl mx-auto">
-            <h1 className="text-5xl md:text-7xl font-bold mb-6 animate-fade-in">
-              More High-Quality Leads. Less Hassle.
-            </h1>
+            <div className="hidden lg:flex items-center justify-center mb-8">
+              <div className="flex-shrink-0 mr-8">
+                <Logo 
+                  width={350} 
+                  height={105} 
+                  withBadge={true}
+                  clickable={false}
+                />
+              </div>
+              <div className="flex-1 text-left">
+                <h1 className="text-5xl md:text-6xl font-bold mb-4 animate-fade-in">
+                  More High-Quality Leads. Less Hassle.
+                </h1>
+              </div>
+            </div>
+            <div className="lg:hidden">
+              <h1 className="text-5xl md:text-7xl font-bold mb-6 animate-fade-in">
+                More High-Quality Leads. Less Hassle.
+              </h1>
+            </div>
             <p className="text-xl md:text-2xl mb-8 max-w-3xl mx-auto opacity-90">
               Connect directly with ready-to-hire customers — no shared leads, no wasted time.
             </p>
