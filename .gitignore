@@ -79,6 +79,8 @@ dist
 .cache/
 public
 !public/assets/logo.png
+!public/images/
+!public/images/*.svg
 
 # Vuepress build output
 .vuepress/dist

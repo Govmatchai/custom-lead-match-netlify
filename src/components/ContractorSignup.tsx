@@ -36,6 +36,14 @@ const ContractorSignup = () => {
             <div className="hidden md:flex items-center space-x-4">
               <Button 
                 variant="outline" 
+                onClick={() => window.location.href = '/contact'}
+                className="hover:bg-gray-50 border-gray-300"
+                aria-label="Contact Us"
+              >
+                Contact Us
+              </Button>
+              <Button 
+                variant="outline" 
                 onClick={() => window.location.href = '/contractor-login'}
                 className="hover:bg-gray-50 border-gray-300"
                 aria-label="Contractor Login"
@@ -63,6 +71,14 @@ const ContractorSignup = () => {
           {showMobileMenu && (
             <div className="md:hidden py-4 border-t border-gray-200">
               <div className="space-y-2">
+                <Button 
+                  variant="outline" 
+                  className="w-full justify-center"
+                  onClick={() => window.location.href = '/contact'}
+                  aria-label="Contact Us"
+                >
+                  Contact Us
+                </Button>
                 <Button 
                   variant="outline" 
                   className="w-full justify-center"
@@ -122,20 +138,20 @@ const ContractorSignup = () => {
 
       <div className="bg-white py-16">
         <div className="container mx-auto px-4">
-          <div className="flex flex-wrap justify-center items-center gap-8 mb-12 opacity-60">
-            <div className="text-gray-600 font-semibold">BBB Accredited</div>
-            <div className="text-gray-600 font-semibold">Google Partner</div>
-            <div className="text-gray-600 font-semibold">Verified Leads Guaranteed</div>
-            <div className="text-gray-600 font-semibold">SSL Secured</div>
+          <div className="flex flex-wrap justify-center items-center gap-8 mb-12 opacity-75">
+            <img src="/images/bbb-accredited.svg" alt="BBB Accredited Business" className="h-12 w-auto" />
+            <img src="/images/google-partner.svg" alt="Google Partner" className="h-12 w-auto" />
+            <img src="/images/verified-leads.svg" alt="Verified Leads Guaranteed" className="h-12 w-auto" />
+            <img src="/images/ssl-secured.svg" alt="SSL Secured" className="h-12 w-auto" />
           </div>
           
           <div className="text-center mb-8">
             <p className="text-gray-600 mb-6">Trusted by thousands of contractors nationwide</p>
-            <div className="flex flex-wrap justify-center items-center gap-8 opacity-50">
-              <div className="w-24 h-12 bg-gray-200 rounded flex items-center justify-center text-xs font-semibold text-gray-500">LOGO</div>
-              <div className="w-24 h-12 bg-gray-200 rounded flex items-center justify-center text-xs font-semibold text-gray-500">LOGO</div>
-              <div className="w-24 h-12 bg-gray-200 rounded flex items-center justify-center text-xs font-semibold text-gray-500">LOGO</div>
-              <div className="w-24 h-12 bg-gray-200 rounded flex items-center justify-center text-xs font-semibold text-gray-500">LOGO</div>
+            <div className="flex flex-wrap justify-center items-center gap-8 opacity-75">
+              <img src="/images/bbb-accredited.svg" alt="BBB Accredited Business" className="h-12 w-auto" />
+              <img src="/images/google-partner.svg" alt="Google Partner" className="h-12 w-auto" />
+              <img src="/images/verified-leads.svg" alt="Verified Leads Guaranteed" className="h-12 w-auto" />
+              <img src="/images/ssl-secured.svg" alt="SSL Secured" className="h-12 w-auto" />
             </div>
           </div>
         </div>
