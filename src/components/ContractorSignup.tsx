@@ -138,20 +138,36 @@ const ContractorSignup = () => {
 
       <div className="bg-white py-16">
         <div className="container mx-auto px-4">
-          <div className="flex flex-wrap justify-center items-center gap-8 mb-12 opacity-75">
-            <img src="/images/bbb-accredited.svg" alt="BBB Accredited Business" className="h-12 w-auto" />
-            <img src="/images/google-partner.svg" alt="Google Partner" className="h-12 w-auto" />
-            <img src="/images/verified-leads.svg" alt="Verified Leads Guaranteed" className="h-12 w-auto" />
-            <img src="/images/ssl-secured.svg" alt="SSL Secured" className="h-12 w-auto" />
+          <div className="flex flex-wrap justify-center items-center gap-6 mb-12 opacity-75">
+            <div className="px-4 py-2 bg-gray-100 rounded-lg border border-gray-200">
+              <span className="text-sm font-medium text-gray-600">BBB Accredited</span>
+            </div>
+            <div className="px-4 py-2 bg-gray-100 rounded-lg border border-gray-200">
+              <span className="text-sm font-medium text-gray-600">Google Partner</span>
+            </div>
+            <div className="px-4 py-2 bg-gray-100 rounded-lg border border-gray-200">
+              <span className="text-sm font-medium text-gray-600">Verified Leads</span>
+            </div>
+            <div className="px-4 py-2 bg-gray-100 rounded-lg border border-gray-200">
+              <span className="text-sm font-medium text-gray-600">SSL Secured</span>
+            </div>
           </div>
           
           <div className="text-center mb-8">
             <p className="text-gray-600 mb-6">Trusted by thousands of contractors nationwide</p>
-            <div className="flex flex-wrap justify-center items-center gap-8 opacity-75">
-              <img src="/images/bbb-accredited.svg" alt="BBB Accredited Business" className="h-12 w-auto" />
-              <img src="/images/google-partner.svg" alt="Google Partner" className="h-12 w-auto" />
-              <img src="/images/verified-leads.svg" alt="Verified Leads Guaranteed" className="h-12 w-auto" />
-              <img src="/images/ssl-secured.svg" alt="SSL Secured" className="h-12 w-auto" />
+            <div className="flex flex-wrap justify-center items-center gap-6 opacity-75">
+              <div className="px-3 py-1.5 bg-gray-100 rounded-md border border-gray-200">
+                <span className="text-xs font-medium text-gray-600">BBB Accredited</span>
+              </div>
+              <div className="px-3 py-1.5 bg-gray-100 rounded-md border border-gray-200">
+                <span className="text-xs font-medium text-gray-600">Google Partner</span>
+              </div>
+              <div className="px-3 py-1.5 bg-gray-100 rounded-md border border-gray-200">
+                <span className="text-xs font-medium text-gray-600">Verified Leads</span>
+              </div>
+              <div className="px-3 py-1.5 bg-gray-100 rounded-md border border-gray-200">
+                <span className="text-xs font-medium text-gray-600">SSL Secured</span>
+              </div>
             </div>
           </div>
         </div>
