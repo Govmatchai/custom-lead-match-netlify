@@ -56,23 +56,70 @@ export const Contact = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <nav className="bg-white border-b border-gray-200 sticky top-0 z-50 shadow-sm">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-center items-center h-32 relative">
-            <div className="flex items-center pt-2">
-              <Logo className="max-w-xs" width={250} height={75} withBadge={true} withTagline={true} clickable={false} />
+    <div className="min-h-screen bg-gray-50" style={{ 
+      paddingTop: 'env(safe-area-inset-top, 0)',
+      scrollPaddingTop: 'var(--header-height, 72px)'
+    }}>
+      <style>{`
+        :root {
+          --header-height: 72px;
+        }
+        
+        .contact-header {
+          overflow: visible;
+        }
+        
+        .contact-hero {
+          overflow: visible;
+          padding-top: calc(var(--header-height) + 24px);
+        }
+        
+        @media (max-width: 640px) {
+          .contact-hero {
+            padding-top: calc(var(--header-height) + 16px);
+          }
+        }
+        
+        .contact-brand {
+          display: flex;
+          justify-content: center;
+          margin-top: 24px;
+        }
+        
+        .logo-card {
+          background: #fff;
+          padding: 12px 16px;
+          border-radius: 16px;
+          box-shadow: 0 8px 24px rgba(2,6,23,0.12);
+          overflow: visible;
+        }
+        
+        .logo-card img {
+          display: block;
+          height: 64px;
+          max-width: 100%;
+          object-fit: contain;
+        }
+      `}</style>
+      
+      <header className="contact-header bg-white border-b border-gray-200 sticky top-0 z-50 shadow-sm" style={{ height: 'var(--header-height)' }}>
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-full">
+          <div className="flex justify-between items-center h-full">
+            <div className="contact-brand">
+              <div className="logo-card">
+                <Logo className="max-w-xs" width={250} height={75} withBadge={true} withTagline={true} clickable={false} />
+              </div>
             </div>
-            <div className="absolute right-0 flex items-center space-x-4">
+            <div className="flex items-center space-x-4">
               <Button variant="outline" onClick={() => window.location.href = '/'}>
                 Home
               </Button>
             </div>
           </div>
         </div>
-      </nav>
+      </header>
 
-      <div className="pt-12 pb-12">
+      <div className="contact-hero pb-12">
         <div className="max-w-2xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-8">
             <h1 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
