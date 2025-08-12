@@ -31,7 +31,7 @@ const ContractorSignup = () => {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-16">
             <div className="flex items-center">
-              <Logo className="max-w-xs" width={150} height={45} />
+              <Logo className="max-w-sm md:max-w-md" width={220} height={66} />
             </div>
             <div className="hidden md:flex items-center space-x-4">
               <Button 
