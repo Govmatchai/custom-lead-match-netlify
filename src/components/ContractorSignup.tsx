@@ -22,26 +22,6 @@ const ContractorSignup = () => {
     "Pre-Screened & Validated Leads Only — No Spam or Junk"
   ]
 
-  const testimonials = [
-    {
-      name: "Marcus G.",
-      title: "HVAC Pro",
-      quote: "I stopped buying from [redacted] and switched to CLM full-time.",
-      avatar: "MG"
-    },
-    {
-      name: "Denise R.", 
-      title: "Roofing Contractor",
-      quote: "Real leads, actual jobs, no BS.",
-      avatar: "DR"
-    },
-    {
-      name: "Carlos A.",
-      title: "General Contractor", 
-      quote: "Got a $14,000 kitchen job from my 2nd lead.",
-      avatar: "CA"
-    }
-  ]
 
   const trustBadges = [
     { icon: CheckCircle, text: "TCPA Compliant" },
@@ -51,23 +31,6 @@ const ContractorSignup = () => {
     { icon: DollarSign, text: "Pay-as-you-go, no contracts" }
   ]
 
-  const updatedHowItWorksSteps = [
-    {
-      icon: CheckCircle,
-      title: "Claim Your Free Leads",
-      description: "No payment needed to get started"
-    },
-    {
-      icon: Zap,
-      title: "Get Matched Instantly", 
-      description: "New leads sent via text/email in real-time"
-    },
-    {
-      icon: DollarSign,
-      title: "Buy More When You're Ready",
-      description: "Pay only if the system works for you"
-    }
-  ]
 
 
   return (
@@ -198,7 +161,7 @@ const ContractorSignup = () => {
             <div className="grid grid-cols-1 md:grid-cols-3 gap-12">
               <div className="text-center relative">
                 <div className="w-24 h-24 bg-gradient-to-r from-blue-500 to-indigo-600 text-white rounded-full flex items-center justify-center text-3xl font-bold mx-auto mb-6 shadow-lg">
-                  <span>{'📝'}</span>
+                  📝
                 </div>
                 <h3 className="text-2xl font-bold mb-4">Sign Up & Create Profile</h3>
                 <p className="text-gray-600 text-lg">Set up your contractor profile with your services, coverage areas, and preferences in minutes.</p>
@@ -216,7 +179,7 @@ const ContractorSignup = () => {
               
               <div className="text-center">
                 <div className="w-24 h-24 bg-gradient-to-r from-blue-500 to-indigo-600 text-white rounded-full flex items-center justify-center text-3xl font-bold mx-auto mb-6 shadow-lg">
-                  <span>{'📈'}</span>
+                  📈
                 </div>
                 <h3 className="text-2xl font-bold mb-4">Close More Jobs & Grow</h3>
                 <p className="text-gray-600 text-lg">Focus on what you do best - completing quality work and growing your business with consistent leads.</p>
@@ -274,7 +237,7 @@ const ContractorSignup = () => {
             <Card className="border-0 shadow-lg hover:shadow-xl transition-shadow duration-300">
               <CardContent className="p-8 text-center">
                 <div className="w-16 h-16 bg-gradient-to-r from-red-400 to-red-600 text-white rounded-full flex items-center justify-center text-2xl font-bold mx-auto mb-6">
-                  {'🎛️'}
+                  🎛️
                 </div>
                 <h3 className="text-xl font-bold mb-4">Job-Type & Location Filters</h3>
                 <p className="text-gray-600">Set your preferences for job types, budget ranges, and service areas to get perfect matches.</p>
@@ -452,45 +415,7 @@ const ContractorSignup = () => {
         </div>
       </div>
 
-      <div className="py-20 bg-gradient-to-r from-blue-600 to-indigo-600 text-white">
-        <div className="container mx-auto px-4 text-center">
-          <h2 className="text-4xl font-bold mb-6">Your Next Job Is Waiting — Claim It Today</h2>
-          <p className="text-xl mb-8 max-w-2xl mx-auto opacity-90">
-            Join thousands of contractors who are growing their business with exclusive, high-quality leads.
-          </p>
-          
-          <div className="flex flex-col sm:flex-row gap-4 justify-center items-center mb-8">
-            <Button 
-              size="lg"
-              onClick={() => window.location.href = '/signup'}
-              className="bg-white text-blue-600 hover:bg-gray-100 px-8 py-4 text-xl font-bold transition-all duration-300 transform hover:scale-105 shadow-lg"
-            >
-              Sign Up Free
-            </Button>
-            <Button 
-              size="lg"
-              variant="outline"
-              onClick={() => window.location.href = '/contractor-login'}
-              className="border-2 border-white text-white hover:bg-white hover:text-blue-600 px-8 py-4 text-xl font-bold transition-all duration-300"
-            >
-              Access Dashboard
-            </Button>
-          </div>
-          
-          <p className="text-sm opacity-75">
-            Questions? Contact us through our support portal
-          </p>
-        </div>
-      </div>
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12" id="signup-form">
-        <div className="text-center mb-12">
-          <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
-            Ready to Get Started?
-          </h2>
-          <p className="text-xl text-gray-600 max-w-2xl mx-auto">
-            Join thousands of contractors who are growing their business with exclusive, high-quality leads.
-          </p>
-        </div>
 
         {/* About Us Section */}
         <div className="mb-16 bg-gradient-to-r from-blue-50 to-indigo-50 p-8 rounded-xl">
@@ -556,46 +481,7 @@ const ContractorSignup = () => {
           </div>
         </div>
 
-        {/* Testimonials Section */}
-        <div className="mb-16">
-          <h3 className="text-3xl font-bold text-center text-gray-900 mb-12">What Contractors Say</h3>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            {testimonials.map((testimonial, index) => (
-              <Card key={index} className="border-2 hover:shadow-lg transition-shadow">
-                <CardContent className="p-6">
-                  <div className="flex items-center mb-4">
-                    <div className="w-12 h-12 bg-blue-500 text-white rounded-full flex items-center justify-center font-bold mr-4">
-                      {testimonial.avatar}
-                    </div>
-                    <div>
-                      <h4 className="font-semibold">{testimonial.name}</h4>
-                      <p className="text-gray-600 text-sm">{testimonial.title}</p>
-                    </div>
-                  </div>
-                  <p className="text-gray-700 italic">"{testimonial.quote}"</p>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
-        </div>
 
-        <div className="mb-12">
-          <h3 className="text-3xl font-bold text-center text-gray-900 mb-8">How It Works</h3>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            {updatedHowItWorksSteps.map((step, index) => {
-              const IconComponent = step.icon
-              return (
-                <div key={index} className="text-center">
-                  <div className="w-16 h-16 bg-blue-500 text-white rounded-full flex items-center justify-center mx-auto mb-4">
-                    <IconComponent className="w-8 h-8" />
-                  </div>
-                  <h4 className="font-bold text-lg mb-2">{step.title}</h4>
-                  <p className="text-gray-600">{step.description}</p>
-                </div>
-              )
-            })}
-          </div>
-        </div>
 
 
         <div className="mb-12 bg-gray-50 p-8 rounded-lg">
