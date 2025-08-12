@@ -59,11 +59,11 @@ export const Contact = () => {
     <div className="min-h-screen bg-gray-50">
       <nav className="bg-white border-b border-gray-200 sticky top-0 z-50 shadow-sm">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center h-16">
+          <div className="flex justify-center items-center h-16 relative">
             <div className="flex items-center">
               <Logo className="max-w-xs" width={250} height={75} withBadge={true} withTagline={true} clickable={false} />
             </div>
-            <div className="flex items-center space-x-4">
+            <div className="absolute right-0 flex items-center space-x-4">
               <Button variant="outline" onClick={() => window.location.href = '/'}>
                 Home
               </Button>
