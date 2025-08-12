@@ -5,6 +5,7 @@ import { Label } from './ui/label'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from './ui/card'
 import { Alert, AlertDescription } from './ui/alert'
 import { IndustryDropdown } from './shared/IndustryDropdown'
+import { Logo } from './ui/Logo'
 import { getApiUrl } from '../lib/api'
 
 interface SignupFormProps {
@@ -109,6 +110,15 @@ export const SignupForm = ({ prefilledData }: SignupFormProps) => {
     <div className="min-h-screen bg-gray-50 py-12">
       <div className="max-w-2xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="text-center mb-8">
+          <div className="flex justify-center mb-6">
+            <Logo 
+              width={286} 
+              height={85} 
+              withBadge={true}
+              withTagline={true}
+              clickable={false}
+            />
+          </div>
           <h1 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
             Create Your Free Account
           </h1>
