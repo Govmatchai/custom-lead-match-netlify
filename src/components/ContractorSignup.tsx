@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
 import { CheckCircle, Star, DollarSign, Phone, Lock } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
@@ -10,21 +10,11 @@ import { TestimonialsCarousel } from './TestimonialsCarousel'
 const ContractorSignup = () => {
   const [showMobileMenu, setShowMobileMenu] = useState(false)
   const [stickyCtaDismissed, setStickyCtaDismissed] = useState(localStorage.getItem('dismiss_sticky_signup') === 'true')
-  const [isScrolled, setIsScrolled] = useState(false)
 
 
 
 
 
-  useEffect(() => {
-    const handleScroll = () => {
-      const scrollTop = window.scrollY
-      setIsScrolled(scrollTop > 100)
-    }
-
-    window.addEventListener('scroll', handleScroll)
-    return () => window.removeEventListener('scroll', handleScroll)
-  }, [])
 
   const trustBadges = [
     { icon: CheckCircle, text: "TCPA Compliant" },
@@ -42,14 +32,6 @@ const ContractorSignup = () => {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-16">
             <div className="flex items-center">
-              <Logo 
-                className="max-w-sm md:max-w-md transition-all duration-300" 
-                width={286} 
-                height={85} 
-                withBadge={true}
-                withTagline={true}
-                isSticky={isScrolled}
-              />
             </div>
             <div className="hidden md:flex items-center space-x-4">
               <Button 
@@ -205,7 +187,7 @@ const ContractorSignup = () => {
             <div className="grid grid-cols-1 md:grid-cols-3 gap-12">
               <div className="text-center relative">
                 <div className="w-24 h-24 bg-gradient-to-r from-blue-500 to-indigo-600 text-white rounded-full flex items-center justify-center text-3xl font-bold mx-auto mb-6 shadow-lg">
-                  <span>📝</span>
+                  📝
                 </div>
                 <h3 className="text-2xl font-bold mb-4">Sign Up & Create Profile</h3>
                 <p className="text-gray-600 text-lg">Set up your contractor profile with your services, coverage areas, and preferences in minutes.</p>
@@ -214,7 +196,7 @@ const ContractorSignup = () => {
               
               <div className="text-center relative">
                 <div className="w-24 h-24 bg-gradient-to-r from-blue-500 to-indigo-600 text-white rounded-full flex items-center justify-center text-3xl font-bold mx-auto mb-6 shadow-lg">
-                  <span>🤝</span>
+                  🤝
                 </div>
                 <h3 className="text-2xl font-bold mb-4">Get Matched With Exclusive Leads</h3>
                 <p className="text-gray-600 text-lg">Our AI matches you with high-quality leads in your area. No bidding wars - each lead goes to one contractor.</p>
@@ -223,7 +205,7 @@ const ContractorSignup = () => {
               
               <div className="text-center">
                 <div className="w-24 h-24 bg-gradient-to-r from-blue-500 to-indigo-600 text-white rounded-full flex items-center justify-center text-3xl font-bold mx-auto mb-6 shadow-lg">
-                  <span>📈</span>
+                  📈
                 </div>
                 <h3 className="text-2xl font-bold mb-4">Close More Jobs & Grow</h3>
                 <p className="text-gray-600 text-lg">Focus on what you do best - completing quality work and growing your business with consistent leads.</p>
@@ -281,7 +263,7 @@ const ContractorSignup = () => {
             <Card className="border-0 shadow-lg hover:shadow-xl transition-shadow duration-300">
               <CardContent className="p-8 text-center">
                 <div className="w-16 h-16 bg-gradient-to-r from-red-400 to-red-600 text-white rounded-full flex items-center justify-center text-2xl font-bold mx-auto mb-6">
-                  <span>🎛️</span>
+                  🎛️
                 </div>
                 <h3 className="text-xl font-bold mb-4">Job-Type & Location Filters</h3>
                 <p className="text-gray-600">Set your preferences for job types, budget ranges, and service areas to get perfect matches.</p>
