@@ -6,6 +6,7 @@ import { Input } from './ui/input'
 import { Label } from './ui/label'
 import { Loader2, AlertCircle, CheckCircle, Eye, EyeOff } from 'lucide-react'
 import { Logo } from './ui/Logo'
+import { supabase } from '../lib/supabase'
 
 export default function ResetPassword() {
   const navigate = useNavigate()
@@ -15,20 +16,64 @@ export default function ResetPassword() {
   const [success, setSuccess] = useState(false)
   const [showPassword, setShowPassword] = useState(false)
   const [showConfirmPassword, setShowConfirmPassword] = useState(false)
+  const [authTokens, setAuthTokens] = useState<{accessToken: string | null, refreshToken: string | null}>({
+    accessToken: null,
+    refreshToken: null
+  })
   const [formData, setFormData] = useState({
     password: '',
     confirmPassword: ''
   })
 
   const userType = searchParams.get('type') || 'contractor'
-  const accessToken = searchParams.get('access_token')
-  const refreshToken = searchParams.get('refresh_token')
 
   useEffect(() => {
-    if (!accessToken) {
+    const extractAuthTokens = () => {
+      const hash = new URLSearchParams(window.location.hash.slice(1))
+      const hashAccessToken = hash.get('access_token')
+      const hashRefreshToken = hash.get('refresh_token')
+      
+      const queryAccessToken = searchParams.get('access_token')
+      const queryRefreshToken = searchParams.get('refresh_token')
+      
+      const code = searchParams.get('code')
+      
+      if (hashAccessToken && hashRefreshToken) {
+        return { accessToken: hashAccessToken, refreshToken: hashRefreshToken }
+      } else if (queryAccessToken && queryRefreshToken) {
+        return { accessToken: queryAccessToken, refreshToken: queryRefreshToken }
+      } else if (code) {
+        handleCodeExchange(code)
+        return { accessToken: null, refreshToken: null }
+      }
+      
+      return { accessToken: null, refreshToken: null }
+    }
+
+    const tokens = extractAuthTokens()
+    setAuthTokens(tokens)
+    
+    if (!tokens.accessToken && !searchParams.get('code')) {
       setError('Invalid or expired reset link')
     }
-  }, [accessToken])
+  }, [searchParams])
+
+  const handleCodeExchange = async (code: string) => {
+    try {
+      const { data, error } = await supabase.auth.exchangeCodeForSession(code)
+      if (error) throw error
+      
+      if (data.session) {
+        setAuthTokens({
+          accessToken: data.session.access_token,
+          refreshToken: data.session.refresh_token
+        })
+      }
+    } catch (error) {
+      console.error('Code exchange error:', error)
+      setError('Failed to process reset link')
+    }
+  }
 
   const handleInputChange = (field: string, value: string) => {
     setFormData(prev => ({
@@ -55,31 +100,31 @@ export default function ResetPassword() {
     }
 
     try {
-      const response = await fetch('/.netlify/functions/reset-password', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          access_token: accessToken,
-          refresh_token: refreshToken,
-          new_password: formData.password,
-          user_type: userType
+      if (authTokens.accessToken && authTokens.refreshToken) {
+        const { error: sessionError } = await supabase.auth.setSession({
+          access_token: authTokens.accessToken,
+          refresh_token: authTokens.refreshToken
         })
+        
+        if (sessionError) {
+          throw new Error('Invalid or expired reset token')
+        }
+      }
+
+      const { error: updateError } = await supabase.auth.updateUser({
+        password: formData.password
       })
 
-      const data = await response.json()
-
-      if (response.ok) {
-        setSuccess(true)
-        setTimeout(() => {
-          navigate(userType === 'admin' ? '/admin' : '/contractor-login')
-        }, 3000)
-      } else {
-        setError(data.message || 'Failed to reset password')
+      if (updateError) {
+        throw new Error(updateError.message || 'Failed to update password')
       }
-    } catch (error) {
-      setError('Network error. Please try again.')
+
+      setSuccess(true)
+      setTimeout(() => {
+        navigate(userType === 'admin' ? '/admin' : '/login')
+      }, 3000)
+    } catch (error: any) {
+      setError(error.message || 'Network error. Please try again.')
     } finally {
       setLoading(false)
     }
@@ -166,7 +211,7 @@ export default function ResetPassword() {
               </div>
             </div>
 
-            <Button type="submit" className="w-full" disabled={loading || !accessToken}>
+            <Button type="submit" className="w-full" disabled={loading || (!authTokens.accessToken && !searchParams.get('code'))}>
               {loading ? (
                 <>
                   <Loader2 className="w-4 h-4 animate-spin mr-2" />
