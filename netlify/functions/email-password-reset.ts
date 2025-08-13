@@ -15,7 +15,7 @@ export const handler: Handler = async (event) => {
       options: { redirectTo: `${appBaseUrl}/reset-password` }
     });
     if (error || !data) throw new Error(error?.message || "Failed to generate link");
-    const resetUrl = data.properties?.action_link || data.action_link;
+    const resetUrl = data.properties?.action_link;
 
     await sendTemplateEmail(email, PASSWORD_RESET_TEMPLATE_ID, {
       email, reset_url: resetUrl, app_base_url: appBaseUrl
