@@ -133,7 +133,7 @@ exports.handler = async (event, context) => {
     }
 
     try {
-      const welcomeEmailUrl = `${process.env.URL || 'https://customleadmatch.netlify.app'}/.netlify/functions/send-welcome-email`
+      const welcomeEmailUrl = `${process.env.URL || 'https://customleadmatch.netlify.app'}/.netlify/functions/email-welcome`
       
       const welcomeEmailResponse = await fetch(welcomeEmailUrl, {
         method: 'POST',
@@ -141,10 +141,10 @@ exports.handler = async (event, context) => {
           'Content-Type': 'application/json'
         },
         body: JSON.stringify({
-          contractor_id: contractor.id,
+          to: email,
+          first_name: contact_name,
           email: email,
-          name: contact_name,
-          business_name: business_name
+          company: business_name
         })
       })
       

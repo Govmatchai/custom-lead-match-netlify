@@ -300,6 +300,26 @@ export const handler = async (event, context) => {
             } else {
               console.log(`Successfully added $${depositAmount} to contractor ${contractor_id} wallet via Checkout Session`)
               console.log('Inserted checkout session transaction:', data)
+              
+              try {
+                const emailUrl = `${process.env.URL || 'https://customleadmatch.netlify.app'}/.netlify/functions/email-lead-confirmation`
+                await fetch(emailUrl, {
+                  method: 'POST',
+                  headers: { 'Content-Type': 'application/json' },
+                  body: JSON.stringify({
+                    to: session.customer_details?.email,
+                    first_name: session.metadata?.contractor_name || 'Contractor',
+                    service_category: session.metadata?.service_category || 'Service',
+                    city: session.metadata?.city || 'Your Area',
+                    state: session.metadata?.state || '',
+                    summary: session.metadata?.lead_summary || 'Lead details available in dashboard',
+                    lead_id: session.metadata?.lead_id || 'N/A',
+                    new_balance: (parseFloat(session.metadata?.new_balance || '0')).toFixed(2)
+                  })
+                })
+              } catch (emailError) {
+                console.error('Failed to send lead confirmation email:', emailError)
+              }
             }
           } else {
             console.log(`Transaction already exists for checkout session ${session.id}, skipping`)

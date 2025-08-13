@@ -97,11 +97,33 @@ export const handler = async (event, context) => {
       }
     }
 
-    const { error: resetError } = await supabase.auth.resetPasswordForEmail(email, {
-      redirectTo: redirect_url
-    })
+    try {
+      const resetEmailUrl = `${process.env.URL || 'https://customleadmatch.netlify.app'}/.netlify/functions/email-password-reset`
+      
+      const resetEmailResponse = await fetch(resetEmailUrl, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ email })
+      })
 
-    if (resetError) {
+      if (!resetEmailResponse.ok) {
+        const errorText = await resetEmailResponse.text()
+        console.error('Failed to send reset email:', errorText)
+        return {
+          statusCode: 500,
+          headers: {
+            'Content-Type': 'application/json',
+            'Access-Control-Allow-Origin': '*'
+          },
+          body: JSON.stringify({ 
+            success: false, 
+            message: 'Failed to send reset email' 
+          })
+        }
+      }
+    } catch (resetError) {
       console.error('Password reset error:', resetError)
       return {
         statusCode: 500,
