@@ -1,4 +1,4 @@
-import postmark from "postmark";
+import * as postmark from "postmark";
 
 const required = (name: string, v?: string) => {
   if (!v) throw new Error(`Missing env var: ${name}`);
