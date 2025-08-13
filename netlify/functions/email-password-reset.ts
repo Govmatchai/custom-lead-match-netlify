@@ -19,7 +19,7 @@ export const handler: Handler = async (event) => {
 
     await sendTemplateEmail(email, PASSWORD_RESET_TEMPLATE_ID, {
       email, reset_url: resetUrl, app_base_url: appBaseUrl
-    });
+    }, true);
     return { statusCode: 200, body: JSON.stringify({ ok: true }) };
   } catch (e:any) {
     return { statusCode: 400, body: JSON.stringify({ error: e.message }) };

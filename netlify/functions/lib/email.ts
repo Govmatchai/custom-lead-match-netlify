@@ -20,13 +20,32 @@ type TemplateModel = Record<string, any>;
 export async function sendTemplateEmail(
   to: string,
   templateId: number | string,
-  model: TemplateModel
+  model: TemplateModel,
+  includeLogoAttachment: boolean = false
 ) {
-  return emailClient.sendEmailWithTemplate({
+  const emailOptions: any = {
     From: fromAddress,
     To: to,
     TemplateId: Number(templateId),
     TemplateModel: model,
     MessageStream: "outbound"
-  });
+  };
+
+  if (includeLogoAttachment) {
+    const fs = await import('fs');
+    const logoPath = 'public/assets/email/clm-logo.png';
+    try {
+      const logoContent = await fs.promises.readFile(logoPath);
+      emailOptions.Attachments = [{
+        Name: "clm-logo.png",
+        Content: logoContent.toString("base64"),
+        ContentType: "image/png",
+        ContentID: "cid:clm-logo"
+      }];
+    } catch (error) {
+      console.warn('Logo attachment failed, using HTTPS fallback:', error);
+    }
+  }
+
+  return emailClient.sendEmailWithTemplate(emailOptions);
 }

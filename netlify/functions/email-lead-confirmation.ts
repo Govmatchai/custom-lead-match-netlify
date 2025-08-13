@@ -12,7 +12,7 @@ export const handler: Handler = async (event) => {
     await sendTemplateEmail(to, LEAD_PURCHASE_TEMPLATE_ID, {
       first_name, service_category, city, state, summary, lead_id, new_balance,
       app_base_url: appBaseUrl
-    });
+    }, true);
     return { statusCode: 200, body: JSON.stringify({ ok: true }) };
   } catch (e:any) {
     return { statusCode: 400, body: JSON.stringify({ error: e.message }) };

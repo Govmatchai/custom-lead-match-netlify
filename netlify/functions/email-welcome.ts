@@ -9,7 +9,7 @@ export const handler: Handler = async (event) => {
     if (!to || !first_name || !email) throw new Error("Missing params");
     await sendTemplateEmail(to, WELCOME_TEMPLATE_ID, {
       first_name, email, company, app_base_url: appBaseUrl
-    });
+    }, true);
     return { statusCode: 200, body: JSON.stringify({ ok: true }) };
   } catch (e:any) {
     return { statusCode: 400, body: JSON.stringify({ error: e.message }) };
