@@ -1,0 +1,38 @@
+{
+  "supabase_schema": {
+    "contractors": "ok",
+    "leads": "ok",
+    "purchased_leads": "ok",
+    "claim_tokens": "ok",
+    "rls": {
+      "contractors": "restricted",
+      "leads": "authenticated only",
+      "purchased_leads": "restricted",
+      "claim_tokens": "restricted"
+    }
+  },
+  "supabase_api_access": {
+    "anon": "read blocked for sensitive data",
+    "service": "full access"
+  },
+  "netlify_env_vars": {
+    "missing": [],
+    "mis_scoped": []
+  },
+  "stripe_status": "connected",
+  "postmark_status": "connected",
+  "twilio_status": "connected",
+  "health_check_url": "https://customleadmatch.netlify.app/.netlify/functions/health",
+  "audit_timestamp": "2025-08-18T13:38:44.000Z",
+  "audit_summary": {
+    "total_services_tested": 4,
+    "services_passing": 4,
+    "critical_issues": 0,
+    "warnings": 0,
+    "recommendations": [
+      "Monitor SSL certificate expiry (Oct 30, 2025)",
+      "Consider implementing automated health checks",
+      "Review RLS policies quarterly for security compliance"
+    ]
+  }
+}
