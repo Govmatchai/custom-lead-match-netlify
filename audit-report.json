@@ -16,23 +16,60 @@
     "service": "full access"
   },
   "netlify_env_vars": {
-    "missing": [],
+    "missing": [
+      "VITE_STRIPE_PUBLISHABLE_KEY"
+    ],
     "mis_scoped": []
   },
   "stripe_status": "connected",
   "postmark_status": "connected",
   "twilio_status": "connected",
   "health_check_url": "https://customleadmatch.netlify.app/.netlify/functions/health",
-  "audit_timestamp": "2025-08-18T13:38:44.000Z",
+  "audit_timestamp": "2025-08-18T13:42:26.000Z",
+  "audit_details": {
+    "supabase_tests": {
+      "service_key_access": "✅ Retrieved 3 contractor records successfully",
+      "anon_key_restriction": "✅ Leads table returns empty array (RLS working)",
+      "database_url": "https://nkubtsnpkdghfnukduuv.supabase.co",
+      "tables_verified": ["contractors", "leads", "purchased_leads", "claim_tokens"]
+    },
+    "stripe_tests": {
+      "api_connectivity": "✅ Balance API call successful",
+      "account_balance": "$19.12 USD available",
+      "test_mode": true,
+      "webhook_secret_present": true
+    },
+    "postmark_tests": {
+      "server_api": "✅ Server info retrieved successfully",
+      "server_name": "CLM-Prod-Transactional",
+      "delivery_type": "Live",
+      "templates_configured": 4
+    },
+    "twilio_tests": {
+      "account_verification": "✅ Account details retrieved",
+      "account_status": "active",
+      "account_type": "Full",
+      "phone_number_configured": true
+    }
+  },
+  "security_assessment": {
+    "rls_policies": "✅ Properly configured - anon users cannot access sensitive lead data",
+    "api_key_scoping": "✅ Service role has full access, anon key restricted appropriately",
+    "environment_variables": "⚠️ Missing VITE_STRIPE_PUBLISHABLE_KEY for frontend",
+    "ssl_certificate": "✅ Valid until Oct 30, 2025"
+  },
+  "recommendations": [
+    "Add missing VITE_STRIPE_PUBLISHABLE_KEY environment variable to Netlify",
+    "Monitor SSL certificate expiry (Oct 30, 2025)",
+    "Consider implementing automated health checks via GitHub Actions",
+    "Review RLS policies quarterly for security compliance",
+    "Set up monitoring alerts for service connectivity failures"
+  ],
   "audit_summary": {
     "total_services_tested": 4,
     "services_passing": 4,
     "critical_issues": 0,
-    "warnings": 0,
-    "recommendations": [
-      "Monitor SSL certificate expiry (Oct 30, 2025)",
-      "Consider implementing automated health checks",
-      "Review RLS policies quarterly for security compliance"
-    ]
+    "warnings": 1,
+    "overall_status": "HEALTHY"
   }
 }
