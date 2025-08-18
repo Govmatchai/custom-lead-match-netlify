@@ -1,5 +1,5 @@
-import React, { useState } from 'react'
-import { Users, FileText, CheckCircle, Clock, Eye, EyeOff, DollarSign, Settings, Plus, Download } from 'lucide-react'
+import React, { useState, useEffect } from 'react'
+import { Users, FileText, CheckCircle, Clock, Eye, EyeOff, DollarSign, Settings, Plus, Download, Mail } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -8,6 +8,10 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Alert, AlertDescription } from '@/components/ui/alert'
 import { Logo } from '@/components/ui/Logo'
 import { ForgotPasswordModal } from './ForgotPasswordModal'
+import { MetricCard } from './admin/MetricCard'
+import { LeadsByServiceChart, WalletDistributionChart, RevenueChart, TopContractorsCard } from './admin/DashboardCharts'
+import { AlertsPanel } from './admin/AlertsPanel'
+import { DateRangeFilter } from './admin/DateRangeFilter'
 
 interface AdminStats {
   total_contractors: number
@@ -94,6 +98,9 @@ const AdminDashboard = () => {
   const [newLead, setNewLead] = useState({
     customer_name: '', phone: '', email: '', service_category: '', sub_service: '', zip_code: '', description: ''
   })
+  const [dateRange, setDateRange] = useState('30')
+  const [dashboardStats, setDashboardStats] = useState<any>(null)
+  const [notificationStats, setNotificationStats] = useState<any>(null)
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -125,12 +132,14 @@ const AdminDashboard = () => {
   const fetchAdminData = async () => {
     setLoading(true)
     try {
-      const [statsResponse, contractorsResponse, leadsResponse, transactionsResponse, pricingResponse] = await Promise.all([
+      const [statsResponse, contractorsResponse, leadsResponse, transactionsResponse, pricingResponse, dashboardResponse, notificationResponse] = await Promise.all([
         fetch('/.netlify/functions/admin-stats'),
         fetch('/.netlify/functions/admin-contractors'),
         fetch('/.netlify/functions/admin-leads'),
         fetch('/.netlify/functions/admin-transactions'),
-        fetch('/.netlify/functions/admin-pricing')
+        fetch('/.netlify/functions/admin-pricing'),
+        fetch(`/.netlify/functions/admin-dashboard-stats?dateRange=${dateRange}`),
+        fetch(`/.netlify/functions/admin-notification-stats?dateRange=${dateRange}`)
       ])
 
       if (statsResponse.ok) {
@@ -162,6 +171,16 @@ const AdminDashboard = () => {
           initialPrices[category] = (price as number).toString()
         })
         setCategoryPrices(initialPrices)
+      }
+
+      if (dashboardResponse.ok) {
+        const dashboardData = await dashboardResponse.json()
+        setDashboardStats(dashboardData)
+      }
+
+      if (notificationResponse.ok) {
+        const notificationData = await notificationResponse.json()
+        setNotificationStats(notificationData)
       }
     } catch (error) {
       console.error('Failed to fetch admin data:', error)
@@ -277,6 +296,12 @@ const AdminDashboard = () => {
       console.error('Failed to reset credits:', error)
     }
   }
+
+  useEffect(() => {
+    if (isAuthenticated) {
+      fetchAdminData()
+    }
+  }, [isAuthenticated, dateRange])
 
   if (!isAuthenticated) {
     return (
@@ -436,47 +461,112 @@ const AdminDashboard = () => {
           </div>
         </div>
 
-        {activeTab === 'stats' && stats && (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-            <Card>
-              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">Total Contractors</CardTitle>
-                <Users className="h-4 w-4 text-muted-foreground" />
-              </CardHeader>
-              <CardContent>
-                <div className="text-2xl font-bold">{stats.total_contractors}</div>
-              </CardContent>
-            </Card>
+        {activeTab === 'stats' && (
+          <div className="space-y-6">
+            <div className="flex justify-between items-center">
+              <h2 className="text-2xl font-bold">Dashboard Overview</h2>
+              <DateRangeFilter value={dateRange} onChange={setDateRange} />
+            </div>
 
-            <Card>
-              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">Total Leads</CardTitle>
-                <FileText className="h-4 w-4 text-muted-foreground" />
-              </CardHeader>
-              <CardContent>
-                <div className="text-2xl font-bold">{stats.total_leads}</div>
-              </CardContent>
-            </Card>
+            <AlertsPanel 
+              inactiveContractors={dashboardStats?.inactiveContractors || 0}
+              unclaimedLeads={dashboardStats?.unclaimedLeads || 0}
+              lowWalletBalances={dashboardStats?.lowWalletBalances || 0}
+            />
 
-            <Card>
-              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">Claimed Leads</CardTitle>
-                <CheckCircle className="h-4 w-4 text-muted-foreground" />
-              </CardHeader>
-              <CardContent>
-                <div className="text-2xl font-bold">{stats.claimed_leads}</div>
-              </CardContent>
-            </Card>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+              <MetricCard
+                title="Active Contractors"
+                value={dashboardStats?.activeContractors || 0}
+                trend={dashboardStats?.contractorGrowth}
+                icon={<Users className="h-4 w-4" />}
+                color="green"
+              />
+              <MetricCard
+                title="Total Revenue"
+                value={`$${dashboardStats?.totalRevenue || '0.00'}`}
+                trend={dashboardStats?.revenueGrowth}
+                icon={<DollarSign className="h-4 w-4" />}
+                color="green"
+              />
+              <MetricCard
+                title="Avg Time to Claim"
+                value={`${dashboardStats?.avgTimeToClaimHours || 0}h`}
+                trend={dashboardStats?.claimTimeImprovement}
+                icon={<Clock className="h-4 w-4" />}
+                color="blue"
+              />
+              <MetricCard
+                title="Email Delivery Rate"
+                value={`${notificationStats?.overall_delivery_rate || dashboardStats?.emailDeliveryRate || 0}%`}
+                trend={dashboardStats?.deliveryRateChange}
+                icon={<Mail className="h-4 w-4" />}
+                color="green"
+              />
+            </div>
 
-            <Card>
-              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">Unclaimed Leads</CardTitle>
-                <Clock className="h-4 w-4 text-muted-foreground" />
-              </CardHeader>
-              <CardContent>
-                <div className="text-2xl font-bold">{stats.unclaimed_leads}</div>
-              </CardContent>
-            </Card>
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+              <LeadsByServiceChart data={dashboardStats?.leadsByService || []} />
+              <WalletDistributionChart data={dashboardStats?.walletDistribution || []} />
+              <RevenueChart data={dashboardStats?.revenueData || []} />
+              <TopContractorsCard data={dashboardStats?.topContractors || []} />
+            </div>
+
+            {stats && (
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mt-8">
+                <Card>
+                  <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                    <CardTitle className="text-sm font-medium">Total Contractors</CardTitle>
+                    <Users className="h-4 w-4 text-muted-foreground" />
+                  </CardHeader>
+                  <CardContent>
+                    <div className="text-2xl font-bold">{stats.total_contractors}</div>
+                    <p className="text-xs text-muted-foreground">
+                      Active businesses registered
+                    </p>
+                  </CardContent>
+                </Card>
+
+                <Card>
+                  <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                    <CardTitle className="text-sm font-medium">Total Leads</CardTitle>
+                    <FileText className="h-4 w-4 text-muted-foreground" />
+                  </CardHeader>
+                  <CardContent>
+                    <div className="text-2xl font-bold">{stats.total_leads}</div>
+                    <p className="text-xs text-muted-foreground">
+                      Customer inquiries received
+                    </p>
+                  </CardContent>
+                </Card>
+
+                <Card>
+                  <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                    <CardTitle className="text-sm font-medium">Claimed Leads</CardTitle>
+                    <CheckCircle className="h-4 w-4 text-muted-foreground" />
+                  </CardHeader>
+                  <CardContent>
+                    <div className="text-2xl font-bold">{stats.claimed_leads}</div>
+                    <p className="text-xs text-muted-foreground">
+                      Leads purchased by contractors
+                    </p>
+                  </CardContent>
+                </Card>
+
+                <Card>
+                  <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                    <CardTitle className="text-sm font-medium">Unclaimed Leads</CardTitle>
+                    <Clock className="h-4 w-4 text-muted-foreground" />
+                  </CardHeader>
+                  <CardContent>
+                    <div className="text-2xl font-bold">{stats.unclaimed_leads}</div>
+                    <p className="text-xs text-muted-foreground">
+                      Available for contractors
+                    </p>
+                  </CardContent>
+                </Card>
+              </div>
+            )}
           </div>
         )}
 
