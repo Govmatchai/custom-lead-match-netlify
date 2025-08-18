@@ -64,11 +64,18 @@ async function sendWalletFundedNotifications(contractor, lead) {
     formattedPhone = '+' + formattedPhone;
   }
 
-  await twilioClient.messages.create({
-    body: smsMessage,
-    from: process.env.TWILIO_PHONE_NUMBER,
-    to: formattedPhone
-  });
+  try {
+    console.log(`📱 Attempting to send SMS to ${formattedPhone} for contractor ${contractor.id}`);
+    const smsResult = await twilioClient.messages.create({
+      body: smsMessage,
+      from: process.env.TWILIO_PHONE_NUMBER,
+      to: formattedPhone
+    });
+    console.log(`✅ SMS sent successfully to ${formattedPhone}:`, smsResult.sid);
+  } catch (smsError) {
+    console.error(`❌ SMS failed for ${formattedPhone}:`, smsError.message);
+    throw smsError;
+  }
 
   const emailSubject = 'New Exclusive Lead Available – Claim It Now';
   const emailHtml = `
