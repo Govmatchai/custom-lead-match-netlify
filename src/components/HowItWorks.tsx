@@ -89,8 +89,8 @@ export default function HowItWorks() {
                   <div className="text-sm text-gray-600">Monthly Fees</div>
                 </div>
                 <div className="text-center">
-                  <div className="text-3xl font-bold text-blue-600">3</div>
-                  <div className="text-sm text-gray-600">Free Leads to Start</div>
+                  <div className="text-3xl font-bold text-blue-600">$25</div>
+                  <div className="text-sm text-gray-600">Free Lead Credit</div>
                 </div>
               </div>
             </div>
@@ -101,7 +101,7 @@ export default function HowItWorks() {
                 size="lg"
                 className="bg-blue-600 hover:bg-blue-700"
               >
-                Get Started - Claim Your 3 Free Leads
+                Get Started - Claim Your $25 Free Lead Credit
               </Button>
             </div>
           </CardContent>

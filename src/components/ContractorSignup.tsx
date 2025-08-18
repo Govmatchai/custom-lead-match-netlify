@@ -373,7 +373,7 @@ const ContractorSignup = () => {
                 <div className="w-8 h-8 bg-green-500 text-white rounded-full flex items-center justify-center mr-4">
                   <CheckCircle className="w-5 h-5" />
                 </div>
-                <span className="text-lg font-semibold">3 free leads to prove we work</span>
+                <span className="text-lg font-semibold">$25 Free Lead Credit to prove we work</span>
               </div>
               <div className="flex items-center">
                 <div className="w-8 h-8 bg-green-500 text-white rounded-full flex items-center justify-center mr-4">
