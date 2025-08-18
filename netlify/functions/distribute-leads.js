@@ -1,5 +1,6 @@
 import { createClient } from '@supabase/supabase-js'
 import twilio from 'twilio'
+import { notifyContractorsForLead } from './notify-contractors.js'
 import dotenv from 'dotenv'
 
 dotenv.config({ path: '../../.env' })
@@ -128,32 +129,7 @@ async function distributeLead(lead) {
     return
   }
 
-  const claimUrl = `${process.env.URL || 'https://customleadmatch.netlify.app'}/claim/${token}`
-
-  for (const contractor of targetContractors) {
-    try {
-      let formattedPhone = contractor.phone.replace(/\D/g, '')
-      if (formattedPhone.length === 10) {
-        formattedPhone = '+1' + formattedPhone
-      } else if (formattedPhone.length === 11 && formattedPhone.startsWith('1')) {
-        formattedPhone = '+' + formattedPhone
-      } else {
-        console.error(`Invalid phone format for contractor ${contractor.id}`)
-        continue
-      }
-
-      const priority = lead.lead_score >= 85 ? '🔥 Priority' : 
-                      lead.lead_score >= 70 ? '⭐ Quality' : '📋 Available'
-      
-      await twilioClient.messages.create({
-        body: `${priority} ${lead.service_category} Lead: ${lead.zip_code} - ${lead.sub_service}. Smart-matched for your area. Claim: ${claimUrl}`,
-        from: process.env.TWILIO_PHONE_NUMBER,
-        to: formattedPhone
-      })
-
-      console.log(`✅ SMS sent to contractor ${contractor.id} for lead ${lead.id}`)
-    } catch (smsError) {
-      console.error(`❌ SMS error for contractor ${contractor.id}:`, smsError)
-    }
-  }
+  const notificationResults = await notifyContractorsForLead(lead, targetContractors)
+  
+  console.log(`✅ Lead ${lead.id} notifications sent:`, notificationResults)
 }
