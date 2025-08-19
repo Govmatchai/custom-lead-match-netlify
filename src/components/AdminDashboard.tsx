@@ -1,11 +1,12 @@
 import React, { useState, useEffect } from 'react'
-import { Users, FileText, CheckCircle, Clock, Eye, EyeOff, DollarSign, Settings, Plus, Download, Mail } from 'lucide-react'
+import { Users, FileText, CheckCircle, Clock, Eye, EyeOff, DollarSign, Settings, Plus, Download, Mail, Trash2 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Alert, AlertDescription } from '@/components/ui/alert'
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog'
 import { Logo } from '@/components/ui/Logo'
 import { ForgotPasswordModal } from './ForgotPasswordModal'
 import { MetricCard } from './admin/MetricCard'
@@ -294,6 +295,46 @@ const AdminDashboard = () => {
       }
     } catch (error) {
       console.error('Failed to reset credits:', error)
+    }
+  }
+
+  const handleDeleteContractor = async (contractorId: string) => {
+    try {
+      const response = await fetch('/.netlify/functions/admin-delete-contractor', {
+        method: 'DELETE',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ contractor_id: contractorId })
+      })
+
+      if (response.ok) {
+        fetchAdminData()
+      } else {
+        console.error('Failed to delete contractor')
+      }
+    } catch (error) {
+      console.error('Failed to delete contractor:', error)
+    }
+  }
+
+  const handleDeleteLead = async (leadId: string) => {
+    try {
+      const response = await fetch('/.netlify/functions/admin-delete-lead', {
+        method: 'DELETE',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ lead_id: leadId })
+      })
+
+      if (response.ok) {
+        fetchAdminData()
+      } else {
+        console.error('Failed to delete lead')
+      }
+    } catch (error) {
+      console.error('Failed to delete lead:', error)
     }
   }
 
@@ -625,13 +666,39 @@ const AdminDashboard = () => {
                         <span className="text-sm text-gray-500">
                           Registered: {new Date(contractor.created_at).toLocaleDateString()}
                         </span>
-                        <Button
-                          onClick={() => handleResetCredits(contractor.id)}
-                          variant="outline"
-                          size="sm"
-                        >
-                          Reset Credits to 3
-                        </Button>
+                        <div className="flex gap-2">
+                          <Button
+                            onClick={() => handleResetCredits(contractor.id)}
+                            variant="outline"
+                            size="sm"
+                          >
+                            Reset Credits to 3
+                          </Button>
+                          <Dialog>
+                            <DialogTrigger asChild>
+                              <Button variant="outline" size="sm" className="text-red-600 hover:text-red-700">
+                                <Trash2 className="h-4 w-4" />
+                              </Button>
+                            </DialogTrigger>
+                            <DialogContent>
+                              <DialogHeader>
+                                <DialogTitle>Delete Contractor</DialogTitle>
+                                <DialogDescription>
+                                  Are you sure you want to delete {contractor.business_name}? This will permanently delete the contractor account and all associated data including transactions, purchased leads, and wallet balance. This action cannot be undone.
+                                </DialogDescription>
+                              </DialogHeader>
+                              <DialogFooter>
+                                <Button variant="outline">Cancel</Button>
+                                <Button 
+                                  variant="destructive" 
+                                  onClick={() => handleDeleteContractor(contractor.id)}
+                                >
+                                  Delete Contractor
+                                </Button>
+                              </DialogFooter>
+                            </DialogContent>
+                          </Dialog>
+                        </div>
                       </div>
                     </div>
                   ))}
@@ -690,9 +757,35 @@ const AdminDashboard = () => {
                       </div>
                       <div className="flex justify-between items-center text-sm text-gray-500">
                         <span>Submitted: {new Date(lead.created_at).toLocaleDateString()}</span>
-                        {lead.claimed && lead.claimed_by && lead.claimed_at && (
-                          <span>Claimed by: {lead.claimed_by} on {new Date(lead.claimed_at).toLocaleDateString()}</span>
-                        )}
+                        <div className="flex items-center gap-2">
+                          {lead.claimed && lead.claimed_by && lead.claimed_at && (
+                            <span>Claimed by: {lead.claimed_by} on {new Date(lead.claimed_at).toLocaleDateString()}</span>
+                          )}
+                          <Dialog>
+                            <DialogTrigger asChild>
+                              <Button variant="outline" size="sm" className="text-red-600 hover:text-red-700">
+                                <Trash2 className="h-4 w-4" />
+                              </Button>
+                            </DialogTrigger>
+                            <DialogContent>
+                              <DialogHeader>
+                                <DialogTitle>Delete Lead</DialogTitle>
+                                <DialogDescription>
+                                  Are you sure you want to delete this lead from {lead.customer_name}? This will permanently delete the lead and all associated data including any purchases and sales records. This action cannot be undone.
+                                </DialogDescription>
+                              </DialogHeader>
+                              <DialogFooter>
+                                <Button variant="outline">Cancel</Button>
+                                <Button 
+                                  variant="destructive" 
+                                  onClick={() => handleDeleteLead(lead.id)}
+                                >
+                                  Delete Lead
+                                </Button>
+                              </DialogFooter>
+                            </DialogContent>
+                          </Dialog>
+                        </div>
                       </div>
                     </div>
                   ))}
@@ -830,9 +923,35 @@ const AdminDashboard = () => {
                       </div>
                       <div className="flex justify-between items-center text-sm text-gray-500">
                         <span>Submitted: {new Date(lead.created_at).toLocaleDateString()}</span>
-                        {lead.claimed && lead.claimed_by && lead.claimed_at && (
-                          <span>Claimed by: {lead.claimed_by} on {new Date(lead.claimed_at).toLocaleDateString()}</span>
-                        )}
+                        <div className="flex items-center gap-2">
+                          {lead.claimed && lead.claimed_by && lead.claimed_at && (
+                            <span>Claimed by: {lead.claimed_by} on {new Date(lead.claimed_at).toLocaleDateString()}</span>
+                          )}
+                          <Dialog>
+                            <DialogTrigger asChild>
+                              <Button variant="outline" size="sm" className="text-red-600 hover:text-red-700">
+                                <Trash2 className="h-4 w-4" />
+                              </Button>
+                            </DialogTrigger>
+                            <DialogContent>
+                              <DialogHeader>
+                                <DialogTitle>Delete Lead</DialogTitle>
+                                <DialogDescription>
+                                  Are you sure you want to delete this lead from {lead.customer_name}? This will permanently delete the lead and all associated data including any purchases and sales records. This action cannot be undone.
+                                </DialogDescription>
+                              </DialogHeader>
+                              <DialogFooter>
+                                <Button variant="outline">Cancel</Button>
+                                <Button 
+                                  variant="destructive" 
+                                  onClick={() => handleDeleteLead(lead.id)}
+                                >
+                                  Delete Lead
+                                </Button>
+                              </DialogFooter>
+                            </DialogContent>
+                          </Dialog>
+                        </div>
                       </div>
                     </div>
                   ))}
