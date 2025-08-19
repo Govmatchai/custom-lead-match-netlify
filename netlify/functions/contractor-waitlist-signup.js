@@ -46,27 +46,6 @@ export const handler = async (event, context) => {
       }
     }
 
-    if (!process.env.NETLIFY) {
-      try {
-        await supabase.rpc('exec', {
-          sql: `
-            CREATE TABLE IF NOT EXISTS contractors_waitlist (
-              id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-              first_name VARCHAR(255) NOT NULL,
-              last_name VARCHAR(255) NOT NULL,
-              company VARCHAR(255) NOT NULL,
-              email VARCHAR(255) UNIQUE NOT NULL,
-              phone VARCHAR(20) NOT NULL,
-              trade VARCHAR(100) NOT NULL,
-              signup_date TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
-              created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
-            );
-          `
-        })
-      } catch (tableError) {
-        console.log('Table creation attempt (may already exist):', tableError)
-      }
-    }
 
     const { data: waitlistEntry, error } = await supabase
       .from('contractors_waitlist')
@@ -92,6 +71,21 @@ export const handler = async (event, context) => {
           body: JSON.stringify({ 
             success: false, 
             message: 'You have already joined the waitlist with this email address.' 
+          })
+        }
+      }
+      
+      if (error.code === '42P01') {
+        console.error('contractors_waitlist table does not exist:', error)
+        return {
+          statusCode: 500,
+          headers: {
+            'Content-Type': 'application/json',
+            'Access-Control-Allow-Origin': '*'
+          },
+          body: JSON.stringify({ 
+            success: false, 
+            message: 'Waitlist system is being set up. Please try again in a few minutes.' 
           })
         }
       }
