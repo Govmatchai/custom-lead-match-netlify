@@ -280,23 +280,6 @@ const AdminDashboard = () => {
     window.URL.revokeObjectURL(url)
   }
 
-  const handleResetCredits = async (contractorId: string) => {
-    try {
-      const response = await fetch('/.netlify/functions/admin-reset-credits', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ contractor_id: contractorId, credits: 3 })
-      })
-
-      if (response.ok) {
-        fetchAdminData()
-      }
-    } catch (error) {
-      console.error('Failed to reset credits:', error)
-    }
-  }
 
   const handleDeleteContractor = async (contractorId: string) => {
     try {
@@ -667,13 +650,6 @@ const AdminDashboard = () => {
                           Registered: {new Date(contractor.created_at).toLocaleDateString()}
                         </span>
                         <div className="flex gap-2">
-                          <Button
-                            onClick={() => handleResetCredits(contractor.id)}
-                            variant="outline"
-                            size="sm"
-                          >
-                            Reset Credits to 3
-                          </Button>
                           <Dialog>
                             <DialogTrigger asChild>
                               <Button variant="outline" size="sm" className="text-red-600 hover:text-red-700">
