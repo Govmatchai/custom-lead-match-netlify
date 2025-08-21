@@ -47,6 +47,21 @@ export const handler = async (event, context) => {
 
     const deletePromises = contractor_ids.map(async (contractorId) => {
       try {
+        await supabase
+          .from('leads')
+          .update({ claimed_by: null })
+          .eq('claimed_by', contractorId)
+
+        await supabase
+          .from('leads')
+          .update({ purchased_by: null })
+          .eq('purchased_by', contractorId)
+
+        await supabase
+          .from('dynamic_pages')
+          .update({ contractor_id: null })
+          .eq('contractor_id', contractorId)
+
         const { error } = await supabase
           .from('contractors')
           .delete()

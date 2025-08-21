@@ -46,6 +46,57 @@ export const handler = async (event, context) => {
       }
     }
 
+    const { error: claimedLeadsError } = await supabase
+      .from('leads')
+      .update({ claimed_by: null })
+      .eq('claimed_by', contractor_id)
+
+    if (claimedLeadsError) {
+      console.error('Error updating claimed leads:', claimedLeadsError)
+      return {
+        statusCode: 500,
+        headers: {
+          'Content-Type': 'application/json',
+          'Access-Control-Allow-Origin': '*'
+        },
+        body: JSON.stringify({ detail: 'Failed to update claimed leads' })
+      }
+    }
+
+    const { error: purchasedLeadsError } = await supabase
+      .from('leads')
+      .update({ purchased_by: null })
+      .eq('purchased_by', contractor_id)
+
+    if (purchasedLeadsError) {
+      console.error('Error updating purchased leads:', purchasedLeadsError)
+      return {
+        statusCode: 500,
+        headers: {
+          'Content-Type': 'application/json',
+          'Access-Control-Allow-Origin': '*'
+        },
+        body: JSON.stringify({ detail: 'Failed to update purchased leads' })
+      }
+    }
+
+    const { error: dynamicPagesError } = await supabase
+      .from('dynamic_pages')
+      .update({ contractor_id: null })
+      .eq('contractor_id', contractor_id)
+
+    if (dynamicPagesError) {
+      console.error('Error updating dynamic pages:', dynamicPagesError)
+      return {
+        statusCode: 500,
+        headers: {
+          'Content-Type': 'application/json',
+          'Access-Control-Allow-Origin': '*'
+        },
+        body: JSON.stringify({ detail: 'Failed to update dynamic pages' })
+      }
+    }
+
     const { error } = await supabase
       .from('contractors')
       .delete()
