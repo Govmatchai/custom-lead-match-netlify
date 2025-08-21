@@ -52,14 +52,14 @@ export const handler = async (event, context) => {
     let dollarAmount
     if (amount !== undefined) {
       dollarAmount = parseFloat(amount)
-      if (dollarAmount < 10) {
+      if (dollarAmount < 20) {
         return {
           statusCode: 400,
           headers: {
             'Content-Type': 'application/json',
             'Access-Control-Allow-Origin': '*'
           },
-          body: JSON.stringify({ detail: 'Minimum funding amount is $10' })
+          body: JSON.stringify({ detail: 'Minimum funding amount is $20' })
         }
       }
     } else {
