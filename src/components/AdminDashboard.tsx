@@ -102,6 +102,8 @@ const AdminDashboard = () => {
   const [dateRange, setDateRange] = useState('30')
   const [dashboardStats, setDashboardStats] = useState<any>(null)
   const [notificationStats, setNotificationStats] = useState<any>(null)
+  const [selectedContractors, setSelectedContractors] = useState<string[]>([])
+  const [selectAll, setSelectAll] = useState(false)
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -318,6 +320,59 @@ const AdminDashboard = () => {
       }
     } catch (error) {
       console.error('Failed to delete lead:', error)
+    }
+  }
+
+  const handleSelectContractor = (contractorId: string) => {
+    setSelectedContractors(prev => {
+      if (prev.includes(contractorId)) {
+        return prev.filter(id => id !== contractorId)
+      } else {
+        return [...prev, contractorId]
+      }
+    })
+  }
+
+  const handleSelectAll = () => {
+    if (selectAll) {
+      setSelectedContractors([])
+    } else {
+      setSelectedContractors(contractors.map(c => c.id))
+    }
+    setSelectAll(!selectAll)
+  }
+
+  const handleBulkDeleteContractors = async () => {
+    if (selectedContractors.length === 0) {
+      alert('Please select contractors to delete')
+      return
+    }
+
+    if (!confirm(`Are you sure you want to delete ${selectedContractors.length} contractors? This action cannot be undone.`)) {
+      return
+    }
+
+    try {
+      const response = await fetch(`/.netlify/functions/admin-bulk-delete-contractors`, {
+        method: 'DELETE',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ contractor_ids: selectedContractors })
+      })
+
+      if (response.ok) {
+        const result = await response.json()
+        setContractors(contractors.filter(c => !selectedContractors.includes(c.id)))
+        setSelectedContractors([])
+        setSelectAll(false)
+        alert(`Successfully deleted ${result.successful.length} contractors`)
+      } else {
+        alert('Failed to delete contractors')
+      }
+    } catch (error) {
+      console.error('Error deleting contractors:', error)
+      alert('Error deleting contractors')
     }
   }
 
@@ -599,6 +654,33 @@ const AdminDashboard = () => {
             <CardHeader>
               <CardTitle>Registered Contractors</CardTitle>
               <CardDescription>Manage contractor accounts and credits</CardDescription>
+              {contractors.length > 0 && (
+                <div className="flex items-center gap-4 mt-4">
+                  <div className="flex items-center space-x-2">
+                    <input
+                      type="checkbox"
+                      id="select-all"
+                      checked={selectAll}
+                      onChange={handleSelectAll}
+                      className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+                    />
+                    <label htmlFor="select-all" className="text-sm font-medium text-gray-700">
+                      Select All ({contractors.length})
+                    </label>
+                  </div>
+                  {selectedContractors.length > 0 && (
+                    <Button
+                      variant="destructive"
+                      size="sm"
+                      onClick={handleBulkDeleteContractors}
+                      className="ml-auto"
+                    >
+                      <Trash2 className="h-4 w-4 mr-2" />
+                      Delete Selected ({selectedContractors.length})
+                    </Button>
+                  )}
+                </div>
+              )}
             </CardHeader>
             <CardContent>
               {contractors.length === 0 ? (
@@ -607,73 +689,83 @@ const AdminDashboard = () => {
                 <div className="space-y-4">
                   {contractors.map((contractor) => (
                     <div key={contractor.id} className="border rounded-lg p-4">
-                      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-3">
-                        <div>
-                          <span className="font-medium">Business:</span>
-                          <p>{contractor.business_name}</p>
-                        </div>
-                        <div>
-                          <span className="font-medium">Contact:</span>
-                          <p>{contractor.contact_name}</p>
-                        </div>
-                        <div>
-                          <span className="font-medium">Phone:</span>
-                          <p>{contractor.phone}</p>
-                        </div>
-                      </div>
-                      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-3">
-                        <div>
-                          <span className="font-medium">Email:</span>
-                          <p>{contractor.email}</p>
-                        </div>
-                        <div>
-                          <span className="font-medium">Industry:</span>
-                          <p>{contractor.industry} - {contractor.sub_service}</p>
-                        </div>
-                        <div>
-                          <span className="font-medium">Credits:</span>
-                          <p className="text-lg font-bold text-blue-600">{contractor.lead_credits}</p>
-                        </div>
-                      </div>
-                      <div className="mb-3">
-                        <span className="font-medium">Service Areas:</span>
-                        <div className="mt-1 flex flex-wrap gap-1">
-                          {contractor.zip_codes.map((zip, index) => (
-                            <span key={index} className="inline-block bg-blue-100 text-blue-800 text-xs px-2 py-1 rounded">
-                              {zip}
+                      <div className="flex items-start gap-4">
+                        <input
+                          type="checkbox"
+                          checked={selectedContractors.includes(contractor.id)}
+                          onChange={() => handleSelectContractor(contractor.id)}
+                          className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded mt-1"
+                        />
+                        <div className="flex-1">
+                          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-3">
+                            <div>
+                              <span className="font-medium">Business:</span>
+                              <p>{contractor.business_name}</p>
+                            </div>
+                            <div>
+                              <span className="font-medium">Contact:</span>
+                              <p>{contractor.contact_name}</p>
+                            </div>
+                            <div>
+                              <span className="font-medium">Phone:</span>
+                              <p>{contractor.phone}</p>
+                            </div>
+                          </div>
+                          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-3">
+                            <div>
+                              <span className="font-medium">Email:</span>
+                              <p>{contractor.email}</p>
+                            </div>
+                            <div>
+                              <span className="font-medium">Industry:</span>
+                              <p>{contractor.industry} - {contractor.sub_service}</p>
+                            </div>
+                            <div>
+                              <span className="font-medium">Credits:</span>
+                              <p className="text-lg font-bold text-blue-600">{contractor.lead_credits}</p>
+                            </div>
+                          </div>
+                          <div className="mb-3">
+                            <span className="font-medium">Service Areas:</span>
+                            <div className="mt-1 flex flex-wrap gap-1">
+                              {contractor.zip_codes.map((zip, index) => (
+                                <span key={index} className="inline-block bg-blue-100 text-blue-800 text-xs px-2 py-1 rounded">
+                                  {zip}
+                                </span>
+                              ))}
+                            </div>
+                          </div>
+                          <div className="flex justify-between items-center">
+                            <span className="text-sm text-gray-500">
+                              Registered: {new Date(contractor.created_at).toLocaleDateString()}
                             </span>
-                          ))}
-                        </div>
-                      </div>
-                      <div className="flex justify-between items-center">
-                        <span className="text-sm text-gray-500">
-                          Registered: {new Date(contractor.created_at).toLocaleDateString()}
-                        </span>
-                        <div className="flex gap-2">
-                          <Dialog>
-                            <DialogTrigger asChild>
-                              <Button variant="outline" size="sm" className="text-red-600 hover:text-red-700">
-                                <Trash2 className="h-4 w-4" />
-                              </Button>
-                            </DialogTrigger>
-                            <DialogContent>
-                              <DialogHeader>
-                                <DialogTitle>Delete Contractor</DialogTitle>
-                                <DialogDescription>
-                                  Are you sure you want to delete {contractor.business_name}? This will permanently delete the contractor account and all associated data including transactions, purchased leads, and wallet balance. This action cannot be undone.
-                                </DialogDescription>
-                              </DialogHeader>
-                              <DialogFooter>
-                                <Button variant="outline">Cancel</Button>
-                                <Button 
-                                  variant="destructive" 
-                                  onClick={() => handleDeleteContractor(contractor.id)}
-                                >
-                                  Delete Contractor
-                                </Button>
-                              </DialogFooter>
-                            </DialogContent>
-                          </Dialog>
+                            <div className="flex gap-2">
+                              <Dialog>
+                                <DialogTrigger asChild>
+                                  <Button variant="outline" size="sm" className="text-red-600 hover:text-red-700">
+                                    <Trash2 className="h-4 w-4" />
+                                  </Button>
+                                </DialogTrigger>
+                                <DialogContent>
+                                  <DialogHeader>
+                                    <DialogTitle>Delete Contractor</DialogTitle>
+                                    <DialogDescription>
+                                      Are you sure you want to delete {contractor.business_name}? This will permanently delete the contractor account and all associated data including transactions, purchased leads, and wallet balance. This action cannot be undone.
+                                    </DialogDescription>
+                                  </DialogHeader>
+                                  <DialogFooter>
+                                    <Button variant="outline">Cancel</Button>
+                                    <Button 
+                                      variant="destructive" 
+                                      onClick={() => handleDeleteContractor(contractor.id)}
+                                    >
+                                      Delete Contractor
+                                    </Button>
+                                  </DialogFooter>
+                                </DialogContent>
+                              </Dialog>
+                            </div>
+                          </div>
                         </div>
                       </div>
                     </div>

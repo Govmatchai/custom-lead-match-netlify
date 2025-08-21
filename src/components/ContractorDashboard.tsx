@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
-import { CreditCard, MapPin, Phone, Calendar, User, Building, Eye, ShoppingCart, Edit } from 'lucide-react'
+import { CreditCard, MapPin, Phone, Calendar, User, Building, Eye, ShoppingCart, Edit, MessageSquare } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog'
@@ -116,6 +116,7 @@ const ContractorDashboard = () => {
   const [totalPages, setTotalPages] = useState(1)
   const [totalRecords, setTotalRecords] = useState(0)
   const [categoryPricing, setCategoryPricing] = useState<{ [key: string]: number }>({})
+  const [smsOptIn, setSmsOptIn] = useState(false)
 
   useEffect(() => {
     console.log('ContractorDashboard useEffect triggered')
@@ -184,6 +185,27 @@ const ContractorDashboard = () => {
         return
       }
 
+      const authData = await authResponse.json()
+      if (authData.contractor) {
+        setDashboardData(prev => prev ? ({
+          ...prev,
+          contractor: authData.contractor
+        }) : {
+          contractor: authData.contractor,
+          available_leads: [],
+          claimed_leads: [],
+          archived_leads: [],
+          completed_leads: [],
+          purchased_leads: [],
+          total_leads: 0,
+          total_claimed: 0,
+          total_archived: 0,
+          total_completed: 0,
+          wallet_balance: '0'
+        } as unknown as DashboardData)
+        setSmsOptIn(authData.contractor.sms_opt_in || false)
+      }
+
       fetchDashboardData()
     } catch (error) {
       console.error('Auth check failed:', error)
@@ -250,6 +272,7 @@ const ContractorDashboard = () => {
         
         console.log('Setting dashboard data:', newDashboardData)
         setDashboardData(newDashboardData)
+        setSmsOptIn(newDashboardData.contractor?.sms_opt_in || false)
       } else {
         console.log('Some responses failed:')
         console.log('Dashboard OK:', dashboardResponse.ok)
@@ -446,10 +469,64 @@ const ContractorDashboard = () => {
     }
   }
 
-  const handleProfileUpdateSuccess = () => {
+  const handleProfileUpdateSuccess = (updatedContractor?: any) => {
+    if (updatedContractor) {
+      setDashboardData(prev => prev ? ({
+        ...prev,
+        contractor: updatedContractor
+      }) : {
+        contractor: updatedContractor,
+        available_leads: [],
+        claimed_leads: [],
+        archived_leads: [],
+        completed_leads: [],
+        purchased_leads: [],
+        total_leads: 0,
+        total_claimed: 0,
+        total_archived: 0,
+        total_completed: 0,
+        wallet_balance: '0'
+      } as unknown as DashboardData)
+      setSmsOptIn(updatedContractor.sms_opt_in || false)
+    }
     setSuccessMessage('Profile updated successfully!')
     fetchDashboardData()
     setTimeout(() => setSuccessMessage(''), 5000)
+  }
+
+  const handleSmsToggle = async () => {
+    const sessionToken = localStorage.getItem('contractor_session_token')
+    
+    if (!sessionToken || !dashboardData?.contractor) {
+      alert('Session expired. Please log in again.')
+      return
+    }
+
+    try {
+      const response = await fetch('/.netlify/functions/update-contractor-sms', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          contractor_id: dashboardData.contractor.id,
+          session_token: sessionToken,
+          sms_opt_in: !smsOptIn
+        })
+      })
+
+      if (response.ok) {
+        const data = await response.json()
+        setSmsOptIn(data.sms_opt_in)
+        setSuccessMessage('SMS preference updated successfully')
+        setTimeout(() => setSuccessMessage(''), 3000)
+      } else {
+        alert('Failed to update SMS preference')
+      }
+    } catch (error) {
+      console.error('Error updating SMS preference:', error)
+      alert('Error updating SMS preference')
+    }
   }
 
   const sortLeads = (leads: Lead[]) => {
@@ -684,6 +761,35 @@ const ContractorDashboard = () => {
                 >
                   {purchasing ? 'Processing...' : `Add $${fundAmount || '0'} to Wallet`}
                 </Button>
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <MessageSquare className="h-5 w-5" />
+                SMS Notifications
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="font-medium">Receive SMS updates</p>
+                  <p className="text-sm text-gray-600">Get notified about new leads and updates via SMS</p>
+                </div>
+                <div className="flex items-center">
+                  <input
+                    type="checkbox"
+                    id="sms-toggle"
+                    checked={smsOptIn}
+                    onChange={handleSmsToggle}
+                    className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+                  />
+                  <label htmlFor="sms-toggle" className="ml-2 text-sm font-medium text-gray-700">
+                    {smsOptIn ? 'Enabled' : 'Disabled'}
+                  </label>
+                </div>
               </div>
             </CardContent>
           </Card>
