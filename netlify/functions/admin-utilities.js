@@ -94,20 +94,30 @@ export const handler = async (event, context) => {
           customer_name: 'Test Customer 1',
           phone: '(555) 123-4567',
           email: 'test1@example.com',
-          service_category: 'home_services',
-          sub_service: 'plumbing',
+          service_category: 'Home Services',
+          sub_service: 'Plumbing',
           zip_code: '12345',
-          description: 'Test plumbing lead for QA purposes',
+          description: 'Test plumbing lead for QA purposes - kitchen sink repair needed',
           status: 'valid'
         },
         {
           customer_name: 'Test Customer 2',
           phone: '(555) 234-5678',
           email: 'test2@example.com',
-          service_category: 'home_services',
-          sub_service: 'hvac',
-          zip_code: '67890',
-          description: 'Test HVAC lead for QA purposes',
+          service_category: 'Home Services',
+          sub_service: 'HVAC',
+          zip_code: '12346',
+          description: 'Test HVAC lead for QA purposes - air conditioning repair needed',
+          status: 'valid'
+        },
+        {
+          customer_name: 'Test Customer 3',
+          phone: '(555) 345-6789',
+          email: 'test3@example.com',
+          service_category: 'Legal',
+          sub_service: 'Personal Injury',
+          zip_code: '12345',
+          description: 'Test legal lead for QA purposes - car accident case consultation',
           status: 'valid'
         }
       ]
