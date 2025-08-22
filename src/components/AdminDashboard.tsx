@@ -255,7 +255,7 @@ const AdminDashboard = () => {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ 
-          to: 'customleadmatch@gmail.com',
+          to: 'freshsaltyair@gmail.com',
           first_name: 'Test User',
           company: 'Test Company',
           trade: 'Test Trade'
@@ -263,7 +263,7 @@ const AdminDashboard = () => {
       })
       
       if (response.ok) {
-        setSuccessMessage(`Successfully sent test ${type === 'launching_soon' ? 'launching soon' : 'launch day'} email to customleadmatch@gmail.com`)
+        setSuccessMessage(`Successfully sent test ${type === 'launching_soon' ? 'launching soon' : 'launch day'} email to freshsaltyair@gmail.com`)
         setTimeout(() => setSuccessMessage(''), 5000)
       } else {
         const error = await response.json()
@@ -1452,7 +1452,7 @@ const AdminDashboard = () => {
                       </Button>
                     </div>
                     <p className="text-xs text-gray-500 mt-2">
-                      Test emails sent to customleadmatch@gmail.com (no database updates)
+                      Test emails sent to freshsaltyair@gmail.com (no database updates)
                     </p>
                   </div>
                   
