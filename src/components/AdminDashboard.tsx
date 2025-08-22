@@ -247,6 +247,36 @@ const AdminDashboard = () => {
     }
   }
 
+  const handleTestEmail = async (type: string) => {
+    try {
+      const endpoint = type === 'launching_soon' ? 'email-launching-soon' : 'email-launch-day'
+      
+      const response = await fetch(`/.netlify/functions/${endpoint}`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ 
+          to: 'customleadmatch@gmail.com',
+          first_name: 'Test User',
+          company: 'Test Company',
+          trade: 'Test Trade'
+        })
+      })
+      
+      if (response.ok) {
+        setSuccessMessage(`Successfully sent test ${type === 'launching_soon' ? 'launching soon' : 'launch day'} email to customleadmatch@gmail.com`)
+        setTimeout(() => setSuccessMessage(''), 5000)
+      } else {
+        const error = await response.json()
+        setErrorMessage(`Error sending test email: ${error.error || 'Failed to send test email'}`)
+        setTimeout(() => setErrorMessage(''), 5000)
+      }
+    } catch (error) {
+      console.error('Error sending test email:', error)
+      setErrorMessage('Error sending test email')
+      setTimeout(() => setErrorMessage(''), 5000)
+    }
+  }
+
   const handleWalletAdjustment = async (e: React.FormEvent) => {
     e.preventDefault()
     try {
@@ -1402,6 +1432,30 @@ const AdminDashboard = () => {
                       Send "Launch Day" Emails
                     </Button>
                   </div>
+                  
+                  <div className="border-t pt-4">
+                    <h4 className="font-medium text-gray-900 mb-2">Test Email Functions</h4>
+                    <div className="flex gap-4">
+                      <Button 
+                        onClick={() => handleTestEmail('launching_soon')}
+                        variant="outline"
+                        className="border-yellow-300 text-yellow-700 hover:bg-yellow-50"
+                      >
+                        Send Test – Launching Soon
+                      </Button>
+                      <Button 
+                        onClick={() => handleTestEmail('launch_day')}
+                        variant="outline"
+                        className="border-green-300 text-green-700 hover:bg-green-50"
+                      >
+                        Send Test – Launch Day
+                      </Button>
+                    </div>
+                    <p className="text-xs text-gray-500 mt-2">
+                      Test emails sent to customleadmatch@gmail.com (no database updates)
+                    </p>
+                  </div>
+                  
                   <div className="text-sm text-gray-600">
                     <p>• "Launching Soon" emails can be sent multiple times</p>
                     <p>• "Launch Day" emails mark entries as notified and should only be sent once</p>
