@@ -67,7 +67,8 @@ exports.handler = async (event, context) => {
         sub_service,
         zip_codes: zipCodesArray,
         sms_opt_in: sms_opt_in || false,
-        lead_credits: 3
+        lead_credits: 3,
+        wallet_balance: 25.00
       })
       .select()
       .single()

@@ -16,6 +16,7 @@ CREATE TABLE contractors (
     zip_codes TEXT[] NOT NULL,
     sms_opt_in BOOLEAN DEFAULT true,
     lead_credits INTEGER DEFAULT 3,
+    wallet_balance DECIMAL(10,2) DEFAULT 25.00,
     stripe_customer_id VARCHAR(255),
     created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );

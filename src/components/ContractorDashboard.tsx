@@ -311,8 +311,8 @@ const ContractorDashboard = () => {
       return
     }
     
-    if (amount < 10) {
-      setFundAmountError('Minimum funding amount is $10')
+    if (amount < 20) {
+      setFundAmountError('Minimum funding amount is $20')
       return
     }
     
@@ -747,7 +747,7 @@ const ContractorDashboard = () => {
                       value={fundAmount}
                       onChange={(e) => setFundAmount(e.target.value)}
                       className="w-full pl-8 pr-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                      placeholder="10"
+                      placeholder="20"
                     />
                   </div>
                   {fundAmountError && (
@@ -756,7 +756,7 @@ const ContractorDashboard = () => {
                 </div>
                 <Button 
                   onClick={handleFundWallet}
-                  disabled={purchasing || !fundAmount || parseFloat(fundAmount) < 10}
+                  disabled={purchasing || !fundAmount || parseFloat(fundAmount) < 20}
                   className="w-full"
                 >
                   {purchasing ? 'Processing...' : `Add $${fundAmount || '0'} to Wallet`}

@@ -55,7 +55,8 @@ export const handler = async (event, context) => {
         company,
         email,
         phone,
-        trade
+        trade,
+        launch_notified: false
       })
       .select()
       .single()

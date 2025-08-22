@@ -6,6 +6,7 @@ CREATE TABLE IF NOT EXISTS contractors_waitlist (
   email VARCHAR(255) UNIQUE NOT NULL,
   phone VARCHAR(20) NOT NULL,
   trade VARCHAR(100) NOT NULL,
+  launch_notified BOOLEAN DEFAULT false,
   signup_date TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
   created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );

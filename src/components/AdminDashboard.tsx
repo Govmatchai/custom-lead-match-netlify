@@ -104,6 +104,8 @@ const AdminDashboard = () => {
   const [notificationStats, setNotificationStats] = useState<any>(null)
   const [selectedContractors, setSelectedContractors] = useState<string[]>([])
   const [selectAll, setSelectAll] = useState(false)
+  const [successMessage, setSuccessMessage] = useState('')
+  const [errorMessage, setErrorMessage] = useState('')
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -215,6 +217,33 @@ const AdminDashboard = () => {
     } catch (error) {
       console.error('Failed to update pricing:', error)
       alert('Failed to update pricing')
+    }
+  }
+
+  const handleWaitlistNotification = async (notificationType: string) => {
+    try {
+      const response = await fetch('/.netlify/functions/admin-waitlist-notifications', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          action: 'send_notifications',
+          notification_type: notificationType
+        })
+      })
+
+      const result = await response.json()
+      
+      if (response.ok) {
+        setSuccessMessage(`${result.message}. Sent: ${result.total_sent}, Errors: ${result.total_errors}`)
+        setTimeout(() => setSuccessMessage(''), 5000)
+      } else {
+        setErrorMessage(result.message || 'Failed to send notifications')
+        setTimeout(() => setErrorMessage(''), 5000)
+      }
+    } catch (error) {
+      console.error('Error sending waitlist notifications:', error)
+      setErrorMessage('Error sending notifications')
+      setTimeout(() => setErrorMessage(''), 5000)
     }
   }
 
@@ -445,6 +474,16 @@ const AdminDashboard = () => {
   return (
     <div className="min-h-screen bg-gray-50">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        {successMessage && (
+          <Alert className="mb-6 border-green-200 bg-green-50">
+            <AlertDescription className="text-green-700">{successMessage}</AlertDescription>
+          </Alert>
+        )}
+        {errorMessage && (
+          <Alert className="mb-6 border-red-200 bg-red-50">
+            <AlertDescription className="text-red-700">{errorMessage}</AlertDescription>
+          </Alert>
+        )}
         <div className="mb-8 flex items-center space-x-4">
           <Logo className="max-w-xs" width={200} height={60} />
           <div>
@@ -1337,6 +1376,36 @@ const AdminDashboard = () => {
                     <Download className="w-4 h-4 mr-2" />
                     Export Leads
                   </Button>
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Waitlist Management Section */}
+            <Card>
+              <CardHeader>
+                <CardTitle>Pre-Launch Waitlist Management</CardTitle>
+                <CardDescription>Manage contractor waitlist and send launch notifications</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-4">
+                  <div className="flex gap-4">
+                    <Button 
+                      onClick={() => handleWaitlistNotification('launching_soon')}
+                      className="bg-yellow-600 hover:bg-yellow-700"
+                    >
+                      Send "Launching Soon" Emails
+                    </Button>
+                    <Button 
+                      onClick={() => handleWaitlistNotification('launch_day')}
+                      className="bg-green-600 hover:bg-green-700"
+                    >
+                      Send "Launch Day" Emails
+                    </Button>
+                  </div>
+                  <div className="text-sm text-gray-600">
+                    <p>• "Launching Soon" emails can be sent multiple times</p>
+                    <p>• "Launch Day" emails mark entries as notified and should only be sent once</p>
+                  </div>
                 </div>
               </CardContent>
             </Card>
