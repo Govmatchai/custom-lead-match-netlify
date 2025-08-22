@@ -1,5 +1,5 @@
 import React, { useState } from 'react'
-import { CheckCircle, CreditCard, Star, Phone, Lock } from 'lucide-react'
+import { MapPin, Handshake, Settings, CheckCircle, CreditCard, Star, Phone, Lock } from 'lucide-react'
 import { Button } from './ui/button'
 import { Input } from './ui/input'
 import { Label } from './ui/label'
@@ -72,6 +72,7 @@ const ContractorWaitlist = () => {
 
   return (
     <div className="min-h-screen bg-white font-['Inter',_'Roboto',_'Open_Sans',_sans-serif]">
+      {/* Hero Section */}
       <div 
         className="relative min-h-screen bg-cover bg-center bg-no-repeat flex items-center"
         style={{
@@ -90,11 +91,11 @@ const ContractorWaitlist = () => {
             </div>
             
             <h1 className="text-5xl md:text-6xl font-bold mb-6 animate-fade-in">
-              Get Exclusive Leads. No Competition. No Contracts.
+              Be the First to Get Matched When We Launch
             </h1>
             
             <p className="text-xl md:text-2xl mb-8 max-w-3xl mx-auto opacity-90">
-              Join the only contractor network where every lead is yours alone. Claim your $25 Free Credit today.
+              Join our pre-launch list and lock in a $25 lead credit. We'll notify you the moment your trade goes live—no spam, no catch.
             </p>
             
             <Button 
@@ -102,87 +103,100 @@ const ContractorWaitlist = () => {
               onClick={() => document.getElementById('signup-form')?.scrollIntoView({ behavior: 'smooth' })}
               className="bg-white text-blue-600 hover:bg-gray-100 px-8 py-4 text-xl font-bold transition-all duration-300 transform hover:scale-105 shadow-lg"
             >
-              Reserve My Spot – Free
+              Join Now – Get $25 in Lead Credit
             </Button>
           </div>
         </div>
       </div>
 
+      {/* Benefits Section */}
       <div className="py-20 bg-white">
+        <div className="container mx-auto px-4">
+          <div className="max-w-4xl mx-auto text-center mb-16">
+            <h2 className="text-4xl font-bold mb-6">What You'll Get</h2>
+          </div>
+          
+          <div className="max-w-6xl mx-auto grid grid-cols-1 md:grid-cols-2 gap-8">
+            <div className="flex items-start space-x-4">
+              <div className="w-12 h-12 bg-green-500 text-white rounded-full flex items-center justify-center flex-shrink-0">
+                <CheckCircle className="w-6 h-6" />
+              </div>
+              <div>
+                <h3 className="text-xl font-bold mb-2">$25 free credit in your contractor wallet</h3>
+                <p className="text-gray-600">(no payment required)</p>
+              </div>
+            </div>
+            
+            <div className="flex items-start space-x-4">
+              <div className="w-12 h-12 bg-blue-500 text-white rounded-full flex items-center justify-center flex-shrink-0">
+                <Star className="w-6 h-6" />
+              </div>
+              <div>
+                <h3 className="text-xl font-bold mb-2">Early access to the platform</h3>
+                <p className="text-gray-600">before public launch</p>
+              </div>
+            </div>
+            
+            <div className="flex items-start space-x-4">
+              <div className="w-12 h-12 bg-purple-500 text-white rounded-full flex items-center justify-center flex-shrink-0">
+                <Phone className="w-6 h-6" />
+              </div>
+              <div>
+                <h3 className="text-xl font-bold mb-2">A chance to preview</h3>
+                <p className="text-gray-600">how lead matching works</p>
+              </div>
+            </div>
+            
+            <div className="flex items-start space-x-4">
+              <div className="w-12 h-12 bg-orange-500 text-white rounded-full flex items-center justify-center flex-shrink-0">
+                <CreditCard className="w-6 h-6" />
+              </div>
+              <div>
+                <h3 className="text-xl font-bold mb-2">Priority onboarding</h3>
+                <p className="text-gray-600">for your trade and zip code</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Feature Highlights */}
+      <div className="py-20 bg-gray-50">
         <div className="container mx-auto px-4">
           <div className="max-w-6xl mx-auto grid grid-cols-1 md:grid-cols-3 gap-8">
             <div className="text-center">
-              <div className="w-16 h-16 bg-gradient-to-r from-green-400 to-green-600 text-white rounded-full flex items-center justify-center text-2xl font-bold mx-auto mb-6">
-                ✅
+              <div className="w-16 h-16 bg-gradient-to-r from-green-400 to-green-600 text-white rounded-full flex items-center justify-center mx-auto mb-6">
+                <MapPin className="w-8 h-8" />
               </div>
-              <h3 className="text-xl font-bold mb-4">Exclusive Leads</h3>
-              <p className="text-gray-600">Never shared with competitors</p>
+              <h3 className="text-xl font-bold mb-4">Local-Only Leads</h3>
+              <p className="text-gray-600">Get matched to nearby jobs—we don't sell national leads.</p>
             </div>
             
             <div className="text-center">
-              <div className="w-16 h-16 bg-gradient-to-r from-yellow-400 to-yellow-600 text-white rounded-full flex items-center justify-center text-2xl font-bold mx-auto mb-6">
-                ⚡
+              <div className="w-16 h-16 bg-gradient-to-r from-blue-400 to-blue-600 text-white rounded-full flex items-center justify-center mx-auto mb-6">
+                <Handshake className="w-8 h-8" />
               </div>
-              <h3 className="text-xl font-bold mb-4">Instant Notifications</h3>
-              <p className="text-gray-600">Real-time SMS &amp; Email alerts</p>
+              <h3 className="text-xl font-bold mb-4">Real Buyers, Not Clicks</h3>
+              <p className="text-gray-600">Homeowners come to us to hire, not browse.</p>
             </div>
             
             <div className="text-center">
-              <div className="w-16 h-16 bg-gradient-to-r from-blue-400 to-blue-600 text-white rounded-full flex items-center justify-center text-2xl font-bold mx-auto mb-6">
-                💳
+              <div className="w-16 h-16 bg-gradient-to-r from-purple-400 to-purple-600 text-white rounded-full flex items-center justify-center mx-auto mb-6">
+                <Settings className="w-8 h-8" />
               </div>
-              <h3 className="text-xl font-bold mb-4">Simple Pricing</h3>
-              <p className="text-gray-600">Pay-as-you-go, no monthly fees</p>
+              <h3 className="text-xl font-bold mb-4">Full Control</h3>
+              <p className="text-gray-600">Choose your budget, service area, and availability.</p>
             </div>
           </div>
         </div>
       </div>
 
+      {/* Trust Section */}
       <div className="py-20 bg-gradient-to-br from-green-50 to-blue-50">
         <div className="container mx-auto px-4">
           <div className="max-w-4xl mx-auto text-center">
-            <h2 className="text-4xl font-bold mb-6">Sign up today and receive $25 in wallet balance.</h2>
-            <p className="text-xl text-gray-600 mb-8">Get a Verified Badge to stand out when we launch.</p>
-            
-            <div className="bg-yellow-100 border-l-4 border-yellow-500 p-6 mb-8 text-left">
-              <p className="font-bold text-yellow-800">Offer available only before launch. Limited availability by service area.</p>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <div className="py-20 bg-white">
-        <div className="container mx-auto px-4">
-          <h2 className="text-4xl font-bold text-center mb-16">How It Works</h2>
-          
-          <div className="max-w-6xl mx-auto">
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-12">
-              <div className="text-center relative">
-                <div className="w-24 h-24 bg-gradient-to-r from-blue-500 to-indigo-600 text-white rounded-full flex items-center justify-center text-3xl font-bold mx-auto mb-6 shadow-lg">
-                  📝
-                </div>
-                <h3 className="text-2xl font-bold mb-4">Sign Up</h3>
-                <p className="text-gray-600 text-lg">Create your free account</p>
-                <div className="hidden md:block absolute top-12 left-full w-12 h-0.5 bg-gray-300 transform -translate-y-1/2"></div>
-              </div>
-              
-              <div className="text-center relative">
-                <div className="w-24 h-24 bg-gradient-to-r from-blue-500 to-indigo-600 text-white rounded-full flex items-center justify-center text-3xl font-bold mx-auto mb-6 shadow-lg">
-                  🔔
-                </div>
-                <h3 className="text-2xl font-bold mb-4">Get Notified</h3>
-                <p className="text-gray-600 text-lg">Leads matched to your trade &amp; area</p>
-                <div className="hidden md:block absolute top-12 left-full w-12 h-0.5 bg-gray-300 transform -translate-y-1/2"></div>
-              </div>
-              
-              <div className="text-center">
-                <div className="w-24 h-24 bg-gradient-to-r from-blue-500 to-indigo-600 text-white rounded-full flex items-center justify-center text-3xl font-bold mx-auto mb-6 shadow-lg">
-                  🏆
-                </div>
-                <h3 className="text-2xl font-bold mb-4">Claim &amp; Win Jobs</h3>
-                <p className="text-gray-600 text-lg">Pay only when you see value</p>
-              </div>
-            </div>
+            <h2 className="text-4xl font-bold mb-6">Zero Risk. All Reward.</h2>
+            <p className="text-xl text-gray-600 mb-8">We'll never share your info. Cancel anytime. This is your chance to get ahead—before your competitors do.</p>
           </div>
         </div>
       </div>
@@ -192,7 +206,7 @@ const ContractorWaitlist = () => {
           <div className="max-w-2xl mx-auto">
             <Card className="border-2 shadow-lg">
               <CardHeader>
-                <CardTitle className="text-2xl text-center">Join the Waitlist – Free $25 Credit</CardTitle>
+                <CardTitle className="text-2xl text-center">Join the Pre-Launch List – Free $25 Credit</CardTitle>
               </CardHeader>
               <CardContent>
                 {errorMessage && (
@@ -284,7 +298,7 @@ const ContractorWaitlist = () => {
                     className="w-full bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white py-4 text-xl font-bold rounded-lg shadow-lg hover:shadow-xl transition-all duration-200 transform hover:scale-105"
                     disabled={isSubmitting}
                   >
-                    {isSubmitting ? 'Joining Waitlist...' : 'Join the Waitlist – Free $25 Credit'}
+                    {isSubmitting ? 'Joining Pre-Launch List...' : 'Join Now – Get $25 in Lead Credit'}
                   </Button>
                 </form>
               </CardContent>

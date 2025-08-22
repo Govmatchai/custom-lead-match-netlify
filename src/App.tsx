@@ -26,6 +26,7 @@ import Signup from './pages/Signup'
 import { Contact } from './components/Contact'
 import ContractorWaitlist from './components/ContractorWaitlist'
 import ContractorWaitlistConfirmed from './components/ContractorWaitlistConfirmed'
+import ContractorWaitlistRedirect from './components/ContractorWaitlistRedirect'
 
 function App() {
   return (
@@ -62,7 +63,8 @@ function App() {
           <Route path="/about-us" element={<AboutUs />} />
           <Route path="/how-it-works" element={<HowItWorks />} />
           <Route path="/contact" element={<Contact />} />
-          <Route path="/contractor-waitlist" element={<ContractorWaitlist />} />
+          <Route path="/launch-soon" element={<ContractorWaitlist />} />
+          <Route path="/contractor-waitlist" element={<ContractorWaitlistRedirect />} />
           <Route path="/contractor-waitlist-confirmed" element={<ContractorWaitlistConfirmed />} />
         </Routes>
       </div>
