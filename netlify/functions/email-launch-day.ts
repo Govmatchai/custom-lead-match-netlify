@@ -6,7 +6,7 @@ export const handler: Handler = async (event) => {
     const { to, first_name, company, trade } = JSON.parse(event.body || "{}");
     if (!to || !first_name) throw new Error("Missing required params: to, first_name");
 
-    const subject = "🎉 We're Live! Your $25 Credit is Ready";
+    const subject = "🎉 We're Live! Your $25 Wallet Balance is Ready";
     const html = `
       <!DOCTYPE html>
       <html>
@@ -37,7 +37,7 @@ export const handler: Handler = async (event) => {
           
           <div style="background: #dcfce7; border: 2px solid #16a34a; border-radius: 8px; padding: 20px; margin-bottom: 20px; text-align: center;">
             <h4 style="color: #15803d; margin-bottom: 10px; font-size: 20px;">🎁 Welcome Bonus</h4>
-            <p style="font-size: 24px; font-weight: bold; color: #15803d; margin-bottom: 5px;">$25 FREE CREDIT</p>
+            <p style="font-size: 24px; font-weight: bold; color: #15803d; margin-bottom: 5px;">$25 FREE WALLET BALANCE</p>
             <p style="font-size: 14px; color: #166534; margin-bottom: 0;">Already added to your account!</p>
           </div>
           
@@ -67,7 +67,7 @@ export const handler: Handler = async (event) => {
             <li style="margin-bottom: 5px;">Complete your profile to receive better-matched leads</li>
             <li style="margin-bottom: 5px;">Set up your service areas and preferences</li>
             <li style="margin-bottom: 5px;">Enable SMS notifications for instant lead alerts</li>
-            <li style="margin-bottom: 0;">Use your $25 credit to purchase your first leads</li>
+            <li style="margin-bottom: 0;">Use your $25 wallet balance to purchase your first leads</li>
           </ul>
         </div>
         

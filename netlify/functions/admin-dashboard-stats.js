@@ -35,8 +35,18 @@ export const handler = async (event, context) => {
   }
 
   try {
-    const dateRange = parseInt(event.queryStringParameters?.dateRange || '30');
-    const startDate = subDays(new Date(), dateRange).toISOString();
+    const dateRange = event.queryStringParameters?.dateRange || '30';
+    let startDate;
+    
+    if (dateRange.startsWith('month-')) {
+      const [_, year, month] = dateRange.split('-');
+      startDate = new Date(parseInt(year), parseInt(month), 1).toISOString();
+    } else if (dateRange.startsWith('year-')) {
+      const [_, year] = dateRange.split('-');
+      startDate = new Date(parseInt(year), 0, 1).toISOString();
+    } else {
+      startDate = subDays(new Date(), parseInt(dateRange)).toISOString();
+    }
     const thirtyDaysAgo = subDays(new Date(), 30).toISOString();
 
     const { data: activeContractorIds } = await supabase

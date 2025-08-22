@@ -36,7 +36,7 @@ interface Contractor {
   industry: string
   sub_service: string
   zip_codes: string[]
-  lead_credits: number
+  wallet_balance: number
 }
 
 interface PurchasedLead {

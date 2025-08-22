@@ -187,7 +187,7 @@ const ContractorSignup = () => {
             <div className="grid grid-cols-1 md:grid-cols-3 gap-12">
               <div className="text-center relative">
                 <div className="w-24 h-24 bg-gradient-to-r from-blue-500 to-indigo-600 text-white rounded-full flex items-center justify-center text-3xl font-bold mx-auto mb-6 shadow-lg">
-                  📝
+                  &#x2713;
                 </div>
                 <h3 className="text-2xl font-bold mb-4">Sign Up & Create Profile</h3>
                 <p className="text-gray-600 text-lg">Set up your contractor profile with your services, coverage areas, and preferences in minutes.</p>
@@ -196,7 +196,7 @@ const ContractorSignup = () => {
               
               <div className="text-center relative">
                 <div className="w-24 h-24 bg-gradient-to-r from-blue-500 to-indigo-600 text-white rounded-full flex items-center justify-center text-3xl font-bold mx-auto mb-6 shadow-lg">
-                  🤝
+                  &#x2713;
                 </div>
                 <h3 className="text-2xl font-bold mb-4">Get Matched With Exclusive Leads</h3>
                 <p className="text-gray-600 text-lg">Our AI matches you with high-quality leads in your area. No bidding wars - each lead goes to one contractor.</p>
@@ -205,7 +205,7 @@ const ContractorSignup = () => {
               
               <div className="text-center">
                 <div className="w-24 h-24 bg-gradient-to-r from-blue-500 to-indigo-600 text-white rounded-full flex items-center justify-center text-3xl font-bold mx-auto mb-6 shadow-lg">
-                  📈
+                  &#x2713;
                 </div>
                 <h3 className="text-2xl font-bold mb-4">Close More Jobs & Grow</h3>
                 <p className="text-gray-600 text-lg">Focus on what you do best - completing quality work and growing your business with consistent leads.</p>
@@ -223,7 +223,7 @@ const ContractorSignup = () => {
             <Card className="border-0 shadow-lg hover:shadow-xl transition-shadow duration-300">
               <CardContent className="p-8 text-center">
                 <div className="w-16 h-16 bg-gradient-to-r from-green-400 to-green-600 text-white rounded-full flex items-center justify-center text-2xl font-bold mx-auto mb-6">
-                  🎯
+                  &#x2713;
                 </div>
                 <h3 className="text-xl font-bold mb-4">AI-Powered Lead Matching</h3>
                 <p className="text-gray-600">Our smart algorithm matches you with leads that fit your expertise and location perfectly.</p>
@@ -233,7 +233,7 @@ const ContractorSignup = () => {
             <Card className="border-0 shadow-lg hover:shadow-xl transition-shadow duration-300">
               <CardContent className="p-8 text-center">
                 <div className="w-16 h-16 bg-gradient-to-r from-blue-400 to-blue-600 text-white rounded-full flex items-center justify-center text-2xl font-bold mx-auto mb-6">
-                  🛡️
+                  &#x2713;
                 </div>
                 <h3 className="text-xl font-bold mb-4">Exclusive Leads Only</h3>
                 <p className="text-gray-600">No bidding wars. Each lead is sold to only one contractor, giving you the best chance to close.</p>
@@ -243,7 +243,7 @@ const ContractorSignup = () => {
             <Card className="border-0 shadow-lg hover:shadow-xl transition-shadow duration-300">
               <CardContent className="p-8 text-center">
                 <div className="w-16 h-16 bg-gradient-to-r from-purple-400 to-purple-600 text-white rounded-full flex items-center justify-center text-2xl font-bold mx-auto mb-6">
-                  📱
+                  &#x2713;
                 </div>
                 <h3 className="text-xl font-bold mb-4">Direct Customer Contact</h3>
                 <p className="text-gray-600">Get customer contact info immediately. No middleman, no delays - just direct communication.</p>
@@ -253,7 +253,7 @@ const ContractorSignup = () => {
             <Card className="border-0 shadow-lg hover:shadow-xl transition-shadow duration-300">
               <CardContent className="p-8 text-center">
                 <div className="w-16 h-16 bg-gradient-to-r from-yellow-400 to-yellow-600 text-white rounded-full flex items-center justify-center text-2xl font-bold mx-auto mb-6">
-                  ⚡
+                  &#x2713;
                 </div>
                 <h3 className="text-xl font-bold mb-4">Faster Close Times</h3>
                 <p className="text-gray-600">Get leads in real-time with instant notifications, so you can respond within minutes.</p>
@@ -263,7 +263,7 @@ const ContractorSignup = () => {
             <Card className="border-0 shadow-lg hover:shadow-xl transition-shadow duration-300">
               <CardContent className="p-8 text-center">
                 <div className="w-16 h-16 bg-gradient-to-r from-red-400 to-red-600 text-white rounded-full flex items-center justify-center text-2xl font-bold mx-auto mb-6">
-                  🎛️
+                  &#x2713;
                 </div>
                 <h3 className="text-xl font-bold mb-4">Job-Type & Location Filters</h3>
                 <p className="text-gray-600">Set your preferences for job types, budget ranges, and service areas to get perfect matches.</p>
@@ -273,7 +273,7 @@ const ContractorSignup = () => {
             <Card className="border-0 shadow-lg hover:shadow-xl transition-shadow duration-300">
               <CardContent className="p-8 text-center">
                 <div className="w-16 h-16 bg-gradient-to-r from-indigo-400 to-indigo-600 text-white rounded-full flex items-center justify-center text-2xl font-bold mx-auto mb-6">
-                  📊
+                  &#x2713;
                 </div>
                 <h3 className="text-xl font-bold mb-4">Mobile-Friendly Dashboard</h3>
                 <p className="text-gray-600">Manage your leads, track performance, and update your profile from anywhere with our mobile app.</p>
@@ -373,7 +373,7 @@ const ContractorSignup = () => {
                 <div className="w-8 h-8 bg-green-500 text-white rounded-full flex items-center justify-center mr-4">
                   <CheckCircle className="w-5 h-5" />
                 </div>
-                <span className="text-lg font-semibold">$25 Free Lead Credit to prove we work</span>
+                <span className="text-lg font-semibold">$25 Free Wallet Balance to prove we work</span>
               </div>
               <div className="flex items-center">
                 <div className="w-8 h-8 bg-green-500 text-white rounded-full flex items-center justify-center mr-4">

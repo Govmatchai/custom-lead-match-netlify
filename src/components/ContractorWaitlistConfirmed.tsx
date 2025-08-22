@@ -36,7 +36,7 @@ const ContractorWaitlistConfirmed = () => {
                 <h3 className="font-bold text-blue-800 mb-3">What happens next:</h3>
                 <ul className="space-y-2 text-blue-700">
                   <li>• You'll be among the first contractors invited when we launch</li>
-                  <li>• Your account will start with $25 in free lead credits</li>
+                  <li>• Your account will start with $25 in wallet balance</li>
                   <li>• You'll earn a Verified Badge as an early adopter</li>
                   <li>• We'll send you updates about our launch progress</li>
                 </ul>

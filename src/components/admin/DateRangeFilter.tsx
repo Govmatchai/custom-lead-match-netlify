@@ -6,10 +6,18 @@ interface DateRangeFilterProps {
 }
 
 export function DateRangeFilter({ value, onChange }: DateRangeFilterProps) {
+  const currentDate = new Date();
+  const currentYear = currentDate.getFullYear();
+  const currentMonth = currentDate.getMonth();
+  
   const ranges = [
     { value: '7', label: 'Last 7 days' },
     { value: '30', label: 'Last 30 days' },
-    { value: '90', label: 'Last 90 days' }
+    { value: '90', label: 'Last 90 days' },
+    { value: `month-${currentYear}-${currentMonth}`, label: `${currentDate.toLocaleString('default', { month: 'long' })} ${currentYear}` },
+    { value: `month-${currentYear}-${currentMonth - 1}`, label: `${new Date(currentYear, currentMonth - 1).toLocaleString('default', { month: 'long' })} ${currentYear}` },
+    { value: `year-${currentYear}`, label: `${currentYear}` },
+    { value: `year-${currentYear - 1}`, label: `${currentYear - 1}` }
   ];
 
   return (

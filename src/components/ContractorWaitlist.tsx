@@ -141,7 +141,7 @@ const ContractorWaitlist = () => {
       <div className="py-20 bg-gradient-to-br from-green-50 to-blue-50">
         <div className="container mx-auto px-4">
           <div className="max-w-4xl mx-auto text-center">
-            <h2 className="text-4xl font-bold mb-6">Sign up today and receive $25 in free lead credits.</h2>
+            <h2 className="text-4xl font-bold mb-6">Sign up today and receive $25 in wallet balance.</h2>
             <p className="text-xl text-gray-600 mb-8">Get a Verified Badge to stand out when we launch.</p>
             
             <div className="bg-yellow-100 border-l-4 border-yellow-500 p-6 mb-8 text-left">

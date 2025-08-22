@@ -30,7 +30,7 @@ interface Contractor {
   industry: string
   sub_service: string
   zip_codes: string[]
-  lead_credits: number
+  wallet_balance: number
   created_at: string
 }
 
@@ -760,8 +760,8 @@ const AdminDashboard = () => {
                               <p>{contractor.industry} - {contractor.sub_service}</p>
                             </div>
                             <div>
-                              <span className="font-medium">Credits:</span>
-                              <p className="text-lg font-bold text-blue-600">{contractor.lead_credits}</p>
+                              <span className="font-medium">Wallet Balance:</span>
+                              <p className="text-lg font-bold text-blue-600">${contractor.wallet_balance}</p>
                             </div>
                           </div>
                           <div className="mb-3">

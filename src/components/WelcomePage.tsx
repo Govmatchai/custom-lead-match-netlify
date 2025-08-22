@@ -11,7 +11,7 @@ interface Contractor {
   contact_name: string
   industry: string
   sub_service: string
-  lead_credits: number
+  wallet_balance: number
 }
 
 export default function WelcomePage() {
@@ -115,7 +115,7 @@ export default function WelcomePage() {
           {/* Success Message */}
           <div className="mb-8 p-4 bg-green-50 border-2 border-green-200 rounded-lg max-w-2xl mx-auto">
             <div className="text-green-700 space-y-2">
-              <div>🎁 You'll receive $25 Free Lead Credit — no strings attached.</div>
+              <div>🎁 You'll receive $25 in wallet balance — no strings attached.</div>
               <div>📬 You'll receive a text message when a new lead is available that matches your industry and area.</div>
               <div>📭 If you don't see leads in your dashboard yet, hang tight — our system is working to find you the right match.</div>
               <div>🚀 Be ready! Leads go quickly and are only sent to a limited number of contractors.</div>

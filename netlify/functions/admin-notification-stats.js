@@ -37,8 +37,18 @@ export const handler = async (event, context) => {
   }
 
   try {
-    const dateRange = parseInt(event.queryStringParameters?.dateRange || '30');
-    const startDate = subDays(new Date(), dateRange);
+    const dateRange = event.queryStringParameters?.dateRange || '30';
+    let startDate;
+    
+    if (dateRange.startsWith('month-')) {
+      const [_, year, month] = dateRange.split('-');
+      startDate = new Date(parseInt(year), parseInt(month), 1);
+    } else if (dateRange.startsWith('year-')) {
+      const [_, year] = dateRange.split('-');
+      startDate = new Date(parseInt(year), 0, 1);
+    } else {
+      startDate = subDays(new Date(), parseInt(dateRange));
+    }
     const endDate = new Date();
 
     let emailStats = {

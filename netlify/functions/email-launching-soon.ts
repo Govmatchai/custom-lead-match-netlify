@@ -34,7 +34,7 @@ export const handler: Handler = async (event) => {
           
           <ul style="font-size: 16px; margin-bottom: 20px; padding-left: 20px;">
             <li style="margin-bottom: 8px;">🎯 High-quality leads in your service area</li>
-            <li style="margin-bottom: 8px;">💰 <strong>$25 free credit</strong> to get you started</li>
+            <li style="margin-bottom: 8px;">💰 <strong>$25 wallet balance</strong> to get you started</li>
             <li style="margin-bottom: 8px;">📱 Real-time lead notifications</li>
             <li style="margin-bottom: 8px;">🔒 Secure, professional platform</li>
           </ul>

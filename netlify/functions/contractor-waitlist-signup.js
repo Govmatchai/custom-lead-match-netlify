@@ -105,7 +105,7 @@ export const handler = async (event, context) => {
     const emailHtml = `
       <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
         <h1 style="color: #2563eb;">Welcome to Custom Lead Match!</h1>
-        <h2 style="color: #10b981;">Your $25 Free Credit is Reserved 🎁</h2>
+        <h2 style="color: #10b981;">Your $25 Free Wallet Balance is Reserved 🎁</h2>
         
         <p>Hi ${first_name},</p>
         
@@ -114,7 +114,7 @@ export const handler = async (event, context) => {
         <p><strong>Here's what happens next:</strong></p>
         <ul>
           <li><strong>Launch Day Access</strong> – You'll be among the first contractors invited when we launch in your area.</li>
-          <li><strong>$25 Wallet Credit</strong> – Your account will start with $25 in free lead credits.</li>
+          <li><strong>$25 Wallet Balance</strong> – Your account will start with $25 in wallet balance.</li>
           <li><strong>Verified Badge (Early Access)</strong> – As an early adopter, you'll earn a Verified Badge to stand out.</li>
         </ul>
         
@@ -138,7 +138,7 @@ export const handler = async (event, context) => {
     try {
       await sendEmail(
         email,
-        '🎉 Welcome to Custom Lead Match – Your $25 Credit is Reserved',
+        '🎉 Welcome to Custom Lead Match – Your $25 Wallet Balance is Reserved',
         emailHtml
       )
     } catch (emailError) {
