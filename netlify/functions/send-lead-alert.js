@@ -63,7 +63,7 @@ export const handler = async (event, context) => {
       }
     }
 
-    const testPhoneNumber = '+12345678900'
+    const testPhoneNumber = '+19044664981'
     const smsMessage = `🔥 New ${industry} Lead: ${location} - ${leadType}. Click to claim: ${link}`
 
     const twilioClient = twilio(TWILIO_ACCOUNT_SID, TWILIO_AUTH_TOKEN)
