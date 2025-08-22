@@ -42,8 +42,21 @@ jobs:
 
     - name: Deploy to Netlify
       run: |
-        echo "Linking site with ID: ${{ secrets.NETLIFY_SITE_ID }}"
-        netlify link --id=${{ secrets.NETLIFY_SITE_ID }}
+        echo "Debug: NETLIFY_SITE_ID length: ${#NETLIFY_SITE_ID}"
+        echo "Debug: NETLIFY_AUTH_TOKEN length: ${#NETLIFY_AUTH_TOKEN}"
+        if [ -z "$NETLIFY_SITE_ID" ]; then
+          echo "Error: NETLIFY_SITE_ID is empty or undefined"
+          exit 1
+        fi
+        if [ -z "$NETLIFY_AUTH_TOKEN" ]; then
+          echo "Error: NETLIFY_AUTH_TOKEN is empty or undefined"
+          exit 1
+        fi
+        echo "Unlinking any existing site configuration..."
+        netlify unlink || true
+        echo "Linking site with ID: $NETLIFY_SITE_ID"
+        netlify link --id="$NETLIFY_SITE_ID"
+        echo "Deploying to production..."
         netlify deploy --prod --dir=dist --message="Deploy from GitHub Actions"
       env:
         NETLIFY_AUTH_TOKEN: ${{ secrets.NETLIFY_AUTH_TOKEN }}
