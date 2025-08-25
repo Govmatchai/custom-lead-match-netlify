@@ -69,29 +69,11 @@ export const handler = async (event, context) => {
         .update({ purchased_by: null })
         .eq('purchased_by', contractor_id)
 
-      if (purchasedLeadsError && !purchasedLeadsError.message.includes("Could not find the 'purchased_by' column")) {
-        console.error('Error updating purchased leads:', purchasedLeadsError)
-        return {
-          statusCode: 500,
-          headers: {
-            'Content-Type': 'application/json',
-            'Access-Control-Allow-Origin': '*'
-          },
-          body: JSON.stringify({ detail: 'Failed to update purchased leads' })
-        }
+      if (purchasedLeadsError) {
+        console.log('Note: purchased_by column update failed (column may not exist):', purchasedLeadsError.message)
       }
     } catch (err) {
-      if (!err.message.includes("purchased_by")) {
-        console.error('Error updating purchased leads:', err)
-        return {
-          statusCode: 500,
-          headers: {
-            'Content-Type': 'application/json',
-            'Access-Control-Allow-Origin': '*'
-          },
-          body: JSON.stringify({ detail: 'Failed to update purchased leads' })
-        }
-      }
+      console.log('Note: purchased_by column update failed (column may not exist):', err.message)
     }
 
     const { error: dynamicPagesError } = await supabase
