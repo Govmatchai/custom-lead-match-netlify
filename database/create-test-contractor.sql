@@ -14,7 +14,8 @@ INSERT INTO contractors (
   wallet_balance,
   created_at,
   updated_at
-) VALUES (
+) VALUES 
+(
   'test-contractor-e2e-001',
   'Test Construction LLC',
   'Test Contractor',
@@ -24,9 +25,73 @@ INSERT INTO contractors (
   'plumbing',
   ARRAY['12345', '67890'],
   'testcontractor@example.com',
-  '$2b$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', -- bcrypt hash for 'Test123!'
+  '$2b$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi',
   true,
   100.00,
+  NOW(),
+  NOW()
+),
+(
+  'test-contractor-e2e-002',
+  'ABC Plumbing Services',
+  'John Smith',
+  'john@abcplumbing.com',
+  '(555) 234-5678',
+  'home_services',
+  'plumbing',
+  ARRAY['12345', '67890'],
+  'john@abcplumbing.com',
+  '$2b$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi',
+  true,
+  75.00,
+  NOW(),
+  NOW()
+),
+(
+  'test-contractor-e2e-003',
+  'Quick HVAC Repair',
+  'Jane Doe',
+  'jane@quickhvac.com',
+  '(555) 345-6789',
+  'home_services',
+  'hvac',
+  ARRAY['12346', '67891'],
+  'jane@quickhvac.com',
+  '$2b$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi',
+  true,
+  50.00,
+  NOW(),
+  NOW()
+),
+(
+  'test-contractor-e2e-004',
+  'Elite Legal Services',
+  'Bob Johnson',
+  'bob@elitelegal.com',
+  '(555) 456-7890',
+  'legal',
+  'personal_injury',
+  ARRAY['12347', '67892'],
+  'bob@elitelegal.com',
+  '$2b$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi',
+  true,
+  125.00,
+  NOW(),
+  NOW()
+),
+(
+  'test-contractor-e2e-005',
+  'Premier Auto Repair',
+  'Sarah Wilson',
+  'sarah@premierauto.com',
+  '(555) 567-8901',
+  'automotive',
+  'general_repair',
+  ARRAY['12348', '67893'],
+  'sarah@premierauto.com',
+  '$2b$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi',
+  true,
+  200.00,
   NOW(),
   NOW()
 ) ON CONFLICT (username) DO UPDATE SET

@@ -326,6 +326,21 @@ const AdminDashboard = () => {
     }
   }
 
+  const handleSeedTestContractors = async () => {
+    try {
+      const response = await fetch('/.netlify/functions/admin-utilities', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'seed_test_contractors' })
+      })
+      if (response.ok) {
+        fetchAdminData()
+      }
+    } catch (error) {
+      console.error('Failed to seed test contractors:', error)
+    }
+  }
+
   const handleExportCSV = (data: any[], filename: string) => {
     const csv = [
       Object.keys(data[0]).join(','),
@@ -1329,10 +1344,14 @@ const AdminDashboard = () => {
               </CardHeader>
               <CardContent>
                 <div className="space-y-6">
-                  <div>
+                  <div className="flex gap-2">
                     <Button onClick={handleSeedTestLeads} variant="outline">
                       <Plus className="w-4 h-4 mr-2" />
                       Seed Test Leads
+                    </Button>
+                    <Button onClick={handleSeedTestContractors} variant="outline" className="bg-green-50 border-green-300 text-green-700 hover:bg-green-100">
+                      <Plus className="w-4 h-4 mr-2" />
+                      Seed Test Contractors
                     </Button>
                   </div>
                   

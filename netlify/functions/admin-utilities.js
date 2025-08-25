@@ -149,6 +149,107 @@ export const handler = async (event, context) => {
       }
     }
 
+    if (action === 'seed_test_contractors') {
+      const testContractors = [
+        {
+          id: 'test-contractor-e2e-001',
+          business_name: 'Test Construction LLC',
+          contact_name: 'Test Contractor',
+          email: 'testcontractor@example.com',
+          phone: '(555) 123-4567',
+          industry: 'home_services',
+          sub_service: 'plumbing',
+          zip_codes: ['12345', '67890'],
+          username: 'testcontractor@example.com',
+          password_hash: '$2b$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi',
+          sms_opt_in: true,
+          wallet_balance: 100.00
+        },
+        {
+          id: 'test-contractor-e2e-002',
+          business_name: 'ABC Plumbing Services',
+          contact_name: 'John Smith',
+          email: 'john@abcplumbing.com',
+          phone: '(555) 234-5678',
+          industry: 'home_services',
+          sub_service: 'plumbing',
+          zip_codes: ['12345', '67890'],
+          username: 'john@abcplumbing.com',
+          password_hash: '$2b$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi',
+          sms_opt_in: true,
+          wallet_balance: 75.00
+        },
+        {
+          id: 'test-contractor-e2e-003',
+          business_name: 'Quick HVAC Repair',
+          contact_name: 'Jane Doe',
+          email: 'jane@quickhvac.com',
+          phone: '(555) 345-6789',
+          industry: 'home_services',
+          sub_service: 'hvac',
+          zip_codes: ['12346', '67891'],
+          username: 'jane@quickhvac.com',
+          password_hash: '$2b$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi',
+          sms_opt_in: true,
+          wallet_balance: 50.00
+        },
+        {
+          id: 'test-contractor-e2e-004',
+          business_name: 'Elite Legal Services',
+          contact_name: 'Bob Johnson',
+          email: 'bob@elitelegal.com',
+          phone: '(555) 456-7890',
+          industry: 'legal',
+          sub_service: 'personal_injury',
+          zip_codes: ['12347', '67892'],
+          username: 'bob@elitelegal.com',
+          password_hash: '$2b$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi',
+          sms_opt_in: true,
+          wallet_balance: 125.00
+        },
+        {
+          id: 'test-contractor-e2e-005',
+          business_name: 'Premier Auto Repair',
+          contact_name: 'Sarah Wilson',
+          email: 'sarah@premierauto.com',
+          phone: '(555) 567-8901',
+          industry: 'automotive',
+          sub_service: 'general_repair',
+          zip_codes: ['12348', '67893'],
+          username: 'sarah@premierauto.com',
+          password_hash: '$2b$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi',
+          sms_opt_in: true,
+          wallet_balance: 200.00
+        }
+      ]
+
+      const { data: contractors, error } = await supabase
+        .from('contractors')
+        .upsert(testContractors, { onConflict: 'username' })
+        .select()
+
+      if (error) {
+        console.error('Test contractors creation error:', error)
+        return {
+          statusCode: 500,
+          headers: {
+            'Content-Type': 'application/json',
+            'Access-Control-Allow-Origin': '*'
+          },
+          body: JSON.stringify({ detail: 'Failed to create test contractors' })
+        }
+      }
+
+      return {
+        statusCode: 200,
+        headers: {
+          'Content-Type': 'application/json',
+          'Access-Control-Allow-Origin': '*'
+        },
+        body: JSON.stringify({ message: `${contractors.length} test contractors created successfully`, contractors })
+      }
+    }
+
     return {
       statusCode: 400,
       headers: {
