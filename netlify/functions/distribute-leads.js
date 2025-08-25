@@ -25,6 +25,53 @@ export const handler = async (event, context) => {
   }
 
   try {
+    const requestBody = event.body ? JSON.parse(event.body) : {}
+    const { lead_id, force_distribute } = requestBody
+
+    if (lead_id) {
+      const { data: lead, error: leadError } = await supabase
+        .from('leads')
+        .select('*')
+        .eq('id', lead_id)
+        .single()
+
+      if (leadError || !lead) {
+        return {
+          statusCode: 404,
+          headers: {
+            'Content-Type': 'application/json',
+            'Access-Control-Allow-Origin': '*'
+          },
+          body: JSON.stringify({ error: 'Lead not found' })
+        }
+      }
+
+      if (lead.status === 'valid' && (!lead.distributed || force_distribute)) {
+        await distributeLead(lead)
+        
+        await supabase
+          .from('leads')
+          .update({ 
+            distributed: true, 
+            distributed_at: new Date().toISOString() 
+          })
+          .eq('id', lead.id)
+
+        return {
+          statusCode: 200,
+          headers: {
+            'Content-Type': 'application/json',
+            'Access-Control-Allow-Origin': '*'
+          },
+          body: JSON.stringify({
+            message: `Lead ${lead_id} distributed successfully`,
+            leads_processed: 1,
+            leads_distributed: 1
+          })
+        }
+      }
+    }
+
     const now = new Date()
     
     const twoHoursAgo = new Date(now.getTime() - 2 * 60 * 60 * 1000).toISOString()
@@ -151,9 +198,20 @@ async function distributeLead(lead) {
     return
   }
 
-  let targetContractors = eligibleContractors
+  const { data: limitsConfig } = await supabase
+    .from('sms_config')
+    .select('config_value')
+    .eq('config_key', 'notification_limits')
+    .single()
+
+  const limits = limitsConfig?.config_value || { default_max_contractors: 5 }
+  const maxContractors = limits.category_overrides?.[lead.service_category] || 
+                        limits.location_overrides?.[lead.zip_code] || 
+                        limits.default_max_contractors || 5
+
+  let targetContractors = eligibleContractors.slice(0, maxContractors)
   if (lead.lead_score >= 85) {
-    targetContractors = eligibleContractors.slice(0, 3)
+    targetContractors = eligibleContractors.slice(0, Math.min(3, maxContractors))
   }
 
   const token = require('crypto').randomBytes(16).toString('hex')

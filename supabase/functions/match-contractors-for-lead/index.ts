@@ -20,13 +20,63 @@ serve(async (req) => {
     const { record } = await req.json()
     const lead = record
 
+    console.log(`Processing lead ${lead.id} for contractor matching`)
+
+    const { data: smsConfig } = await supabaseClient
+      .from('sms_config')
+      .select('config_value')
+      .eq('config_key', 'sms_budget')
+      .single()
+
+    const budgetConfig = smsConfig?.config_value || { 
+      monthly_limit_dollars: 500, 
+      auto_pause_on_limit: true 
+    }
+    
+    const startOfMonth = new Date()
+    startOfMonth.setDate(1)
+    startOfMonth.setHours(0, 0, 0, 0)
+    
+    const { data: monthlySpend } = await supabaseClient
+      .from('sms_send_log')
+      .select('cost_cents')
+      .gte('timestamp', startOfMonth.toISOString())
+    
+    const totalSpentCents = monthlySpend?.reduce((sum, log) => sum + (log.cost_cents || 79), 0) || 0
+    const totalSpentDollars = totalSpentCents / 100
+    
+    if (budgetConfig.auto_pause_on_limit && totalSpentDollars >= budgetConfig.monthly_limit_dollars) {
+      console.log('SMS budget limit reached, skipping notifications')
+      return new Response(JSON.stringify({ 
+        success: true, 
+        contractors_notified: 0,
+        message: 'SMS budget limit reached'
+      }), {
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+      })
+    }
+
+    const { data: limitsConfig } = await supabaseClient
+      .from('sms_config')
+      .select('config_value')
+      .eq('config_key', 'notification_limits')
+      .single()
+
+    const limits = limitsConfig?.config_value || { default_max_contractors: 5 }
+    const maxContractors = limits.category_overrides?.[lead.service_category] || 
+                          limits.location_overrides?.[lead.zip_code] || 
+                          limits.default_max_contractors || 5
+
     const { data: matchingContractors, error: contractorError } = await supabaseClient
       .from('contractors')
-      .select('id, phone, email, sms_opt_in, business_name')
+      .select('id, phone, email, sms_opt_in, business_name, is_sms_enabled, last_active, wallet_balance')
       .eq('industry', lead.service_category)
       .eq('sub_service', lead.sub_service)
       .contains('zip_codes', [lead.zip_code])
       .eq('sms_opt_in', true)
+      .eq('is_sms_enabled', true)
+      .gt('wallet_balance', 1.00)
+      .limit(maxContractors)
 
     if (contractorError) {
       console.error('Contractor query error:', contractorError)
@@ -36,40 +86,43 @@ serve(async (req) => {
       })
     }
 
-    if (matchingContractors && matchingContractors.length > 0) {
-      const twilioAccountSid = Deno.env.get('TWILIO_ACCOUNT_SID')
-      const twilioAuthToken = Deno.env.get('TWILIO_AUTH_TOKEN')
-      const twilioPhoneNumber = Deno.env.get('TWILIO_PHONE_NUMBER') || '+13157844568'
+    const eligibleContractors = matchingContractors?.filter(contractor => {
+      const lastActiveDate = contractor.last_active ? new Date(contractor.last_active) : new Date(0)
+      const daysSinceActive = (Date.now() - lastActiveDate.getTime()) / (1000 * 60 * 60 * 24)
+      return daysSinceActive < 14
+    }) || []
 
-      const claimUrl = `https://customleadmatch.netlify.app/claim-lead/${lead.id}`
+    console.log(`Found ${eligibleContractors.length} eligible contractors for lead ${lead.id}`)
 
-      for (const contractor of matchingContractors) {
-        try {
-          const response = await fetch(`https://api.twilio.com/2010-04-01/Accounts/${twilioAccountSid}/Messages.json`, {
-            method: 'POST',
-            headers: {
-              'Authorization': `Basic ${btoa(`${twilioAccountSid}:${twilioAuthToken}`)}`,
-              'Content-Type': 'application/x-www-form-urlencoded',
-            },
-            body: new URLSearchParams({
-              From: twilioPhoneNumber,
-              To: contractor.phone,
-              Body: `🔥 New ${lead.service_category} Lead: ${lead.zip_code} - ${lead.sub_service}. Pre-screened & validated. Click to claim: ${claimUrl}`
-            })
+    if (eligibleContractors.length > 0) {
+      try {
+        const netlifyUrl = Deno.env.get('NETLIFY_URL') || 'https://customleadmatch.netlify.app'
+        const distributeResponse = await fetch(`${netlifyUrl}/.netlify/functions/distribute-leads`, {
+          method: 'POST',
+          headers: { 
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')}`
+          },
+          body: JSON.stringify({ 
+            lead_id: lead.id,
+            force_distribute: true 
           })
+        })
 
-          if (!response.ok) {
-            console.error(`SMS error for contractor ${contractor.id}:`, await response.text())
-          }
-        } catch (smsError) {
-          console.error(`SMS error for contractor ${contractor.id}:`, smsError)
+        if (!distributeResponse.ok) {
+          console.error('Distribute leads failed:', await distributeResponse.text())
+        } else {
+          console.log('Successfully triggered lead distribution')
         }
+      } catch (distributeError) {
+        console.error('Error calling distribute-leads:', distributeError)
       }
     }
 
     return new Response(JSON.stringify({ 
       success: true, 
-      contractors_notified: matchingContractors?.length || 0 
+      contractors_notified: eligibleContractors.length,
+      budget_remaining: budgetConfig.monthly_limit_dollars - totalSpentDollars
     }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' }
     })

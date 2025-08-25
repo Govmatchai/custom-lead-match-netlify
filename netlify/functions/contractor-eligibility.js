@@ -197,6 +197,14 @@ export const handler = async (event, context) => {
               .eq('id', contractor.id)
 
             if (!updateError) {
+              try {
+                const { sendInactiveContractorEmail } = await import('./send-inactive-contractor-email.js')
+                await sendInactiveContractorEmail(contractor)
+                console.log(`Sent inactive notification email to contractor ${contractor.id}`)
+              } catch (emailError) {
+                console.error(`Failed to send inactive email to contractor ${contractor.id}:`, emailError)
+              }
+
               disabledCount++
               results.push({
                 contractor_id: contractor.id,

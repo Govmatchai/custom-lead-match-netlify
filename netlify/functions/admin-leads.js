@@ -35,7 +35,9 @@ export const handler = async (event, context) => {
     const { data: leads, error } = await supabase
       .from('leads')
       .select('*, lead_score, lead_score_band, lead_score_reason, lead_score_updated_at')
+      .in('status', ['valid', 'pending_review', 'invalid', 'duplicate', 'claimed'])
       .order('created_at', { ascending: false })
+      .limit(200)
 
     if (error) {
       console.error('Database query error:', error)
