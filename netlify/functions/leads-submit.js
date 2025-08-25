@@ -1,5 +1,4 @@
 import { createClient } from '@supabase/supabase-js'
-import twilio from 'twilio'
 import { randomBytes } from 'crypto'
 import { validateLead } from './lead-validation.js'
 import dotenv from 'dotenv'
@@ -10,15 +9,6 @@ const supabase = createClient(
   process.env.SUPABASE_URL,
   process.env.SUPABASE_SERVICE_KEY
 )
-
-let twilioClient = null
-try {
-  if (process.env.TWILIO_ACCOUNT_SID && process.env.TWILIO_ACCOUNT_SID.startsWith('AC')) {
-    twilioClient = twilio(process.env.TWILIO_ACCOUNT_SID, process.env.TWILIO_AUTH_TOKEN)
-  }
-} catch (error) {
-  console.log('Twilio not initialized (likely local dev environment)')
-}
 
 export const handler = async (event, context) => {
   if (event.httpMethod === 'OPTIONS') {
@@ -82,8 +72,8 @@ export const handler = async (event, context) => {
         customer_name,
         service_category,
         sub_service,
-        zip_code,
-        phone,
+        zip_code: validationFlags.zip_code_formatted || zip_code,
+        phone: validationFlags.phone_formatted || phone,
         email,
         description,
         ip_address: clientIP,
@@ -118,6 +108,29 @@ export const handler = async (event, context) => {
       } catch (scoreError) {
         console.error('Scoring error:', scoreError)
       }
+
+      try {
+        const distributeResponse = await fetch(`${process.env.URL || 'https://customleadmatch.netlify.app'}/.netlify/functions/distribute-leads`, {
+          method: 'POST',
+          headers: { 
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${process.env.SUPABASE_SERVICE_KEY}`
+          },
+          body: JSON.stringify({ 
+            lead_id: lead.id,
+            force_distribute: true 
+          })
+        })
+        
+        if (distributeResponse.ok) {
+          const distributionResult = await distributeResponse.json()
+          console.log(`✅ Lead ${lead.id} distributed to ${distributionResult.contractors_notified || 0} contractors`)
+        } else {
+          console.log(`⚠️ Lead distribution failed for ${lead.id}`)
+        }
+      } catch (distributionError) {
+        console.error('Distribution error:', distributionError)
+      }
     }
 
     if (leadError) {
@@ -132,8 +145,8 @@ export const handler = async (event, context) => {
             customer_name,
             service_category,
             sub_service,
-            zip_code,
-            phone,
+            zip_code: validationFlags.zip_code_formatted || zip_code,
+            phone: validationFlags.phone_formatted || phone,
             email,
             description,
             ip_address: clientIP,
@@ -193,79 +206,17 @@ export const handler = async (event, context) => {
           }
         }
         
-        console.log('Direct insertion also failed, falling back to temporary processing')
-        const mockLead = {
-          id: `temp-${Date.now()}`,
-          customer_name,
-          service_category,
-          sub_service,
-          zip_code,
-          phone,
-          email,
-          description,
-          status
-        }
-        
-        const { data: matchingContractors, error: contractorError } = await supabase
-          .from('contractors')
-          .select('*')
-          .eq('industry', service_category)
-          .eq('sub_service', sub_service)
-          .contains('zip_codes', [zip_code])
-          .gt('lead_credits', 0)
-          .eq('sms_opt_in', true)
-
-        console.log(`Found ${matchingContractors?.length || 0} matching contractors for ${service_category}/${sub_service} in ${zip_code}`)
-        if (contractorError) {
-          console.error('Contractor query error:', contractorError)
-        }
-
-        let contractorsNotified = 0
-        if (status === 'valid' && matchingContractors && matchingContractors.length > 0) {
-          for (const contractor of matchingContractors) {
-            try {
-              let formattedPhone = contractor.phone.replace(/\D/g, '') // Remove all non-digits
-              if (formattedPhone.length === 10) {
-                formattedPhone = '+1' + formattedPhone // Add US country code
-              } else if (formattedPhone.length === 11 && formattedPhone.startsWith('1')) {
-                formattedPhone = '+' + formattedPhone // Add + prefix
-              } else {
-                console.error(`Invalid phone number format for contractor ${contractor.id}: ${contractor.phone}`)
-                continue
-              }
-              
-              console.log(`Attempting to send SMS to contractor ${contractor.id} at ${formattedPhone} (original: ${contractor.phone})`)
-              
-              if (twilioClient) {
-                await twilioClient.messages.create({
-                  body: `🔥 New ${service_category} Lead: ${zip_code} - ${sub_service}. Emergency plumbing repair needed. Contact: ${phone}`,
-                  from: process.env.TWILIO_PHONE_NUMBER,
-                  to: formattedPhone
-                })
-              } else {
-                console.log(`⚠️ Skipping SMS send to ${formattedPhone} (local dev environment)`)
-              }
-              contractorsNotified++
-              console.log(`✅ SMS sent successfully to contractor ${contractor.id} at ${formattedPhone}`)
-            } catch (smsError) {
-              console.error(`❌ SMS error for contractor ${contractor.id}:`, smsError.message)
-              console.error('Error code:', smsError.code)
-            }
-          }
-        }
-
+        console.log('Direct insertion also failed, returning error')
         return {
-          statusCode: 200,
+          statusCode: 500,
           headers: {
             'Content-Type': 'application/json',
             'Access-Control-Allow-Origin': '*'
           },
           body: JSON.stringify({
-            message: `Lead processed successfully! Smart matching contractors will be notified based on quality and timing.`,
-            lead_id: mockLead.id,
-            status,
-            contractors_notified: 0,
-            note: 'Distribution will be handled by scheduled function'
+            message: 'Unable to process lead at this time. Please try again later.',
+            error: 'Database connection failed',
+            status: 'error'
           })
         }
       }
@@ -280,7 +231,7 @@ export const handler = async (event, context) => {
       }
     }
 
-    console.log(`Lead ${lead.id} created successfully. Distribution will be handled by scheduled function based on score: ${lead.lead_score || 'pending'}`)
+    console.log(`Lead ${lead.id} created successfully with status: ${status}`)
 
     return {
       statusCode: 200,
@@ -292,13 +243,15 @@ export const handler = async (event, context) => {
         message: status === 'valid' ? 'Lead submitted successfully! Matching contractors have been notified.' : 
                  status === 'pending_review' ? 'Lead received and is being reviewed for quality.' :
                  status === 'duplicate' ? 'Similar lead already exists. Please wait before submitting again.' :
+                 status === 'invalid' ? 'Lead submission failed validation. Please check your information and try again.' :
                  'Lead received but requires additional review.',
         lead_id: lead.id,
         status,
-        contractors_notified: contractorsNotified,
         validation_summary: {
+          required_fields: validationFlags.required_fields_valid,
           phone_valid: validationFlags.phone_valid,
           email_valid: validationFlags.email_format_valid,
+          zip_code_valid: validationFlags.zip_code_valid,
           is_duplicate: validationFlags.is_duplicate || false,
           content_valid: !validationFlags.content_invalid
         }
