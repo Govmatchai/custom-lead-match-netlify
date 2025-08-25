@@ -63,20 +63,34 @@ export const handler = async (event, context) => {
       }
     }
 
-    const { error: purchasedLeadsError } = await supabase
-      .from('leads')
-      .update({ purchased_by: null })
-      .eq('purchased_by', contractor_id)
+    try {
+      const { error: purchasedLeadsError } = await supabase
+        .from('leads')
+        .update({ purchased_by: null })
+        .eq('purchased_by', contractor_id)
 
-    if (purchasedLeadsError) {
-      console.error('Error updating purchased leads:', purchasedLeadsError)
-      return {
-        statusCode: 500,
-        headers: {
-          'Content-Type': 'application/json',
-          'Access-Control-Allow-Origin': '*'
-        },
-        body: JSON.stringify({ detail: 'Failed to update purchased leads' })
+      if (purchasedLeadsError && !purchasedLeadsError.message.includes("Could not find the 'purchased_by' column")) {
+        console.error('Error updating purchased leads:', purchasedLeadsError)
+        return {
+          statusCode: 500,
+          headers: {
+            'Content-Type': 'application/json',
+            'Access-Control-Allow-Origin': '*'
+          },
+          body: JSON.stringify({ detail: 'Failed to update purchased leads' })
+        }
+      }
+    } catch (err) {
+      if (!err.message.includes("purchased_by")) {
+        console.error('Error updating purchased leads:', err)
+        return {
+          statusCode: 500,
+          headers: {
+            'Content-Type': 'application/json',
+            'Access-Control-Allow-Origin': '*'
+          },
+          body: JSON.stringify({ detail: 'Failed to update purchased leads' })
+        }
       }
     }
 
@@ -94,6 +108,23 @@ export const handler = async (event, context) => {
           'Access-Control-Allow-Origin': '*'
         },
         body: JSON.stringify({ detail: 'Failed to update dynamic pages' })
+      }
+    }
+
+    const { error: purchasedLeadsDeleteError } = await supabase
+      .from('purchased_leads')
+      .delete()
+      .eq('contractor_id', contractor_id)
+
+    if (purchasedLeadsDeleteError) {
+      console.error('Error deleting purchased leads:', purchasedLeadsDeleteError)
+      return {
+        statusCode: 500,
+        headers: {
+          'Content-Type': 'application/json',
+          'Access-Control-Allow-Origin': '*'
+        },
+        body: JSON.stringify({ detail: 'Failed to delete purchased leads' })
       }
     }
 
