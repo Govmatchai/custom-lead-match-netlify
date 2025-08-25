@@ -6,7 +6,10 @@ BEGIN
   PERFORM
     net.http_post(
       url := 'https://nkubtsnpkdghfnukduuv.supabase.co/functions/v1/match-contractors-for-lead',
-      headers := '{"Content-Type": "application/json", "Authorization": "Bearer ' || current_setting('app.settings.service_role_key') || '"}'::jsonb,
+      headers := jsonb_build_object(
+        'Content-Type', 'application/json',
+        'Authorization', 'Bearer ' || current_setting('app.settings.service_role_key', true)
+      ),
       body := jsonb_build_object('record', to_jsonb(NEW))
     );
   RETURN NEW;
