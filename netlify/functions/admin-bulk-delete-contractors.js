@@ -56,13 +56,19 @@ export const handler = async (event, context) => {
           return { id: contractorId, success: false, error: `Failed to update claimed leads: ${claimedLeadsError.message}` }
         }
 
-        const { error: purchasedLeadsError } = await supabase
-          .from('leads')
-          .update({ purchased_by: null })
-          .eq('purchased_by', contractorId)
+        try {
+          const { error: purchasedLeadsError } = await supabase
+            .from('leads')
+            .update({ purchased_by: null })
+            .eq('purchased_by', contractorId)
 
-        if (purchasedLeadsError) {
-          return { id: contractorId, success: false, error: `Failed to update purchased leads: ${purchasedLeadsError.message}` }
+          if (purchasedLeadsError && !purchasedLeadsError.message.includes("Could not find the 'purchased_by' column")) {
+            return { id: contractorId, success: false, error: `Failed to update purchased leads: ${purchasedLeadsError.message}` }
+          }
+        } catch (err) {
+          if (!err.message.includes("purchased_by")) {
+            return { id: contractorId, success: false, error: `Failed to update purchased leads: ${err.message}` }
+          }
         }
 
         const { error: dynamicPagesError } = await supabase
