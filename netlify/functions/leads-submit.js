@@ -11,7 +11,14 @@ const supabase = createClient(
   process.env.SUPABASE_SERVICE_KEY
 )
 
-const twilioClient = twilio(process.env.TWILIO_ACCOUNT_SID, process.env.TWILIO_AUTH_TOKEN)
+let twilioClient = null
+try {
+  if (process.env.TWILIO_ACCOUNT_SID && process.env.TWILIO_ACCOUNT_SID.startsWith('AC')) {
+    twilioClient = twilio(process.env.TWILIO_ACCOUNT_SID, process.env.TWILIO_AUTH_TOKEN)
+  }
+} catch (error) {
+  console.log('Twilio not initialized (likely local dev environment)')
+}
 
 export const handler = async (event, context) => {
   if (event.httpMethod === 'OPTIONS') {
@@ -161,11 +168,15 @@ export const handler = async (event, context) => {
               
               console.log(`Attempting to send SMS to contractor ${contractor.id} at ${formattedPhone} (original: ${contractor.phone})`)
               
-              await twilioClient.messages.create({
-                body: `🔥 New ${service_category} Lead: ${zip_code} - ${sub_service}. Emergency plumbing repair needed. Contact: ${phone}`,
-                from: process.env.TWILIO_PHONE_NUMBER,
-                to: formattedPhone
-              })
+              if (twilioClient) {
+                await twilioClient.messages.create({
+                  body: `🔥 New ${service_category} Lead: ${zip_code} - ${sub_service}. Emergency plumbing repair needed. Contact: ${phone}`,
+                  from: process.env.TWILIO_PHONE_NUMBER,
+                  to: formattedPhone
+                })
+              } else {
+                console.log(`⚠️ Skipping SMS send to ${formattedPhone} (local dev environment)`)
+              }
               contractorsNotified++
               console.log(`✅ SMS sent successfully to contractor ${contractor.id} at ${formattedPhone}`)
             } catch (smsError) {

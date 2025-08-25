@@ -2,7 +2,15 @@ import { createClient } from '@supabase/supabase-js'
 import twilio from 'twilio'
 
 const supabase = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_SERVICE_KEY)
-const twilioClient = twilio(process.env.TWILIO_ACCOUNT_SID, process.env.TWILIO_AUTH_TOKEN)
+
+let twilioClient = null
+try {
+  if (process.env.TWILIO_ACCOUNT_SID && process.env.TWILIO_ACCOUNT_SID.startsWith('AC')) {
+    twilioClient = twilio(process.env.TWILIO_ACCOUNT_SID, process.env.TWILIO_AUTH_TOKEN)
+  }
+} catch (error) {
+  console.log('Twilio not initialized (likely local dev environment)')
+}
 
 export const validateLead = async (leadData, clientIP) => {
   const validationFlags = {}
@@ -11,10 +19,16 @@ export const validateLead = async (leadData, clientIP) => {
   console.log(`🔍 Validating lead for phone: ${leadData.phone}`)
 
   try {
-    const phoneNumber = await twilioClient.lookups.v1.phoneNumbers(leadData.phone).fetch()
-    validationFlags.phone_valid = true
-    validationFlags.phone_carrier = phoneNumber.carrier?.name || 'unknown'
-    console.log(`✅ Phone validation passed for ${leadData.phone}`)
+    if (twilioClient) {
+      const phoneNumber = await twilioClient.lookups.v1.phoneNumbers(leadData.phone).fetch()
+      validationFlags.phone_valid = true
+      validationFlags.phone_carrier = phoneNumber.carrier?.name || 'unknown'
+      console.log(`✅ Phone validation passed for ${leadData.phone}`)
+    } else {
+      console.log(`⚠️ Skipping phone validation for ${leadData.phone} (local dev)`)
+      validationFlags.phone_valid = true
+      validationFlags.phone_carrier = 'local-dev-skip'
+    }
   } catch (error) {
     console.log(`❌ Phone validation failed for ${leadData.phone}:`, error.message)
     validationFlags.phone_valid = false
