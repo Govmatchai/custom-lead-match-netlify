@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react'
-import { Users, FileText, CheckCircle, Clock, Eye, EyeOff, DollarSign, Settings, Plus, Download, Mail, Trash2 } from 'lucide-react'
+import { Users, FileText, CheckCircle, Clock, Eye, EyeOff, DollarSign, Settings, Plus, Download, Mail, Trash2, MessageSquare } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -87,7 +87,7 @@ const AdminDashboard = () => {
   const [contractors, setContractors] = useState<Contractor[]>([])
   const [leads, setLeads] = useState<Lead[]>([])
   const [loading, setLoading] = useState(false)
-  const [activeTab, setActiveTab] = useState<'stats' | 'contractors' | 'leads' | 'lead-management' | 'scoring-config' | 'transactions' | 'pricing' | 'utilities'>('stats')
+  const [activeTab, setActiveTab] = useState<'stats' | 'contractors' | 'leads' | 'lead-management' | 'scoring-config' | 'transactions' | 'pricing' | 'utilities' | 'sms-controls'>('stats')
   const [statusFilter, setStatusFilter] = useState('all')
   const [industryFilter, setIndustryFilter] = useState('all')
   const [transactions, setTransactions] = useState<Transaction[]>([])
@@ -106,6 +106,9 @@ const AdminDashboard = () => {
   const [selectAll, setSelectAll] = useState(false)
   const [successMessage, setSuccessMessage] = useState('')
   const [errorMessage, setErrorMessage] = useState('')
+  const [smsConfig, setSmsConfig] = useState<any>(null)
+  const [smsAnalytics, setSmsAnalytics] = useState<any>(null)
+  const [loadingSmsData, setLoadingSmsData] = useState(false)
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -416,6 +419,90 @@ const AdminDashboard = () => {
     setSelectAll(!selectAll)
   }
 
+  const fetchSmsConfig = async () => {
+    try {
+      const response = await fetch('/.netlify/functions/sms-config')
+      if (response.ok) {
+        const data = await response.json()
+        setSmsConfig(data.configs)
+      }
+    } catch (error) {
+      console.error('Error fetching SMS config:', error)
+    }
+  }
+
+  const updateSmsConfig = async (configKey: string, configValue: any) => {
+    try {
+      const response = await fetch('/.netlify/functions/sms-config', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ config_key: configKey, config_value: configValue })
+      })
+      if (response.ok) {
+        await fetchSmsConfig()
+        setSuccessMessage('SMS configuration updated successfully')
+      }
+    } catch (error) {
+      console.error('Error updating SMS config:', error)
+      setErrorMessage('Failed to update SMS configuration')
+    }
+  }
+
+  const fetchSmsAnalytics = async () => {
+    try {
+      const response = await fetch('/.netlify/functions/sms-analytics?period=month')
+      if (response.ok) {
+        const data = await response.json()
+        setSmsAnalytics(data)
+      }
+    } catch (error) {
+      console.error('Error fetching SMS analytics:', error)
+    }
+  }
+
+  const handleTestSms = async (phoneNumber: string) => {
+    try {
+      const response = await fetch('/.netlify/functions/test-sms-send', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ 
+          phone_number: phoneNumber,
+          message: '🧪 Test SMS from Custom Lead Match admin panel'
+        })
+      })
+      if (response.ok) {
+        setSuccessMessage('Test SMS sent successfully')
+        await fetchSmsAnalytics()
+      } else {
+        setErrorMessage('Failed to send test SMS')
+      }
+    } catch (error) {
+      console.error('Error sending test SMS:', error)
+      setErrorMessage('Failed to send test SMS')
+    }
+  }
+
+  const handleExportSmsAnalytics = async () => {
+    try {
+      const response = await fetch('/.netlify/functions/sms-analytics?period=month&export=true')
+      if (response.ok) {
+        const blob = await response.blob()
+        const url = window.URL.createObjectURL(blob)
+        const a = document.createElement('a')
+        a.href = url
+        a.download = `sms-analytics-${new Date().toISOString().split('T')[0]}.csv`
+        document.body.appendChild(a)
+        a.click()
+        window.URL.revokeObjectURL(url)
+        document.body.removeChild(a)
+        setSuccessMessage('SMS analytics exported successfully')
+      }
+    } catch (error) {
+      console.error('Error exporting SMS analytics:', error)
+      setErrorMessage('Failed to export SMS analytics')
+    }
+  }
+
   const handleBulkDeleteContractors = async () => {
     if (selectedContractors.length === 0) {
       alert('Please select contractors to delete')
@@ -453,6 +540,8 @@ const AdminDashboard = () => {
   useEffect(() => {
     if (isAuthenticated) {
       fetchAdminData()
+      fetchSmsConfig()
+      fetchSmsAnalytics()
     }
   }, [isAuthenticated, dateRange])
 
@@ -619,6 +708,16 @@ const AdminDashboard = () => {
                 }`}
               >
                 Admin Utilities
+              </button>
+              <button
+                onClick={() => setActiveTab('sms-controls')}
+                className={`py-2 px-1 border-b-2 font-medium text-sm ${
+                  activeTab === 'sms-controls'
+                    ? 'border-blue-500 text-blue-600'
+                    : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                }`}
+              >
+                SMS & Notifications
               </button>
             </nav>
           </div>
@@ -1478,6 +1577,251 @@ const AdminDashboard = () => {
                   <div className="text-sm text-gray-600">
                     <p>• "Launching Soon" emails can be sent multiple times</p>
                     <p>• "Launch Day" emails mark entries as notified and should only be sent once</p>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+        )}
+
+        {activeTab === 'sms-controls' && (
+          <div className="space-y-6">
+            <Card>
+              <CardHeader>
+                <CardTitle>Contractor Notification Limits</CardTitle>
+                <CardDescription>Set maximum number of contractors to notify per lead</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-4">
+                  <div>
+                    <label className="block text-sm font-medium mb-2">Default Maximum Contractors</label>
+                    <Input 
+                      type="number" 
+                      placeholder="5" 
+                      defaultValue={smsConfig?.notification_limits?.default_max_contractors || 5}
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium mb-2">Category Overrides</label>
+                    <div className="grid grid-cols-2 gap-4">
+                      <Input placeholder="Home Services: 7" />
+                      <Input placeholder="Legal: 3" />
+                    </div>
+                  </div>
+                  <Button onClick={() => updateSmsConfig('notification_limits', {
+                    default_max_contractors: 5,
+                    category_overrides: { "Home Services": 7, "Legal": 3 }
+                  })}>
+                    Update Limits
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader>
+                <CardTitle>Contractor Eligibility Controls</CardTitle>
+                <CardDescription>Manage contractor activity and auto-disable settings</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-4">
+                  <div className="flex items-center space-x-2">
+                    <input 
+                      type="checkbox" 
+                      id="auto-disable" 
+                      defaultChecked={smsConfig?.eligibility_rules?.auto_disable_inactive || true}
+                    />
+                    <label htmlFor="auto-disable" className="text-sm font-medium">Auto-disable inactive contractors</label>
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium mb-2">Inactivity Threshold (days)</label>
+                    <Input 
+                      type="number" 
+                      placeholder="14" 
+                      defaultValue={smsConfig?.eligibility_rules?.inactivity_threshold_days || 14}
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium mb-2">Minimum Wallet Balance</label>
+                    <Input 
+                      type="number" 
+                      step="0.01" 
+                      placeholder="1.00" 
+                      defaultValue={smsConfig?.eligibility_rules?.minimum_wallet_balance || 1.00}
+                    />
+                  </div>
+                  <Button onClick={() => updateSmsConfig('eligibility_rules', {
+                    auto_disable_inactive: true,
+                    inactivity_threshold_days: 14,
+                    minimum_wallet_balance: 1.00,
+                    send_reactivation_email: true
+                  })}>
+                    Update Eligibility Rules
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader>
+                <CardTitle>SMS Budget Cap</CardTitle>
+                <CardDescription>Control monthly SMS spending and alerts</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-4">
+                  <div>
+                    <label className="block text-sm font-medium mb-2">Monthly SMS Limit ($)</label>
+                    <Input 
+                      type="number" 
+                      placeholder="500" 
+                      defaultValue={smsConfig?.sms_budget?.monthly_limit_dollars || 500}
+                    />
+                  </div>
+                  <div className="flex items-center space-x-2">
+                    <input 
+                      type="checkbox" 
+                      id="auto-pause" 
+                      defaultChecked={smsConfig?.sms_budget?.auto_pause_on_limit || true}
+                    />
+                    <label htmlFor="auto-pause" className="text-sm font-medium">Auto pause SMS when limit reached</label>
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium mb-2">Admin Alert Threshold (%)</label>
+                    <Input 
+                      type="number" 
+                      placeholder="80" 
+                      defaultValue={(smsConfig?.sms_budget?.admin_alert_threshold || 0.8) * 100}
+                    />
+                  </div>
+                  <Button onClick={() => updateSmsConfig('sms_budget', {
+                    monthly_limit_dollars: 500,
+                    auto_pause_on_limit: true,
+                    admin_alert_threshold: 0.8
+                  })}>
+                    Update Budget Settings
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader>
+                <CardTitle>Notification Delivery Rules</CardTitle>
+                <CardDescription>Configure email-first delivery and timing settings</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-4">
+                  <div className="flex items-center space-x-2">
+                    <input 
+                      type="checkbox" 
+                      id="email-first" 
+                      defaultChecked={smsConfig?.delivery_rules?.email_first_enabled || false}
+                    />
+                    <label htmlFor="email-first" className="text-sm font-medium">Send email first, then SMS after delay</label>
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium mb-2">Email to SMS Delay (minutes)</label>
+                    <Input 
+                      type="number" 
+                      placeholder="10" 
+                      defaultValue={smsConfig?.delivery_rules?.email_to_sms_delay_minutes || 10}
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium mb-2">Max Retries</label>
+                    <Input 
+                      type="number" 
+                      placeholder="3" 
+                      defaultValue={smsConfig?.delivery_rules?.max_retries || 3}
+                    />
+                  </div>
+                  <Button onClick={() => updateSmsConfig('delivery_rules', {
+                    email_first_enabled: false,
+                    email_to_sms_delay_minutes: 10,
+                    max_retries: 3,
+                    cost_per_message_cents: 79
+                  })}>
+                    Update Delivery Rules
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader>
+                <CardTitle>SMS Usage Report</CardTitle>
+                <CardDescription>View SMS analytics and export data</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-4">
+                  <div className="grid grid-cols-3 gap-4">
+                    <div className="text-center">
+                      <div className="text-2xl font-bold">{smsAnalytics?.summary?.total_messages || 0}</div>
+                      <div className="text-sm text-gray-600">SMS Sent This Month</div>
+                    </div>
+                    <div className="text-center">
+                      <div className="text-2xl font-bold">${smsAnalytics?.summary?.total_cost_dollars?.toFixed(2) || '0.00'}</div>
+                      <div className="text-sm text-gray-600">Estimated Cost</div>
+                    </div>
+                    <div className="text-center">
+                      <div className="text-2xl font-bold">95%</div>
+                      <div className="text-sm text-gray-600">Delivery Rate</div>
+                    </div>
+                  </div>
+                  
+                  {smsAnalytics?.breakdowns && (
+                    <div className="space-y-4">
+                      <div>
+                        <h4 className="font-medium mb-2">By Category</h4>
+                        <div className="space-y-1">
+                          {smsAnalytics.breakdowns.by_category?.slice(0, 5).map((item: any, index: number) => (
+                            <div key={index} className="flex justify-between text-sm">
+                              <span>{item.category}</span>
+                              <span>{item.count} messages (${item.cost_dollars?.toFixed(2)})</span>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                      
+                      <div>
+                        <h4 className="font-medium mb-2">By Location</h4>
+                        <div className="space-y-1">
+                          {smsAnalytics.breakdowns.by_location?.slice(0, 5).map((item: any, index: number) => (
+                            <div key={index} className="flex justify-between text-sm">
+                              <span>{item.location}</span>
+                              <span>{item.count} messages (${item.cost_dollars?.toFixed(2)})</span>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    </div>
+                  )}
+                  
+                  <div className="flex gap-2">
+                    <Button variant="outline" onClick={handleExportSmsAnalytics}>
+                      <Download className="w-4 h-4 mr-2" />
+                      Export CSV
+                    </Button>
+                    <Button variant="outline" onClick={() => {
+                      const phone = prompt('Enter phone number for test SMS (e.g., +1234567890):')
+                      if (phone) handleTestSms(phone)
+                    }}>
+                      <MessageSquare className="w-4 h-4 mr-2" />
+                      Test SMS Send
+                    </Button>
+                    <Button variant="outline" onClick={() => {
+                      fetch('/.netlify/functions/contractor-eligibility', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ action: 'auto_disable_check' })
+                      }).then(() => {
+                        setSuccessMessage('Auto-disable check completed')
+                        fetchAdminData()
+                      })
+                    }}>
+                      <Settings className="w-4 h-4 mr-2" />
+                      Run Auto-Disable Check
+                    </Button>
                   </div>
                 </div>
               </CardContent>

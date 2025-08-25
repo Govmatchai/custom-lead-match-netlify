@@ -78,9 +78,39 @@ async function sendWalletFundedNotifications(contractor, lead) {
       to: formattedPhone
     });
     console.log(`✅ SMS sent successfully to ${formattedPhone}:`, smsResult.sid);
+    
+    await supabase
+      .from('sms_send_log')
+      .insert({
+        contractor_id: contractor.id,
+        lead_id: lead.id,
+        phone_number: formattedPhone,
+        message_content: smsMessage,
+        category: lead.service_category,
+        sub_category: lead.sub_service,
+        location: lead.zip_code,
+        cost_cents: 79,
+        status: 'sent',
+        twilio_sid: smsResult.sid
+      });
   } catch (smsError) {
     console.error(`❌ SMS failed for ${formattedPhone}:`, smsError.message);
     console.log(`📧 Continuing with email notification for contractor ${contractor.id}`);
+    
+    await supabase
+      .from('sms_send_log')
+      .insert({
+        contractor_id: contractor.id,
+        lead_id: lead.id,
+        phone_number: formattedPhone,
+        message_content: smsMessage,
+        category: lead.service_category,
+        sub_category: lead.sub_service,
+        location: lead.zip_code,
+        cost_cents: 0,
+        status: 'failed',
+        error_message: smsError.message
+      });
   }
 
   const emailSubject = 'New Exclusive Lead Available – Claim It Now';

@@ -94,6 +94,34 @@ export const handler = async (event, context) => {
 }
 
 async function distributeLead(lead) {
+  const { data: smsConfig } = await supabase
+    .from('sms_config')
+    .select('config_value')
+    .eq('config_key', 'sms_budget')
+    .single()
+
+  const budgetConfig = smsConfig?.config_value || { 
+    monthly_limit_dollars: 500, 
+    auto_pause_on_limit: true 
+  }
+  
+  const startOfMonth = new Date()
+  startOfMonth.setDate(1)
+  startOfMonth.setHours(0, 0, 0, 0)
+  
+  const { data: monthlySpend } = await supabase
+    .from('sms_send_log')
+    .select('cost_cents')
+    .gte('timestamp', startOfMonth.toISOString())
+  
+  const totalSpentCents = monthlySpend?.reduce((sum, log) => sum + (log.cost_cents || 79), 0) || 0
+  const totalSpentDollars = totalSpentCents / 100
+  
+  if (budgetConfig.auto_pause_on_limit && totalSpentDollars >= budgetConfig.monthly_limit_dollars) {
+    console.log('SMS budget limit reached, skipping notifications')
+    return
+  }
+
   const { data: contractors, error } = await supabase
     .from('contractors')
     .select('*')
@@ -102,15 +130,30 @@ async function distributeLead(lead) {
     .contains('zip_codes', [lead.zip_code])
     .gt('lead_credits', 0)
     .eq('sms_opt_in', true)
+    .eq('is_sms_enabled', true)
 
   if (error || !contractors?.length) {
     console.log(`No matching contractors found for lead ${lead.id}`)
     return
   }
 
-  let targetContractors = contractors
+  const eligibleContractors = contractors.filter(contractor => {
+    const lastActiveDate = contractor.last_active ? new Date(contractor.last_active) : new Date(0)
+    const daysSinceActive = (Date.now() - lastActiveDate.getTime()) / (1000 * 60 * 60 * 24)
+    
+    return contractor.is_sms_enabled && 
+           contractor.wallet_balance >= 1.00 &&
+           daysSinceActive < 14
+  })
+  
+  if (!eligibleContractors.length) {
+    console.log('No eligible contractors found for SMS notifications')
+    return
+  }
+
+  let targetContractors = eligibleContractors
   if (lead.lead_score >= 85) {
-    targetContractors = contractors.slice(0, 3)
+    targetContractors = eligibleContractors.slice(0, 3)
   }
 
   const token = require('crypto').randomBytes(16).toString('hex')
@@ -130,6 +173,21 @@ async function distributeLead(lead) {
   }
 
   const notificationResults = await notifyContractorsForLead(lead, targetContractors)
+  
+  for (const contractor of targetContractors) {
+    await supabase
+      .from('contractor_activity_log')
+      .insert({
+        contractor_id: contractor.id,
+        event_type: 'lead_notification_sent',
+        event_data: {
+          lead_id: lead.id,
+          lead_score: lead.lead_score,
+          service_category: lead.service_category,
+          sub_service: lead.sub_service
+        }
+      })
+  }
   
   console.log(`✅ Lead ${lead.id} notifications sent:`, notificationResults)
 }
