@@ -47,20 +47,41 @@ export const handler = async (event, context) => {
 
     const deletePromises = contractor_ids.map(async (contractorId) => {
       try {
-        await supabase
+        const { error: claimedLeadsError } = await supabase
           .from('leads')
           .update({ claimed_by: null })
           .eq('claimed_by', contractorId)
 
-        await supabase
+        if (claimedLeadsError) {
+          return { id: contractorId, success: false, error: `Failed to update claimed leads: ${claimedLeadsError.message}` }
+        }
+
+        const { error: purchasedLeadsError } = await supabase
           .from('leads')
           .update({ purchased_by: null })
           .eq('purchased_by', contractorId)
 
-        await supabase
+        if (purchasedLeadsError) {
+          return { id: contractorId, success: false, error: `Failed to update purchased leads: ${purchasedLeadsError.message}` }
+        }
+
+        const { error: dynamicPagesError } = await supabase
           .from('dynamic_pages')
           .update({ contractor_id: null })
           .eq('contractor_id', contractorId)
+
+        if (dynamicPagesError) {
+          return { id: contractorId, success: false, error: `Failed to update dynamic pages: ${dynamicPagesError.message}` }
+        }
+
+        const { error: transactionsError } = await supabase
+          .from('transactions')
+          .delete()
+          .eq('contractor_id', contractorId)
+
+        if (transactionsError) {
+          return { id: contractorId, success: false, error: `Failed to delete transactions: ${transactionsError.message}` }
+        }
 
         const { error } = await supabase
           .from('contractors')
