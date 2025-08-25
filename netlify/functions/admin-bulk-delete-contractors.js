@@ -89,6 +89,15 @@ export const handler = async (event, context) => {
           return { id: contractorId, success: false, error: `Failed to delete transactions: ${transactionsError.message}` }
         }
 
+        const { error: purchasedLeadsError } = await supabase
+          .from('purchased_leads')
+          .delete()
+          .eq('contractor_id', contractorId)
+
+        if (purchasedLeadsError) {
+          return { id: contractorId, success: false, error: `Failed to delete purchased leads: ${purchasedLeadsError.message}` }
+        }
+
         const { error } = await supabase
           .from('contractors')
           .delete()
