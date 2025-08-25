@@ -152,7 +152,6 @@ export const handler = async (event, context) => {
     if (action === 'seed_test_contractors') {
       const testContractors = [
         {
-          id: 'test-contractor-e2e-001',
           business_name: 'Test Construction LLC',
           contact_name: 'Test Contractor',
           email: 'testcontractor@example.com',
@@ -166,7 +165,6 @@ export const handler = async (event, context) => {
           wallet_balance: 100.00
         },
         {
-          id: 'test-contractor-e2e-002',
           business_name: 'ABC Plumbing Services',
           contact_name: 'John Smith',
           email: 'john@abcplumbing.com',
@@ -180,7 +178,6 @@ export const handler = async (event, context) => {
           wallet_balance: 75.00
         },
         {
-          id: 'test-contractor-e2e-003',
           business_name: 'Quick HVAC Repair',
           contact_name: 'Jane Doe',
           email: 'jane@quickhvac.com',
@@ -194,7 +191,6 @@ export const handler = async (event, context) => {
           wallet_balance: 50.00
         },
         {
-          id: 'test-contractor-e2e-004',
           business_name: 'Elite Legal Services',
           contact_name: 'Bob Johnson',
           email: 'bob@elitelegal.com',
@@ -208,7 +204,6 @@ export const handler = async (event, context) => {
           wallet_balance: 125.00
         },
         {
-          id: 'test-contractor-e2e-005',
           business_name: 'Premier Auto Repair',
           contact_name: 'Sarah Wilson',
           email: 'sarah@premierauto.com',
