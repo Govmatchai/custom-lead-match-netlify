@@ -124,8 +124,76 @@ export const handler = async (event, context) => {
       console.error('Lead creation error:', leadError)
       
       if (leadError.message && leadError.message.includes('match_contractors_for_lead')) {
-        console.log('Database trigger error detected, continuing with SMS processing...')
+        console.log('Database trigger error detected, attempting direct lead insertion...')
         
+        const { data: leadWithoutTrigger, error: directInsertError } = await supabase
+          .from('leads')
+          .insert([{
+            customer_name,
+            service_category,
+            sub_service,
+            zip_code,
+            phone,
+            email,
+            description,
+            ip_address: clientIP,
+            status,
+            validation_flags: validationFlags,
+            claimed: false
+          }])
+          .select()
+          .single()
+
+        if (leadWithoutTrigger && !directInsertError) {
+          console.log(`✅ Lead ${leadWithoutTrigger.id} inserted successfully without trigger`)
+          
+          try {
+            const matchResponse = await fetch(`${process.env.URL || 'https://customleadmatch.netlify.app'}/.netlify/functions/distribute-leads`, {
+              method: 'POST',
+              headers: { 
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${process.env.SUPABASE_SERVICE_KEY}`
+              },
+              body: JSON.stringify({ 
+                lead_id: leadWithoutTrigger.id,
+                force_distribute: true 
+              })
+            })
+            
+            if (matchResponse.ok) {
+              console.log('✅ Contractor matching triggered successfully')
+            } else {
+              console.log('⚠️ Contractor matching failed, but lead is stored')
+            }
+          } catch (matchError) {
+            console.error('Contractor matching error:', matchError)
+          }
+
+          return {
+            statusCode: 200,
+            headers: {
+              'Content-Type': 'application/json',
+              'Access-Control-Allow-Origin': '*'
+            },
+            body: JSON.stringify({
+              message: status === 'valid' ? 'Lead submitted successfully! Matching contractors have been notified.' : 
+                       status === 'pending_review' ? 'Lead received and is being reviewed for quality.' :
+                       status === 'duplicate' ? 'Similar lead already exists. Please wait before submitting again.' :
+                       'Lead received but requires additional review.',
+              lead_id: leadWithoutTrigger.id,
+              status,
+              contractors_notified: 0,
+              validation_summary: {
+                phone_valid: validationFlags.phone_valid,
+                email_valid: validationFlags.email_format_valid,
+                is_duplicate: validationFlags.is_duplicate || false,
+                content_valid: !validationFlags.content_invalid
+              }
+            })
+          }
+        }
+        
+        console.log('Direct insertion also failed, falling back to temporary processing')
         const mockLead = {
           id: `temp-${Date.now()}`,
           customer_name,
