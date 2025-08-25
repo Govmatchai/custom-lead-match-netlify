@@ -108,7 +108,6 @@ const AdminDashboard = () => {
   const [errorMessage, setErrorMessage] = useState('')
   const [smsConfig, setSmsConfig] = useState<any>(null)
   const [smsAnalytics, setSmsAnalytics] = useState<any>(null)
-  const [loadingSmsData, setLoadingSmsData] = useState(false)
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault()
