@@ -102,13 +102,13 @@ export const validateLead = async (leadData, clientIP) => {
 
   const description = leadData.description.toLowerCase()
   const spamKeywords = [
-    'test', 'spam', 'fake', 'asdf', 'qwerty', 'lorem ipsum', 'testing',
+    'spam', 'fake', 'asdf', 'qwerty', 'lorem ipsum', 'testing123',
     'click here', 'free money', 'make money fast', 'work from home',
     'viagra', 'casino', 'lottery', 'winner', 'congratulations',
-    'urgent', 'act now', 'limited time', 'call now', 'buy now',
+    'act now', 'limited time', 'call now', 'buy now',
     'sdfgh', 'hjkl', 'zxcv', 'mnbv', 'poiu', 'lkjh', 'gfds',
     'aaaaa', 'bbbbb', 'ccccc', 'ddddd', 'eeee', 'ffff', 'gggg',
-    'hello world', 'sample text', 'example', 'placeholder', 'dummy',
+    'hello world', 'sample text', 'placeholder', 'dummy',
     'gibberish', 'nonsense', 'random text', 'blah blah', 'xyz',
     'abcdef', '123456', 'qazwsx', 'zxcvbn', 'poiuyt'
   ]

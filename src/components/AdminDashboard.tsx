@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react'
-import { Users, FileText, CheckCircle, Clock, Eye, EyeOff, DollarSign, Settings, Plus, Download, Mail, Trash2, MessageSquare } from 'lucide-react'
+import { RefreshCw, AlertCircle, Users, FileText, CheckCircle, Clock, Eye, EyeOff, DollarSign, Settings, Plus, Download, Mail, Trash2, MessageSquare } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -108,6 +108,9 @@ const AdminDashboard = () => {
   const [errorMessage, setErrorMessage] = useState('')
   const [smsConfig, setSmsConfig] = useState<any>(null)
   const [smsAnalytics, setSmsAnalytics] = useState<any>(null)
+  const [lastActivity, setLastActivity] = useState(Date.now())
+  const [sessionTimeout, setSessionTimeout] = useState<NodeJS.Timeout | null>(null)
+  const [isRefreshing, setIsRefreshing] = useState(false)
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -536,11 +539,60 @@ const AdminDashboard = () => {
     }
   }
 
+  const handleRefresh = async () => {
+    setIsRefreshing(true)
+    setLastActivity(Date.now())
+    try {
+      await fetchAdminData()
+      await fetchSmsConfig()
+      await fetchSmsAnalytics()
+      setSuccessMessage('Dashboard refreshed successfully')
+      setTimeout(() => setSuccessMessage(''), 3000)
+    } catch (error) {
+      setErrorMessage('Failed to refresh dashboard')
+      setTimeout(() => setErrorMessage(''), 3000)
+    } finally {
+      setIsRefreshing(false)
+    }
+  }
+
+  const resetSessionTimeout = () => {
+    setLastActivity(Date.now())
+    if (sessionTimeout) {
+      clearTimeout(sessionTimeout)
+    }
+    const timeout = setTimeout(() => {
+      setIsAuthenticated(false)
+      setPassword('')
+      alert('Session expired due to inactivity. Please log in again.')
+    }, 10 * 60 * 1000)
+    setSessionTimeout(timeout)
+  }
+
+  const handleUserActivity = () => {
+    resetSessionTimeout()
+  }
+
   useEffect(() => {
     if (isAuthenticated) {
       fetchAdminData()
       fetchSmsConfig()
       fetchSmsAnalytics()
+      resetSessionTimeout()
+      
+      const events = ['mousedown', 'mousemove', 'keypress', 'scroll', 'touchstart', 'click']
+      events.forEach(event => {
+        document.addEventListener(event, handleUserActivity, true)
+      })
+      
+      return () => {
+        events.forEach(event => {
+          document.removeEventListener(event, handleUserActivity, true)
+        })
+        if (sessionTimeout) {
+          clearTimeout(sessionTimeout)
+        }
+      }
     }
   }, [isAuthenticated, dateRange])
 
@@ -606,6 +658,49 @@ const AdminDashboard = () => {
 
   return (
     <div className="min-h-screen bg-gray-50">
+      <div className="bg-white shadow-sm border-b border-gray-200 px-6 py-4">
+        <div className="flex justify-between items-center">
+          <div>
+            <h1 className="text-2xl font-bold text-gray-900">Admin Dashboard</h1>
+            <p className="text-sm text-gray-500 mt-1">
+              Last refreshed: {new Date(lastActivity).toLocaleTimeString()}
+            </p>
+          </div>
+          <div className="flex items-center space-x-4">
+            <Button 
+              onClick={handleRefresh} 
+              disabled={isRefreshing}
+              variant="outline"
+              className="flex items-center space-x-2"
+            >
+              <RefreshCw className={`w-4 h-4 ${isRefreshing ? 'animate-spin' : ''}`} />
+              <span>{isRefreshing ? 'Refreshing...' : 'Refresh'}</span>
+            </Button>
+            <Button 
+              onClick={() => {
+                setIsAuthenticated(false)
+                setPassword('')
+              }}
+              variant="outline"
+            >
+              Logout
+            </Button>
+          </div>
+        </div>
+      </div>
+
+      {successMessage && (
+        <Alert className="mx-6 mt-4 border-green-200 bg-green-50">
+          <CheckCircle className="w-4 h-4 text-green-600" />
+          <AlertDescription className="text-green-700">{successMessage}</AlertDescription>
+        </Alert>
+      )}
+      {errorMessage && (
+        <Alert className="mx-6 mt-4 border-red-200 bg-red-50">
+          <AlertCircle className="w-4 h-4 text-red-600" />
+          <AlertDescription className="text-red-700">{errorMessage}</AlertDescription>
+        </Alert>
+      )}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {successMessage && (
           <Alert className="mb-6 border-green-200 bg-green-50">
