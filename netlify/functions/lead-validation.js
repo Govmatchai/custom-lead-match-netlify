@@ -19,7 +19,9 @@ export const validateLead = async (leadData, clientIP) => {
     console.log(`❌ Phone validation failed for ${leadData.phone}:`, error.message)
     validationFlags.phone_valid = false
     validationFlags.phone_error = error.message
-    status = 'invalid'
+    if (status === 'valid') {
+      status = 'pending_review'
+    }
   }
 
   const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
@@ -53,8 +55,10 @@ export const validateLead = async (leadData, clientIP) => {
     console.log(`- High risk: ${validationFlags.email_high_risk}`)
     
     if (!validationFlags.email_format_valid || !validationFlags.email_deliverable) {
-      status = 'invalid'
-      console.log(`❌ Email validation failed for ${leadData.email}`)
+      if (leadData.email && leadData.email.trim() !== '') {
+        status = 'pending_review'  // Changed from 'invalid' to 'pending_review'
+        console.log(`❌ Email validation failed for ${leadData.email}`)
+      }
     }
   }
 
