@@ -17,12 +17,7 @@ export async function notifyContractorsForLead(lead, targetContractors) {
 
   for (const contractor of targetContractors) {
     try {
-      const { data: transactions } = await supabase
-        .from('transactions')
-        .select('amount')
-        .eq('contractor_id', contractor.id);
-
-      const walletBalance = transactions?.reduce((sum, t) => sum + parseFloat(t.amount), 0) || 0;
+      const walletBalance = contractor.wallet_balance || 0;
 
       const thirtyDaysAgo = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString();
       const { data: recentPurchases } = await supabase

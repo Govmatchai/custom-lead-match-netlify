@@ -91,15 +91,7 @@ export const handler = async (event, context) => {
       console.error('Leads query error:', leadsError)
     }
 
-    const { data: transactions, error: transactionsError } = await supabase
-      .from('transactions')
-      .select('amount')
-      .eq('contractor_id', contractor_id)
-
-    let walletBalance = 0
-    if (!transactionsError && transactions) {
-      walletBalance = transactions.reduce((sum, transaction) => sum + parseFloat(transaction.amount), 0)
-    }
+    const walletBalance = contractor.wallet_balance || 0
 
     return {
       statusCode: 200,

@@ -45,24 +45,25 @@ export const handler = async (event, context) => {
       }
     }
 
-    const { data: transactions, error } = await supabase
-      .from('transactions')
-      .select('amount')
-      .eq('contractor_id', contractor_id)
+    const { data: contractor, error } = await supabase
+      .from('contractors')
+      .select('wallet_balance')
+      .eq('id', contractor_id)
+      .single()
 
     if (error) {
-      console.error('Balance calculation error:', error)
+      console.error('Balance retrieval error:', error)
       return {
         statusCode: 500,
         headers: {
           'Content-Type': 'application/json',
           'Access-Control-Allow-Origin': '*'
         },
-        body: JSON.stringify({ detail: 'Failed to calculate balance' })
+        body: JSON.stringify({ detail: 'Failed to retrieve balance' })
       }
     }
 
-    const balance = transactions.reduce((sum, transaction) => sum + parseFloat(transaction.amount), 0)
+    const balance = contractor.wallet_balance || 0
 
     return {
       statusCode: 200,

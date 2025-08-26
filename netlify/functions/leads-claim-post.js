@@ -63,24 +63,7 @@ export const handler = async (event, context) => {
       }
     }
 
-    const { data: transactions, error: balanceError } = await supabase
-      .from('transactions')
-      .select('amount')
-      .eq('contractor_id', contractor_id)
-
-    if (balanceError) {
-      console.error('Balance calculation error:', balanceError)
-      return {
-        statusCode: 500,
-        headers: {
-          'Content-Type': 'application/json',
-          'Access-Control-Allow-Origin': '*'
-        },
-        body: JSON.stringify({ success: false, message: 'Failed to check balance' })
-      }
-    }
-
-    const currentBalance = transactions.reduce((sum, transaction) => sum + parseFloat(transaction.amount), 0)
+    const currentBalance = contractor.wallet_balance || 0
     const leadPrice = 10.00
 
     if (currentBalance < leadPrice) {
@@ -155,6 +138,15 @@ export const handler = async (event, context) => {
         },
         body: JSON.stringify({ success: false, message: 'Failed to claim lead' })
       }
+    }
+
+    const { error: walletUpdateError } = await supabase
+      .from('contractors')
+      .update({ wallet_balance: currentBalance - leadPrice })
+      .eq('id', contractor_id)
+
+    if (walletUpdateError) {
+      console.error('Wallet balance update error:', walletUpdateError)
     }
 
     const { error: transactionError } = await supabase

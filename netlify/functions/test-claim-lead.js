@@ -47,12 +47,7 @@ export const handler = async (event, context) => {
       .eq('id', testLeadId)
       .single()
 
-    const { data: transactions, error: transactionError } = await supabase
-      .from('transactions')
-      .select('amount')
-      .eq('contractor_id', testContractorId)
-
-    const currentBalance = transactions ? transactions.reduce((sum, transaction) => sum + parseFloat(transaction.amount), 0) : 0
+    const currentBalance = contractor ? contractor.wallet_balance || 0 : 0
 
     return {
       statusCode: 200,
