@@ -91,7 +91,7 @@ export const handler = async (event, context) => {
       console.error('Leads query error:', leadsError)
     }
 
-    const walletBalance = contractor.wallet_balance || 0
+    const walletBalance = parseFloat(contractor.wallet_balance) || 0
 
     return {
       statusCode: 200,
