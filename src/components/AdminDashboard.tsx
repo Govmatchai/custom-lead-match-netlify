@@ -102,6 +102,7 @@ const AdminDashboard = () => {
   const [dateRange, setDateRange] = useState('30')
   const [dashboardStats, setDashboardStats] = useState<any>(null)
   const [notificationStats, setNotificationStats] = useState<any>(null)
+  const [waitlistAnalytics, setWaitlistAnalytics] = useState<any>(null)
   const [selectedContractors, setSelectedContractors] = useState<string[]>([])
   const [selectAll, setSelectAll] = useState(false)
   const [successMessage, setSuccessMessage] = useState('')
@@ -1224,8 +1225,7 @@ const AdminDashboard = () => {
               <CardTitle>Lead Management & Scoring</CardTitle>
               <CardDescription>View leads with AI scores, validation status and manage quality</CardDescription>
               <div className="flex gap-4 mt-4">
-                <Select value={statusFilter} onValueChange={setStatusFilter}>
-                  <SelectTrigger className="w-48">
+                <select value={statusFilter} onChange={(e) => setStatusFilter(e.target.value)} className="w-48 px-3 py-2 border border-gray-300 rounded-md">
                     <SelectValue placeholder="Filter by status" />
                   </SelectTrigger>
                   <SelectContent>

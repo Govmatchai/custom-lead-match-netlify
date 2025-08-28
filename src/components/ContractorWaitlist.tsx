@@ -37,6 +37,21 @@ const ContractorWaitlist = () => {
     trackPageView()
   }, [])
 
+  useEffect(() => {
+    const trackPageView = async () => {
+      try {
+        await fetch('/.netlify/functions/track-page-view', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ page_path: '/launch-soon' })
+        })
+      } catch (error) {
+        console.log('Page tracking failed:', error)
+      }
+    }
+    trackPageView()
+  }, [])
+
   const handleInputChange = (field: string, value: string) => {
     setFormData(prev => ({
       ...prev,
