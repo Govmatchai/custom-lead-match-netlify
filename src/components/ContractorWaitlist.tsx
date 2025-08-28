@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import { MapPin, Handshake, Settings, CheckCircle, CreditCard, Star, Phone, Lock } from 'lucide-react'
 import { Button } from './ui/button'
 import { Input } from './ui/input'
@@ -21,6 +21,21 @@ const ContractorWaitlist = () => {
 
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [errorMessage, setErrorMessage] = useState('')
+
+  useEffect(() => {
+    const trackPageView = async () => {
+      try {
+        await fetch('/.netlify/functions/track-page-view', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ page_path: '/launch-soon' })
+        })
+      } catch (error) {
+        console.log('Page tracking failed:', error)
+      }
+    }
+    trackPageView()
+  }, [])
 
   const handleInputChange = (field: string, value: string) => {
     setFormData(prev => ({

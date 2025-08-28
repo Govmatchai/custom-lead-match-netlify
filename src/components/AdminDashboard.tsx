@@ -108,6 +108,7 @@ const AdminDashboard = () => {
   const [errorMessage, setErrorMessage] = useState('')
   const [smsConfig, setSmsConfig] = useState<any>(null)
   const [smsAnalytics, setSmsAnalytics] = useState<any>(null)
+  const [waitlistAnalytics, setWaitlistAnalytics] = useState<any>(null)
   const [lastActivity, setLastActivity] = useState(Date.now())
   const [sessionTimeout, setSessionTimeout] = useState<NodeJS.Timeout | null>(null)
   const [isRefreshing, setIsRefreshing] = useState(false)
@@ -142,14 +143,15 @@ const AdminDashboard = () => {
   const fetchAdminData = async () => {
     setLoading(true)
     try {
-      const [statsResponse, contractorsResponse, leadsResponse, transactionsResponse, pricingResponse, dashboardResponse, notificationResponse] = await Promise.all([
+      const [statsResponse, contractorsResponse, leadsResponse, transactionsResponse, pricingResponse, dashboardResponse, notificationResponse, waitlistResponse] = await Promise.all([
         fetch('/.netlify/functions/admin-stats'),
         fetch('/.netlify/functions/admin-contractors'),
         fetch('/.netlify/functions/admin-leads'),
         fetch('/.netlify/functions/admin-transactions'),
         fetch('/.netlify/functions/admin-pricing'),
         fetch(`/.netlify/functions/admin-dashboard-stats?dateRange=${dateRange}`),
-        fetch(`/.netlify/functions/admin-notification-stats?dateRange=${dateRange}`)
+        fetch(`/.netlify/functions/admin-notification-stats?dateRange=${dateRange}`),
+        fetch('/.netlify/functions/admin-waitlist-analytics')
       ])
 
       if (statsResponse.ok) {
@@ -191,6 +193,11 @@ const AdminDashboard = () => {
       if (notificationResponse.ok) {
         const notificationData = await notificationResponse.json()
         setNotificationStats(notificationData)
+      }
+
+      if (waitlistResponse.ok) {
+        const waitlistData = await waitlistResponse.json()
+        setWaitlistAnalytics(waitlistData)
       }
     } catch (error) {
       console.error('Failed to fetch admin data:', error)
@@ -359,6 +366,27 @@ const AdminDashboard = () => {
     a.download = filename
     a.click()
     window.URL.revokeObjectURL(url)
+  }
+
+  const handleExportWaitlist = async () => {
+    try {
+      const response = await fetch('/.netlify/functions/admin-waitlist-notifications', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'export_waitlist' })
+      })
+      if (response.ok) {
+        const blob = await response.blob()
+        const url = window.URL.createObjectURL(blob)
+        const a = document.createElement('a')
+        a.href = url
+        a.download = `waitlist-${new Date().toISOString().split('T')[0]}.csv`
+        a.click()
+        window.URL.revokeObjectURL(url)
+      }
+    } catch (error) {
+      console.error('Failed to export waitlist:', error)
+    }
   }
 
 
@@ -860,6 +888,56 @@ const AdminDashboard = () => {
                 color="green"
               />
             </div>
+
+            {waitlistAnalytics && (
+              <div className="mt-8">
+                <h3 className="text-xl font-bold mb-4">Pre-Launch Waitlist Analytics</h3>
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                  <MetricCard
+                    title="Total Waitlist"
+                    value={waitlistAnalytics.totalWaitlist || 0}
+                    icon={<Users className="h-4 w-4" />}
+                    color="blue"
+                  />
+                  <MetricCard
+                    title="Landing Page Views"
+                    value={waitlistAnalytics.totalPageViews || 0}
+                    icon={<Eye className="h-4 w-4" />}
+                    color="green"
+                  />
+                  <MetricCard
+                    title="Recent Signups (7d)"
+                    value={waitlistAnalytics.recentSignups || 0}
+                    icon={<Plus className="h-4 w-4" />}
+                    color="blue"
+                  />
+                  <MetricCard
+                    title="Launch Notified"
+                    value={waitlistAnalytics.notifiedCount || 0}
+                    icon={<CheckCircle className="h-4 w-4" />}
+                    color="green"
+                  />
+                </div>
+                
+                {waitlistAnalytics.tradeBreakdown && waitlistAnalytics.tradeBreakdown.length > 0 && (
+                  <Card className="mt-6">
+                    <CardHeader>
+                      <CardTitle>Waitlist by Trade</CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="space-y-2">
+                        {waitlistAnalytics.tradeBreakdown.map((item: any, index: number) => (
+                          <div key={index} className="flex justify-between">
+                            <span className="capitalize">{item.trade}</span>
+                            <span className="font-medium">{item.count}</span>
+                          </div>
+                        ))}
+                      </div>
+                    </CardContent>
+                  </Card>
+                )}
+              </div>
+            )}
 
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
               <LeadsByServiceChart data={dashboardStats?.leadsByService || []} />
@@ -1617,6 +1695,10 @@ const AdminDashboard = () => {
                   <Button onClick={() => handleExportCSV(leads, 'leads.csv')} variant="outline">
                     <Download className="w-4 h-4 mr-2" />
                     Export Leads
+                  </Button>
+                  <Button onClick={() => handleExportWaitlist()} variant="outline">
+                    <Download className="w-4 h-4 mr-2" />
+                    Export Waitlist
                   </Button>
                 </div>
               </CardContent>

@@ -85,6 +85,38 @@ export const handler = async (event, context) => {
       }
     }
 
+    if (action === 'export_waitlist') {
+      const { data: waitlistEntries, error } = await supabase
+        .from('contractors_waitlist')
+        .select('*')
+        .order('created_at', { ascending: false })
+
+      if (error) {
+        return {
+          statusCode: 500,
+          headers: { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' },
+          body: JSON.stringify({ success: false, message: 'Failed to fetch waitlist entries' })
+        }
+      }
+
+      const csv = [
+        'First Name,Last Name,Company,Email,Phone,Trade,Launch Notified,Signup Date',
+        ...waitlistEntries.map(entry => 
+          `${entry.first_name},${entry.last_name},${entry.company},${entry.email},${entry.phone},${entry.trade},${entry.launch_notified},${entry.created_at}`
+        )
+      ].join('\n')
+
+      return {
+        statusCode: 200,
+        headers: {
+          'Content-Type': 'text/csv',
+          'Access-Control-Allow-Origin': '*',
+          'Content-Disposition': 'attachment; filename="waitlist.csv"'
+        },
+        body: csv
+      }
+    }
+
     return {
       statusCode: 400,
       headers: { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' },
