@@ -109,7 +109,6 @@ const AdminDashboard = () => {
   const [errorMessage, setErrorMessage] = useState('')
   const [smsConfig, setSmsConfig] = useState<any>(null)
   const [smsAnalytics, setSmsAnalytics] = useState<any>(null)
-  const [waitlistAnalytics, setWaitlistAnalytics] = useState<any>(null)
   const [lastActivity, setLastActivity] = useState(Date.now())
   const [sessionTimeout, setSessionTimeout] = useState<NodeJS.Timeout | null>(null)
   const [isRefreshing, setIsRefreshing] = useState(false)
@@ -1226,32 +1225,23 @@ const AdminDashboard = () => {
               <CardDescription>View leads with AI scores, validation status and manage quality</CardDescription>
               <div className="flex gap-4 mt-4">
                 <select value={statusFilter} onChange={(e) => setStatusFilter(e.target.value)} className="w-48 px-3 py-2 border border-gray-300 rounded-md">
-                    <SelectValue placeholder="Filter by status" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="all">All Statuses</SelectItem>
-                    <SelectItem value="pending_review">Pending Review</SelectItem>
-                    <SelectItem value="valid">Valid</SelectItem>
-                    <SelectItem value="duplicate">Duplicate</SelectItem>
-                    <SelectItem value="invalid">Invalid</SelectItem>
-                    <SelectItem value="claimed">Claimed</SelectItem>
-                  </SelectContent>
-                </Select>
-                <Select value={industryFilter} onValueChange={setIndustryFilter}>
-                  <SelectTrigger className="w-48">
-                    <SelectValue placeholder="Filter by industry" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="all">All Industries</SelectItem>
-                    <SelectItem value="Legal">Legal</SelectItem>
-                    <SelectItem value="Home Services">Home Services</SelectItem>
-                    <SelectItem value="Real Estate">Real Estate</SelectItem>
-                    <SelectItem value="Finance">Finance</SelectItem>
-                    <SelectItem value="Insurance">Insurance</SelectItem>
-                    <SelectItem value="Healthcare">Healthcare</SelectItem>
-                    <SelectItem value="Auto">Auto</SelectItem>
-                  </SelectContent>
-                </Select>
+                  <option value="all">All Statuses</option>
+                  <option value="pending_review">Pending Review</option>
+                  <option value="valid">Valid</option>
+                  <option value="duplicate">Duplicate</option>
+                  <option value="invalid">Invalid</option>
+                  <option value="claimed">Claimed</option>
+                </select>
+                <select value={industryFilter} onChange={(e) => setIndustryFilter(e.target.value)} className="w-48 px-3 py-2 border border-gray-300 rounded-md">
+                  <option value="all">All Industries</option>
+                  <option value="Legal">Legal</option>
+                  <option value="Home Services">Home Services</option>
+                  <option value="Real Estate">Real Estate</option>
+                  <option value="Finance">Finance</option>
+                  <option value="Insurance">Insurance</option>
+                  <option value="Healthcare">Healthcare</option>
+                  <option value="Auto">Auto</option>
+                </select>
                 <Button onClick={() => handleExportCSV(leads, `leads-with-scores-${new Date().toISOString().split('T')[0]}.csv`)} variant="outline">
                   Export CSV with Scores
                 </Button>
