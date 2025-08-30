@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react'
-import { RefreshCw, AlertCircle, Users, FileText, CheckCircle, Clock, Eye, EyeOff, DollarSign, Settings, Plus, Download, Mail, Trash2, MessageSquare } from 'lucide-react'
+import { RefreshCw, AlertCircle, Users, FileText, CheckCircle, Clock, Eye, EyeOff, DollarSign, Settings, Plus, Download, Mail, Trash2, MessageSquare, AlertTriangle } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -1001,7 +1001,7 @@ const AdminDashboard = () => {
                 <MetricCard
                   title="Bounce Rate"
                   value={`${notificationStats?.email?.bounces || 0}`}
-                  icon={<AlertCircle className="h-4 w-4" />}
+                  icon={<AlertTriangle className="h-4 w-4" />}
                   color="red"
                 />
                 <Card>
