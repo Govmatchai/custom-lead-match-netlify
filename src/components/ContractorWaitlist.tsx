@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react'
-import { MapPin, Handshake, Settings, CheckCircle, CreditCard, Star, Phone, Lock } from 'lucide-react'
+import { Search, MessageSquare, Briefcase, CheckCircle, Shield, Zap, Award } from 'lucide-react'
 import { Button } from './ui/button'
 import { Input } from './ui/input'
 import { Label } from './ui/label'
@@ -21,21 +21,6 @@ const ContractorWaitlist = () => {
 
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [errorMessage, setErrorMessage] = useState('')
-
-  useEffect(() => {
-    const trackPageView = async () => {
-      try {
-        await fetch('/.netlify/functions/track-page-view', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ page_path: '/launch-soon' })
-        })
-      } catch (error) {
-        console.log('Page tracking failed:', error)
-      }
-    }
-    trackPageView()
-  }, [])
 
   useEffect(() => {
     const trackPageView = async () => {
@@ -92,26 +77,15 @@ const ContractorWaitlist = () => {
     }
   }
 
-  const trustBadges = [
-    { icon: CheckCircle, text: "TCPA Compliant" },
-    { icon: Lock, text: "SSL Secured" },
-    { icon: Star, text: "Exclusive Leads" },
-    { icon: Phone, text: "Real-time Alerts" },
-    { icon: CreditCard, text: "Pay-as-you-go" }
-  ]
 
   return (
     <div className="min-h-screen bg-white font-['Inter',_'Roboto',_'Open_Sans',_sans-serif]">
       {/* Hero Section */}
-      <div 
-        className="relative min-h-screen bg-cover bg-center bg-no-repeat flex items-center"
-        style={{
-          backgroundImage: `linear-gradient(rgba(59, 130, 246, 0.8), rgba(99, 102, 241, 0.8)), url('https://images.unsplash.com/photo-1581578731548-c64695cc6952?ixlib=rb-4.0.3&auto=format&fit=crop&w=2070&q=80')`
-        }}
-      >
-        <div className="container mx-auto px-4 py-20 text-center text-white relative z-10">
-          <div className="max-w-4xl mx-auto">
-            <div className="flex justify-center mb-8">
+      <div className="relative min-h-screen bg-gradient-to-br from-blue-900 via-blue-800 to-indigo-900 flex items-center">
+        <div className="absolute inset-0 bg-black opacity-20"></div>
+        <div className="container mx-auto px-6 py-20 text-center text-white relative z-10">
+          <div className="max-w-5xl mx-auto">
+            <div className="flex justify-center mb-12">
               <Logo 
                 width={350} 
                 height={105} 
@@ -120,135 +94,109 @@ const ContractorWaitlist = () => {
               />
             </div>
             
-            <h1 className="text-5xl md:text-6xl font-bold mb-6 animate-fade-in">
-              Be the First to Get Matched When We Launch
+            <h1 className="text-5xl md:text-7xl font-bold mb-8 leading-tight">
+              Be the First to Access Real-Time Leads in Your Trade
             </h1>
             
-            <p className="text-xl md:text-2xl mb-8 max-w-3xl mx-auto opacity-90">
-              Join our pre-launch list and lock in a $25 lead credit. We'll notify you the moment your trade goes live—no spam, no catch.
+            <p className="text-xl md:text-2xl mb-12 max-w-4xl mx-auto opacity-95 leading-relaxed">
+              Join our early access list to receive quality leads before anyone else. Limited spots available per trade and location.
             </p>
             
             <Button 
               size="lg"
               onClick={() => document.getElementById('signup-form')?.scrollIntoView({ behavior: 'smooth' })}
-              className="bg-white text-blue-600 hover:bg-gray-100 px-8 py-4 text-xl font-bold transition-all duration-300 transform hover:scale-105 shadow-lg"
+              className="bg-green-500 hover:bg-green-600 text-white px-12 py-6 text-xl font-bold rounded-2xl transition-all duration-300 transform hover:scale-105 shadow-2xl border-0"
             >
-              Join Now – Get $25 in Lead Credit
+              Join Early Access List
             </Button>
           </div>
         </div>
       </div>
 
-      {/* Benefits Section */}
-      <div className="py-20 bg-white">
-        <div className="container mx-auto px-4">
-          <div className="max-w-4xl mx-auto text-center mb-16">
-            <h2 className="text-4xl font-bold mb-6">What You'll Get</h2>
+      {/* How It Works Section */}
+      <div className="py-24 bg-gray-50">
+        <div className="container mx-auto px-6">
+          <div className="max-w-4xl mx-auto text-center mb-20">
+            <h2 className="text-4xl md:text-5xl font-bold mb-6 text-gray-900">How It Works</h2>
+            <p className="text-xl text-gray-600">Three simple steps to start winning more business</p>
           </div>
           
-          <div className="max-w-6xl mx-auto grid grid-cols-1 md:grid-cols-2 gap-8">
-            <div className="flex items-start space-x-4">
-              <div className="w-12 h-12 bg-green-500 text-white rounded-full flex items-center justify-center flex-shrink-0">
-                <CheckCircle className="w-6 h-6" />
+          <div className="max-w-6xl mx-auto grid grid-cols-1 md:grid-cols-3 gap-12">
+            <div className="text-center">
+              <div className="w-20 h-20 bg-gradient-to-br from-blue-500 to-blue-600 text-white rounded-3xl flex items-center justify-center mx-auto mb-8 shadow-xl">
+                <Search className="w-10 h-10" />
               </div>
-              <div>
-                <h3 className="text-xl font-bold mb-2">$25 free credit in your contractor wallet</h3>
-                <p className="text-gray-600">(no payment required)</p>
-              </div>
+              <h3 className="text-2xl font-bold mb-4 text-gray-900">🔎 Step 1: Sign Up</h3>
+              <p className="text-lg text-gray-600 leading-relaxed">Tell us about your trade and location preferences.</p>
             </div>
             
-            <div className="flex items-start space-x-4">
-              <div className="w-12 h-12 bg-blue-500 text-white rounded-full flex items-center justify-center flex-shrink-0">
-                <Star className="w-6 h-6" />
+            <div className="text-center">
+              <div className="w-20 h-20 bg-gradient-to-br from-green-500 to-green-600 text-white rounded-3xl flex items-center justify-center mx-auto mb-8 shadow-xl">
+                <MessageSquare className="w-10 h-10" />
               </div>
-              <div>
-                <h3 className="text-xl font-bold mb-2">Early access to the platform</h3>
-                <p className="text-gray-600">before public launch</p>
-              </div>
+              <h3 className="text-2xl font-bold mb-4 text-gray-900">📲 Step 2: Get Real-Time Leads</h3>
+              <p className="text-lg text-gray-600 leading-relaxed">We'll notify you the moment a new job lead becomes available.</p>
             </div>
             
-            <div className="flex items-start space-x-4">
-              <div className="w-12 h-12 bg-purple-500 text-white rounded-full flex items-center justify-center flex-shrink-0">
-                <Phone className="w-6 h-6" />
+            <div className="text-center">
+              <div className="w-20 h-20 bg-gradient-to-br from-purple-500 to-purple-600 text-white rounded-3xl flex items-center justify-center mx-auto mb-8 shadow-xl">
+                <Briefcase className="w-10 h-10" />
               </div>
-              <div>
-                <h3 className="text-xl font-bold mb-2">A chance to preview</h3>
-                <p className="text-gray-600">how lead matching works</p>
-              </div>
-            </div>
-            
-            <div className="flex items-start space-x-4">
-              <div className="w-12 h-12 bg-orange-500 text-white rounded-full flex items-center justify-center flex-shrink-0">
-                <CreditCard className="w-6 h-6" />
-              </div>
-              <div>
-                <h3 className="text-xl font-bold mb-2">Priority onboarding</h3>
-                <p className="text-gray-600">for your trade and zip code</p>
-              </div>
+              <h3 className="text-2xl font-bold mb-4 text-gray-900">💼 Step 3: Win More Business</h3>
+              <p className="text-lg text-gray-600 leading-relaxed">Claim leads and grow your business directly from your dashboard.</p>
             </div>
           </div>
         </div>
       </div>
 
-      {/* Feature Highlights */}
-      <div className="py-20 bg-gray-50">
-        <div className="container mx-auto px-4">
-          <div className="max-w-6xl mx-auto grid grid-cols-1 md:grid-cols-3 gap-8">
-            <div className="text-center">
-              <div className="w-16 h-16 bg-gradient-to-r from-green-400 to-green-600 text-white rounded-full flex items-center justify-center mx-auto mb-6">
-                <MapPin className="w-8 h-8" />
-              </div>
-              <h3 className="text-xl font-bold mb-4">Local-Only Leads</h3>
-              <p className="text-gray-600">Get matched to nearby jobs—we don't sell national leads.</p>
+      {/* Trust Signals Section */}
+      <div className="py-20 bg-white">
+        <div className="container mx-auto px-6">
+          <div className="max-w-4xl mx-auto text-center mb-16">
+            <h2 className="text-3xl md:text-4xl font-bold mb-4 text-gray-900">Trusted by Contractors in Over 50 U.S. Cities</h2>
+            <p className="text-lg text-gray-600">Backed by AI • Secure & Private</p>
+          </div>
+          
+          <div className="flex flex-wrap justify-center items-center gap-12 mb-16">
+            <div className="flex items-center space-x-3">
+              <Shield className="h-8 w-8 text-blue-600" />
+              <span className="text-lg font-semibold text-gray-700">SSL Secured</span>
             </div>
-            
-            <div className="text-center">
-              <div className="w-16 h-16 bg-gradient-to-r from-blue-400 to-blue-600 text-white rounded-full flex items-center justify-center mx-auto mb-6">
-                <Handshake className="w-8 h-8" />
-              </div>
-              <h3 className="text-xl font-bold mb-4">Real Buyers, Not Clicks</h3>
-              <p className="text-gray-600">Homeowners come to us to hire, not browse.</p>
+            <div className="flex items-center space-x-3">
+              <Zap className="h-8 w-8 text-green-600" />
+              <span className="text-lg font-semibold text-gray-700">AI-Powered</span>
             </div>
-            
-            <div className="text-center">
-              <div className="w-16 h-16 bg-gradient-to-r from-purple-400 to-purple-600 text-white rounded-full flex items-center justify-center mx-auto mb-6">
-                <Settings className="w-8 h-8" />
-              </div>
-              <h3 className="text-xl font-bold mb-4">Full Control</h3>
-              <p className="text-gray-600">Choose your budget, service area, and availability.</p>
+            <div className="flex items-center space-x-3">
+              <Award className="h-8 w-8 text-purple-600" />
+              <span className="text-lg font-semibold text-gray-700">TCPA Compliant</span>
+            </div>
+            <div className="flex items-center space-x-3">
+              <CheckCircle className="h-8 w-8 text-blue-600" />
+              <span className="text-lg font-semibold text-gray-700">Verified Leads</span>
             </div>
           </div>
         </div>
       </div>
 
-      {/* Trust Section */}
-      <div className="py-20 bg-gradient-to-br from-green-50 to-blue-50">
-        <div className="container mx-auto px-4">
-          <div className="max-w-4xl mx-auto text-center">
-            <h2 className="text-4xl font-bold mb-6">Zero Risk. All Reward.</h2>
-            <p className="text-xl text-gray-600 mb-8">We'll never share your info. Cancel anytime. This is your chance to get ahead—before your competitors do.</p>
-          </div>
-        </div>
-      </div>
-
-      <div id="signup-form" className="py-20 bg-gray-50">
-        <div className="container mx-auto px-4">
+      <div id="signup-form" className="py-24 bg-gradient-to-br from-gray-50 to-blue-50">
+        <div className="container mx-auto px-6">
           <div className="max-w-2xl mx-auto">
-            <Card className="border-2 shadow-lg">
-              <CardHeader>
-                <CardTitle className="text-2xl text-center">Join the Pre-Launch List – Free $25 Credit</CardTitle>
+            <Card className="border-0 shadow-2xl rounded-3xl overflow-hidden">
+              <CardHeader className="bg-gradient-to-r from-blue-600 to-indigo-600 text-white text-center py-12">
+                <CardTitle className="text-3xl md:text-4xl font-bold mb-4">Join Early Access List</CardTitle>
+                <p className="text-xl opacity-95">Get started with quality leads in your area</p>
               </CardHeader>
-              <CardContent>
+              <CardContent className="p-12">
                 {errorMessage && (
-                  <Alert className="mb-6 border-red-200 bg-red-50">
-                    <AlertDescription className="text-red-700">{errorMessage}</AlertDescription>
+                  <Alert className="mb-8 border-red-200 bg-red-50 rounded-2xl">
+                    <AlertDescription className="text-red-700 text-lg">{errorMessage}</AlertDescription>
                   </Alert>
                 )}
 
-                <form onSubmit={handleSubmit} className="space-y-6">
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div>
-                      <Label htmlFor="first_name">First Name *</Label>
+                <form onSubmit={handleSubmit} className="space-y-8">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div className="space-y-2">
+                      <Label htmlFor="first_name" className="text-lg font-semibold text-gray-700">First Name *</Label>
                       <Input
                         id="first_name"
                         type="text"
@@ -256,10 +204,11 @@ const ContractorWaitlist = () => {
                         value={formData.first_name}
                         onChange={(e) => handleInputChange('first_name', e.target.value)}
                         placeholder="John"
+                        className="h-14 text-lg rounded-2xl border-2 border-gray-200 focus:border-blue-500 transition-colors"
                       />
                     </div>
-                    <div>
-                      <Label htmlFor="last_name">Last Name *</Label>
+                    <div className="space-y-2">
+                      <Label htmlFor="last_name" className="text-lg font-semibold text-gray-700">Last Name *</Label>
                       <Input
                         id="last_name"
                         type="text"
@@ -267,12 +216,13 @@ const ContractorWaitlist = () => {
                         value={formData.last_name}
                         onChange={(e) => handleInputChange('last_name', e.target.value)}
                         placeholder="Smith"
+                        className="h-14 text-lg rounded-2xl border-2 border-gray-200 focus:border-blue-500 transition-colors"
                       />
                     </div>
                   </div>
 
-                  <div>
-                    <Label htmlFor="company">Company Name *</Label>
+                  <div className="space-y-2">
+                    <Label htmlFor="company" className="text-lg font-semibold text-gray-700">Company Name *</Label>
                     <Input
                       id="company"
                       type="text"
@@ -280,12 +230,13 @@ const ContractorWaitlist = () => {
                       value={formData.company}
                       onChange={(e) => handleInputChange('company', e.target.value)}
                       placeholder="Smith Construction LLC"
+                      className="h-14 text-lg rounded-2xl border-2 border-gray-200 focus:border-blue-500 transition-colors"
                     />
                   </div>
 
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div>
-                      <Label htmlFor="email">Email *</Label>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div className="space-y-2">
+                      <Label htmlFor="email" className="text-lg font-semibold text-gray-700">Email *</Label>
                       <Input
                         id="email"
                         type="email"
@@ -293,10 +244,11 @@ const ContractorWaitlist = () => {
                         value={formData.email}
                         onChange={(e) => handleInputChange('email', e.target.value)}
                         placeholder="john@smithconstruction.com"
+                        className="h-14 text-lg rounded-2xl border-2 border-gray-200 focus:border-blue-500 transition-colors"
                       />
                     </div>
-                    <div>
-                      <Label htmlFor="phone">Phone *</Label>
+                    <div className="space-y-2">
+                      <Label htmlFor="phone" className="text-lg font-semibold text-gray-700">Phone *</Label>
                       <Input
                         id="phone"
                         type="tel"
@@ -304,14 +256,15 @@ const ContractorWaitlist = () => {
                         value={formData.phone}
                         onChange={(e) => handleInputChange('phone', e.target.value)}
                         placeholder="(555) 123-4567"
+                        className="h-14 text-lg rounded-2xl border-2 border-gray-200 focus:border-blue-500 transition-colors"
                       />
                     </div>
                   </div>
 
-                  <div>
-                    <Label htmlFor="trade">Trade *</Label>
+                  <div className="space-y-2">
+                    <Label htmlFor="trade" className="text-lg font-semibold text-gray-700">Trade *</Label>
                     <Select value={formData.trade} onValueChange={(value) => handleInputChange('trade', value)}>
-                      <SelectTrigger>
+                      <SelectTrigger className="h-14 text-lg rounded-2xl border-2 border-gray-200 focus:border-blue-500">
                         <SelectValue placeholder="Select your trade" />
                       </SelectTrigger>
                       <SelectContent>
@@ -325,11 +278,17 @@ const ContractorWaitlist = () => {
 
                   <Button 
                     type="submit" 
-                    className="w-full bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white py-4 text-xl font-bold rounded-lg shadow-lg hover:shadow-xl transition-all duration-200 transform hover:scale-105"
+                    className="w-full bg-green-500 hover:bg-green-600 text-white py-6 text-xl font-bold rounded-2xl shadow-2xl hover:shadow-3xl transition-all duration-300 transform hover:scale-105 border-0"
                     disabled={isSubmitting}
                   >
-                    {isSubmitting ? 'Joining Pre-Launch List...' : 'Join Now – Get $25 in Lead Credit'}
+                    {isSubmitting ? 'Joining Early Access List...' : 'Join Early Access List'}
                   </Button>
+                  
+                  <div className="text-center mt-6">
+                    <p className="text-lg text-gray-600">
+                      💰 <strong>Contractors who sign up now get $25 in free lead credits at launch.</strong>
+                    </p>
+                  </div>
                 </form>
               </CardContent>
             </Card>
@@ -337,18 +296,6 @@ const ContractorWaitlist = () => {
         </div>
       </div>
 
-      <div className="py-16 bg-white">
-        <div className="container mx-auto px-4">
-          <div className="flex flex-wrap justify-center items-center gap-8 opacity-75">
-            {trustBadges.map((badge, index) => (
-              <div key={index} className="flex items-center space-x-2 px-4 py-2 bg-gray-100 rounded-md border border-gray-200">
-                <badge.icon className="h-4 w-4 text-gray-600" />
-                <span className="text-sm font-medium text-gray-600">{badge.text}</span>
-              </div>
-            ))}
-          </div>
-        </div>
-      </div>
 
       <Footer />
     </div>
