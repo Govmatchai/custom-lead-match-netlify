@@ -1378,6 +1378,74 @@ const AdminDashboard = () => {
           </Card>
         )}
 
+        {activeTab === 'launch-queue' && (
+          <Card>
+            <CardHeader>
+              <CardTitle>Launch Invite Queue</CardTitle>
+              <CardDescription>Manage waitlist users and track launch invitations</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-4">
+                <div className="flex gap-4 mb-4">
+                  <Button 
+                    onClick={() => handleWaitlistNotification('launching_soon')}
+                    className="bg-yellow-600 hover:bg-yellow-700"
+                  >
+                    Send Launch Invites
+                  </Button>
+                  <Button onClick={handleExportWaitlist} variant="outline">
+                    <Download className="h-4 w-4 mr-2" />
+                    Export Queue
+                  </Button>
+                </div>
+                
+                <div className="overflow-x-auto">
+                  <table className="w-full border-collapse border border-gray-300">
+                    <thead>
+                      <tr className="bg-gray-50">
+                        <th className="border border-gray-300 p-2 text-left">Name</th>
+                        <th className="border border-gray-300 p-2 text-left">Trade</th>
+                        <th className="border border-gray-300 p-2 text-left">Email</th>
+                        <th className="border border-gray-300 p-2 text-left">Date Joined</th>
+                        <th className="border border-gray-300 p-2 text-left">Notified</th>
+                        <th className="border border-gray-300 p-2 text-left">Account Created</th>
+                        <th className="border border-gray-300 p-2 text-left">Wallet Funded</th>
+                        <th className="border border-gray-300 p-2 text-left">Actions</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {waitlistAnalytics?.waitlistEntries?.map((entry: any, index: number) => (
+                        <tr key={index} className="hover:bg-gray-50">
+                          <td className="border border-gray-300 p-2">{entry.first_name} {entry.last_name}</td>
+                          <td className="border border-gray-300 p-2 capitalize">{entry.trade}</td>
+                          <td className="border border-gray-300 p-2">{entry.email}</td>
+                          <td className="border border-gray-300 p-2">{new Date(entry.created_at).toLocaleDateString()}</td>
+                          <td className="border border-gray-300 p-2">
+                            <span className={`px-2 py-1 rounded text-xs ${entry.launch_notified ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'}`}>
+                              {entry.launch_notified ? 'Yes' : 'No'}
+                            </span>
+                          </td>
+                          <td className="border border-gray-300 p-2">
+                            <span className="px-2 py-1 rounded text-xs bg-gray-100 text-gray-800">No</span>
+                          </td>
+                          <td className="border border-gray-300 p-2">
+                            <span className="px-2 py-1 rounded text-xs bg-gray-100 text-gray-800">No</span>
+                          </td>
+                          <td className="border border-gray-300 p-2">
+                            <Button size="sm" variant="outline" onClick={() => handleTestEmail('launch_day')}>
+                              Resend Invite
+                            </Button>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        )}
+
         {activeTab === 'lead-management' && (
           <Card>
             <CardHeader>
@@ -2217,6 +2285,74 @@ const AdminDashboard = () => {
                       ))}
                     </tbody>
                   </table>
+        {activeTab === 'launch-queue' && (
+          <Card>
+            <CardHeader>
+              <CardTitle>Launch Invite Queue</CardTitle>
+              <CardDescription>Manage waitlist users and track launch invitations</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-4">
+                <div className="flex gap-4 mb-4">
+                  <Button 
+                    onClick={() => handleWaitlistNotification('launching_soon')}
+                    className="bg-yellow-600 hover:bg-yellow-700"
+                  >
+                    Send Launch Invites
+                  </Button>
+                  <Button onClick={handleExportWaitlist} variant="outline">
+                    <Download className="h-4 w-4 mr-2" />
+                    Export Queue
+                  </Button>
+                </div>
+                
+                <div className="overflow-x-auto">
+                  <table className="w-full border-collapse border border-gray-300">
+                    <thead>
+                      <tr className="bg-gray-50">
+                        <th className="border border-gray-300 p-2 text-left">Name</th>
+                        <th className="border border-gray-300 p-2 text-left">Trade</th>
+                        <th className="border border-gray-300 p-2 text-left">Email</th>
+                        <th className="border border-gray-300 p-2 text-left">Date Joined</th>
+                        <th className="border border-gray-300 p-2 text-left">Notified</th>
+                        <th className="border border-gray-300 p-2 text-left">Account Created</th>
+                        <th className="border border-gray-300 p-2 text-left">Wallet Funded</th>
+                        <th className="border border-gray-300 p-2 text-left">Actions</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {waitlistAnalytics?.waitlistEntries?.map((entry: any, index: number) => (
+                        <tr key={index} className="hover:bg-gray-50">
+                          <td className="border border-gray-300 p-2">{entry.first_name} {entry.last_name}</td>
+                          <td className="border border-gray-300 p-2 capitalize">{entry.trade}</td>
+                          <td className="border border-gray-300 p-2">{entry.email}</td>
+                          <td className="border border-gray-300 p-2">{new Date(entry.created_at).toLocaleDateString()}</td>
+                          <td className="border border-gray-300 p-2">
+                            <span className={`px-2 py-1 rounded text-xs ${entry.launch_notified ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'}`}>
+                              {entry.launch_notified ? 'Yes' : 'No'}
+                            </span>
+                          </td>
+                          <td className="border border-gray-300 p-2">
+                            <span className="px-2 py-1 rounded text-xs bg-gray-100 text-gray-800">No</span>
+                          </td>
+                          <td className="border border-gray-300 p-2">
+                            <span className="px-2 py-1 rounded text-xs bg-gray-100 text-gray-800">No</span>
+                          </td>
+                          <td className="border border-gray-300 p-2">
+                            <Button size="sm" variant="outline" onClick={() => handleTestEmail('launch_day')}>
+                              Resend Invite
+                            </Button>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        )}
+
                 </div>
               </div>
             </CardContent>
