@@ -174,7 +174,8 @@ export const handler = async (event, context) => {
         contractorGrowth: 12,
         revenueGrowth: 8,
         claimTimeImprovement: -15,
-        deliveryRateChange: 2
+        deliveryRateChange: 2,
+        fundedWallets: Object.values(walletBalances).filter(b => b > 0).length
       })
     };
   } catch (error) {

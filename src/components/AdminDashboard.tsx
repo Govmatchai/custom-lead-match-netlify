@@ -10,7 +10,6 @@ import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, D
 import { Logo } from '@/components/ui/Logo'
 import { ForgotPasswordModal } from './ForgotPasswordModal'
 import { MetricCard } from './admin/MetricCard'
-import { LeadsByServiceChart, WalletDistributionChart, RevenueChart, TopContractorsCard } from './admin/DashboardCharts'
 import { AlertsPanel } from './admin/AlertsPanel'
 import { DateRangeFilter } from './admin/DateRangeFilter'
 
@@ -87,7 +86,8 @@ const AdminDashboard = () => {
   const [contractors, setContractors] = useState<Contractor[]>([])
   const [leads, setLeads] = useState<Lead[]>([])
   const [loading, setLoading] = useState(false)
-  const [activeTab, setActiveTab] = useState<'stats' | 'contractors' | 'leads' | 'lead-management' | 'scoring-config' | 'transactions' | 'pricing' | 'utilities' | 'sms-controls'>('stats')
+  const [activeTab, setActiveTab] = useState<'stats' | 'contractors' | 'leads' | 'lead-management' | 'scoring-config' | 'transactions' | 'pricing' | 'utilities' | 'sms-controls' | 'launch-queue'>('stats')
+  const [emailVerificationStats, setEmailVerificationStats] = useState<any>(null)
   const [statusFilter, setStatusFilter] = useState('all')
   const [industryFilter, setIndustryFilter] = useState('all')
   const [transactions, setTransactions] = useState<Transaction[]>([])
@@ -143,7 +143,7 @@ const AdminDashboard = () => {
   const fetchAdminData = async () => {
     setLoading(true)
     try {
-      const [statsResponse, contractorsResponse, leadsResponse, transactionsResponse, pricingResponse, dashboardResponse, notificationResponse, waitlistResponse] = await Promise.all([
+      const [statsResponse, contractorsResponse, leadsResponse, transactionsResponse, pricingResponse, dashboardResponse, notificationResponse, waitlistResponse, emailVerificationResponse] = await Promise.all([
         fetch('/.netlify/functions/admin-stats'),
         fetch('/.netlify/functions/admin-contractors'),
         fetch('/.netlify/functions/admin-leads'),
@@ -151,7 +151,8 @@ const AdminDashboard = () => {
         fetch('/.netlify/functions/admin-pricing'),
         fetch(`/.netlify/functions/admin-dashboard-stats?dateRange=${dateRange}`),
         fetch(`/.netlify/functions/admin-notification-stats?dateRange=${dateRange}`),
-        fetch('/.netlify/functions/admin-waitlist-analytics')
+        fetch('/.netlify/functions/admin-waitlist-analytics'),
+        fetch('/.netlify/functions/admin-email-verification')
       ])
 
       if (statsResponse.ok) {
@@ -198,6 +199,11 @@ const AdminDashboard = () => {
       if (waitlistResponse.ok) {
         const waitlistData = await waitlistResponse.json()
         setWaitlistAnalytics(waitlistData)
+      }
+
+      if (emailVerificationResponse.ok) {
+        const emailVerificationData = await emailVerificationResponse.json()
+        setEmailVerificationStats(emailVerificationData)
       }
     } catch (error) {
       console.error('Failed to fetch admin data:', error)
@@ -841,6 +847,16 @@ const AdminDashboard = () => {
               >
                 SMS & Notifications
               </button>
+              <button
+                onClick={() => setActiveTab('launch-queue')}
+                className={`py-2 px-1 border-b-2 font-medium text-sm ${
+                  activeTab === 'launch-queue'
+                    ? 'border-blue-500 text-blue-600'
+                    : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                }`}
+              >
+                Launch Invite Queue
+              </button>
             </nav>
           </div>
         </div>
@@ -939,11 +955,155 @@ const AdminDashboard = () => {
               </div>
             )}
 
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-              <LeadsByServiceChart data={dashboardStats?.leadsByService || []} />
-              <WalletDistributionChart data={dashboardStats?.walletDistribution || []} />
-              <RevenueChart data={dashboardStats?.revenueData || []} />
-              <TopContractorsCard data={dashboardStats?.topContractors || []} />
+            <div className="bg-gray-50 p-6 rounded-lg">
+              <h3 className="text-lg font-bold mb-4 text-gray-900">Platform KPIs</h3>
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                <MetricCard
+                  title="Active Contractors"
+                  value={dashboardStats?.activeContractors || 0}
+                  trend={dashboardStats?.contractorGrowth}
+                  icon={<Users className="h-4 w-4" />}
+                  color="green"
+                />
+                <MetricCard
+                  title="Total Revenue"
+                  value={`$${dashboardStats?.totalRevenue || '0.00'}`}
+                  trend={dashboardStats?.revenueGrowth}
+                  icon={<DollarSign className="h-4 w-4" />}
+                  color="green"
+                />
+                <MetricCard
+                  title="Avg Time to Claim"
+                  value={`${dashboardStats?.avgTimeToClaimHours || 0}h`}
+                  trend={dashboardStats?.claimTimeImprovement}
+                  icon={<Clock className="h-4 w-4" />}
+                  color="blue"
+                />
+                <MetricCard
+                  title="Email Delivery Rate"
+                  value={`${notificationStats?.overall_delivery_rate || dashboardStats?.emailDeliveryRate || 0}%`}
+                  trend={dashboardStats?.deliveryRateChange}
+                  icon={<Mail className="h-4 w-4" />}
+                  color="green"
+                />
+              </div>
+            </div>
+
+            <div className="bg-gray-50 p-6 rounded-lg">
+              <h3 className="text-lg font-bold mb-4 text-gray-900">System Health</h3>
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                <MetricCard
+                  title="Unverified Emails"
+                  value={emailVerificationStats?.unverified_emails || 0}
+                  icon={<AlertCircle className="h-4 w-4" />}
+                  color="yellow"
+                />
+                <MetricCard
+                  title="Bounce Rate"
+                  value={`${notificationStats?.email?.bounces || 0}`}
+                  icon={<AlertCircle className="h-4 w-4" />}
+                  color="red"
+                />
+                <Card>
+                  <CardContent className="p-4">
+                    <div className="flex items-center justify-between">
+                      <span className="text-sm font-medium">System Logs</span>
+                      <Button variant="outline" size="sm" onClick={() => window.open('/admin/logs', '_blank')}>
+                        <FileText className="h-4 w-4 mr-2" />
+                        View Logs
+                      </Button>
+                    </div>
+                  </CardContent>
+                </Card>
+                <Card>
+                  <CardContent className="p-4">
+                    <div className="text-center">
+                      <div className="text-sm font-medium text-green-600">All Systems Normal</div>
+                      <div className="text-xs text-gray-500">Last checked: {new Date().toLocaleTimeString()}</div>
+                    </div>
+                  </CardContent>
+                </Card>
+              </div>
+            </div>
+
+            <div className="bg-blue-50 p-6 rounded-lg">
+              <h3 className="text-lg font-bold mb-4 text-blue-900">Waitlist Funnel Insights</h3>
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-6">
+                <MetricCard
+                  title="Total Waitlist"
+                  value={waitlistAnalytics?.totalWaitlist || 0}
+                  icon={<Users className="h-4 w-4" />}
+                  color="blue"
+                />
+                <MetricCard
+                  title="Landing Page Views"
+                  value={waitlistAnalytics?.totalPageViews || 0}
+                  icon={<Eye className="h-4 w-4" />}
+                  color="blue"
+                />
+                <MetricCard
+                  title="Recent Signups (7d)"
+                  value={waitlistAnalytics?.recentSignups || 0}
+                  icon={<Plus className="h-4 w-4" />}
+                  color="blue"
+                />
+                <MetricCard
+                  title="Launch Notified"
+                  value={waitlistAnalytics?.notifiedCount || 0}
+                  icon={<CheckCircle className="h-4 w-4" />}
+                  color="blue"
+                />
+              </div>
+              
+              {waitlistAnalytics?.tradeBreakdown && waitlistAnalytics.tradeBreakdown.length > 0 && (
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <Card>
+                    <CardHeader>
+                      <CardTitle>Waitlist by Trade</CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="grid grid-cols-2 gap-2">
+                        {waitlistAnalytics.tradeBreakdown.map((item: any, index: number) => (
+                          <div key={index} className="flex justify-between p-2 bg-white rounded border">
+                            <span className="capitalize text-sm">{item.trade}</span>
+                            <span className="font-medium text-sm">{item.count}</span>
+                          </div>
+                        ))}
+                      </div>
+                    </CardContent>
+                  </Card>
+                </div>
+              )}
+            </div>
+
+            <div className="bg-green-50 p-6 rounded-lg">
+              <h3 className="text-lg font-bold mb-4 text-green-900">Contractor Onboarding</h3>
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                <MetricCard
+                  title="Waitlist Only"
+                  value={(waitlistAnalytics?.totalWaitlist || 0) - (waitlistAnalytics?.notifiedCount || 0)}
+                  icon={<Users className="h-4 w-4" />}
+                  color="blue"
+                />
+                <MetricCard
+                  title="Invited to Join"
+                  value={waitlistAnalytics?.notifiedCount || 0}
+                  icon={<Mail className="h-4 w-4" />}
+                  color="yellow"
+                />
+                <MetricCard
+                  title="Created Full Account"
+                  value={dashboardStats?.activeContractors || 0}
+                  icon={<CheckCircle className="h-4 w-4" />}
+                  color="green"
+                />
+                <MetricCard
+                  title="Funded Wallet"
+                  value={dashboardStats?.fundedWallets || 0}
+                  icon={<DollarSign className="h-4 w-4" />}
+                  color="green"
+                />
+              </div>
             </div>
 
             {stats && (
@@ -1993,6 +2153,74 @@ const AdminDashboard = () => {
               </CardContent>
             </Card>
           </div>
+        )}
+
+        {activeTab === 'launch-queue' && (
+          <Card>
+            <CardHeader>
+              <CardTitle>Launch Invite Queue</CardTitle>
+              <CardDescription>Manage waitlist users and track launch invitations</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-4">
+                <div className="flex gap-4 mb-4">
+                  <Button 
+                    onClick={() => handleWaitlistNotification('launching_soon')}
+                    className="bg-yellow-600 hover:bg-yellow-700"
+                  >
+                    Send Launch Invites
+                  </Button>
+                  <Button onClick={handleExportWaitlist} variant="outline">
+                    <Download className="h-4 w-4 mr-2" />
+                    Export Queue
+                  </Button>
+                </div>
+                
+                <div className="overflow-x-auto">
+                  <table className="w-full border-collapse border border-gray-300">
+                    <thead>
+                      <tr className="bg-gray-50">
+                        <th className="border border-gray-300 p-2 text-left">Name</th>
+                        <th className="border border-gray-300 p-2 text-left">Trade</th>
+                        <th className="border border-gray-300 p-2 text-left">Email</th>
+                        <th className="border border-gray-300 p-2 text-left">Date Joined</th>
+                        <th className="border border-gray-300 p-2 text-left">Notified</th>
+                        <th className="border border-gray-300 p-2 text-left">Account Created</th>
+                        <th className="border border-gray-300 p-2 text-left">Wallet Funded</th>
+                        <th className="border border-gray-300 p-2 text-left">Actions</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {waitlistAnalytics?.waitlistEntries?.map((entry: any, index: number) => (
+                        <tr key={index} className="hover:bg-gray-50">
+                          <td className="border border-gray-300 p-2">{entry.first_name} {entry.last_name}</td>
+                          <td className="border border-gray-300 p-2 capitalize">{entry.trade}</td>
+                          <td className="border border-gray-300 p-2">{entry.email}</td>
+                          <td className="border border-gray-300 p-2">{new Date(entry.created_at).toLocaleDateString()}</td>
+                          <td className="border border-gray-300 p-2">
+                            <span className={`px-2 py-1 rounded text-xs ${entry.launch_notified ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'}`}>
+                              {entry.launch_notified ? 'Yes' : 'No'}
+                            </span>
+                          </td>
+                          <td className="border border-gray-300 p-2">
+                            <span className="px-2 py-1 rounded text-xs bg-gray-100 text-gray-800">No</span>
+                          </td>
+                          <td className="border border-gray-300 p-2">
+                            <span className="px-2 py-1 rounded text-xs bg-gray-100 text-gray-800">No</span>
+                          </td>
+                          <td className="border border-gray-300 p-2">
+                            <Button size="sm" variant="outline" onClick={() => handleTestEmail('launch_day')}>
+                              Resend Invite
+                            </Button>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
         )}
       </div>
     </div>

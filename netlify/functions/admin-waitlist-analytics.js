@@ -76,7 +76,8 @@ export const handler = async (event, context) => {
         pendingCount,
         recentSignups,
         totalPageViews,
-        tradeBreakdown: Object.entries(tradeBreakdown).map(([trade, count]) => ({ trade, count }))
+        tradeBreakdown: Object.entries(tradeBreakdown).map(([trade, count]) => ({ trade, count })),
+        waitlistEntries: waitlistEntries || []
       })
     }
   } catch (error) {
