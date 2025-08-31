@@ -175,18 +175,56 @@ async function distributeLead(lead) {
     return
   }
 
+  let contractorIndustry = lead.service_category
+  if (lead.service_category === 'Home Services' || lead.service_category === 'home_services') {
+    contractorIndustry = 'home_services'
+  } else if (lead.service_category === 'HVAC' || lead.service_category === 'hvac') {
+    contractorIndustry = 'home_services'
+  } else if (lead.service_category === 'Plumbing' || lead.service_category === 'plumbing') {
+    contractorIndustry = 'home_services'
+  } else if (lead.service_category === 'Legal' || lead.service_category === 'legal') {
+    contractorIndustry = 'legal'
+  } else if (lead.service_category === 'Automotive' || lead.service_category === 'automotive') {
+    contractorIndustry = 'automotive'
+  }
+
+  let contractorSubService = lead.sub_service?.toLowerCase()
+
+  console.log(`🔍 Looking for contractors with industry: ${contractorIndustry}, sub_service: ${contractorSubService}, zip_code: ${lead.zip_code}`)
+
   const { data: contractors, error } = await supabase
     .from('contractors')
     .select('*')
-    .eq('industry', lead.service_category)
-    .eq('sub_service', lead.sub_service)
+    .eq('industry', contractorIndustry)
+    .eq('sub_service', contractorSubService)
     .contains('zip_codes', [lead.zip_code])
     .gt('lead_credits', 0)
-    .eq('sms_opt_in', true)
-    .eq('is_sms_enabled', true)
 
-  if (error || !contractors?.length) {
-    console.log(`No matching contractors found for lead ${lead.id}`)
+  console.log(`📋 Found ${contractors?.length || 0} contractors matching criteria`)
+
+  if (error) {
+    console.error(`❌ Database error finding contractors for lead ${lead.id}:`, error)
+    return
+  }
+
+  if (!contractors?.length) {
+    console.log(`❌ No matching contractors found for lead ${lead.id}`)
+    
+    const { data: allContractors } = await supabase
+      .from('contractors')
+      .select('id, business_name, industry, sub_service, zip_codes, sms_opt_in, is_sms_enabled, lead_credits')
+      .limit(10)
+    
+    console.log(`🔍 Debug - Available contractors:`, allContractors?.map(c => ({
+      name: c.business_name,
+      industry: c.industry,
+      sub_service: c.sub_service,
+      zip_codes: c.zip_codes,
+      sms_opt_in: c.sms_opt_in,
+      is_sms_enabled: c.is_sms_enabled,
+      lead_credits: c.lead_credits
+    })))
+    
     return
   }
 
