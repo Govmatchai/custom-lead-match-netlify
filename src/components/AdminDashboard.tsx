@@ -95,7 +95,7 @@ const AdminDashboard = () => {
   const [pricing, setPricing] = useState<PricingSettings | null>(null)
   const [categoryPrices, setCategoryPrices] = useState<{ [key: string]: string }>({})
   const [walletAdjustment, setWalletAdjustment] = useState({ contractor_id: '', amount: '', notes: '' })
-  const [manualNotification, setManualNotification] = useState({ lead_id: '', contractor_ids: [] })
+  const [manualNotification, setManualNotification] = useState<{ lead_id: string; contractor_ids: string[] }>({ lead_id: '', contractor_ids: [] })
   const [showForgotPassword, setShowForgotPassword] = useState(false)
   const [newLead, setNewLead] = useState({
     customer_name: '', phone: '', email: '', service_category: '', sub_service: '', zip_code: '', description: ''
