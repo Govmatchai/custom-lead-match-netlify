@@ -84,11 +84,6 @@ export const handler = async (event, context) => {
       .select('*')
       .eq('status', 'valid')
       .eq('distributed', false)
-      .or(`
-        and(lead_score.gte.85,created_at.lte.${now.toISOString()}),
-        and(lead_score.gte.70,lead_score.lt.85,created_at.lte.${twoHoursAgo}),
-        and(lead_score.lt.70,created_at.lte.${twelveHoursAgo})
-      `)
 
     if (error) {
       console.error('Query error:', error)
@@ -210,9 +205,6 @@ async function distributeLead(lead) {
                         limits.default_max_contractors || 5
 
   let targetContractors = eligibleContractors.slice(0, maxContractors)
-  if (lead.lead_score >= 85) {
-    targetContractors = eligibleContractors.slice(0, Math.min(3, maxContractors))
-  }
 
   const token = require('crypto').randomBytes(16).toString('hex')
   const expiresAt = new Date(Date.now() + 24 * 60 * 60 * 1000)
@@ -240,7 +232,6 @@ async function distributeLead(lead) {
         event_type: 'lead_notification_sent',
         event_data: {
           lead_id: lead.id,
-          lead_score: lead.lead_score,
           service_category: lead.service_category,
           sub_service: lead.sub_service
         }

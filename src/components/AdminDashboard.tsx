@@ -86,7 +86,7 @@ const AdminDashboard = () => {
   const [contractors, setContractors] = useState<Contractor[]>([])
   const [leads, setLeads] = useState<Lead[]>([])
   const [loading, setLoading] = useState(false)
-  const [activeTab, setActiveTab] = useState<'stats' | 'contractors' | 'leads' | 'lead-management' | 'scoring-config' | 'transactions' | 'pricing' | 'utilities' | 'sms-controls' | 'launch-queue'>('stats')
+  const [activeTab, setActiveTab] = useState<'stats' | 'contractors' | 'leads' | 'transactions' | 'pricing' | 'utilities' | 'sms-controls' | 'launch-queue'>('stats')
   const [emailVerificationStats, setEmailVerificationStats] = useState<any>(null)
   const [statusFilter, setStatusFilter] = useState('all')
   const [industryFilter, setIndustryFilter] = useState('all')
@@ -95,6 +95,7 @@ const AdminDashboard = () => {
   const [pricing, setPricing] = useState<PricingSettings | null>(null)
   const [categoryPrices, setCategoryPrices] = useState<{ [key: string]: string }>({})
   const [walletAdjustment, setWalletAdjustment] = useState({ contractor_id: '', amount: '', notes: '' })
+  const [manualNotification, setManualNotification] = useState({ lead_id: '', contractor_ids: [] })
   const [showForgotPassword, setShowForgotPassword] = useState(false)
   const [newLead, setNewLead] = useState({
     customer_name: '', phone: '', email: '', service_category: '', sub_service: '', zip_code: '', description: ''
@@ -611,6 +612,25 @@ const AdminDashboard = () => {
     }
   }
 
+  const handleManualNotification = async () => {
+    try {
+      const response = await fetch('/.netlify/functions/send-manual-notification', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(manualNotification)
+      })
+      if (response.ok) {
+        alert('Notifications sent successfully!')
+        setManualNotification({ lead_id: '', contractor_ids: [] })
+      } else {
+        alert('Failed to send notifications')
+      }
+    } catch (error) {
+      console.error('Error sending notifications:', error)
+      alert('Error sending notifications')
+    }
+  }
+
   const resetSessionTimeout = () => {
     setLastActivity(Date.now())
     if (sessionTimeout) {
@@ -809,16 +829,6 @@ const AdminDashboard = () => {
                 Leads
               </button>
               <button
-                onClick={() => setActiveTab('lead-management')}
-                className={`py-2 px-1 border-b-2 font-medium text-sm ${
-                  activeTab === 'lead-management'
-                    ? 'border-blue-500 text-blue-600'
-                    : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
-                }`}
-              >
-                Lead Management
-              </button>
-              <button
                 onClick={() => setActiveTab('transactions')}
                 className={`py-2 px-1 border-b-2 font-medium text-sm ${
                   activeTab === 'transactions'
@@ -837,16 +847,6 @@ const AdminDashboard = () => {
                 }`}
               >
                 Lead Pricing
-              </button>
-              <button
-                onClick={() => setActiveTab('scoring-config')}
-                className={`py-2 px-1 border-b-2 font-medium text-sm ${
-                  activeTab === 'scoring-config'
-                    ? 'border-blue-500 text-blue-600'
-                    : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
-                }`}
-              >
-                Scoring Config
               </button>
               <button
                 onClick={() => setActiveTab('utilities')}
@@ -1493,7 +1493,7 @@ const AdminDashboard = () => {
           </Card>
         )}
 
-        {activeTab === 'lead-management' && (
+        {false && (
           <Card>
             <CardHeader>
               <CardTitle>Lead Management & Scoring</CardTitle>
@@ -1761,66 +1761,6 @@ const AdminDashboard = () => {
           </Card>
         )}
 
-        {activeTab === 'scoring-config' && (
-          <Card>
-            <CardHeader>
-              <CardTitle>Lead Distribution Configuration</CardTitle>
-              <CardDescription>Adjust scoring thresholds and timing rules for internal lead distribution</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                <div>
-                  <Label htmlFor="high-threshold">High Priority Threshold (≥)</Label>
-                  <Input 
-                    id="high-threshold"
-                    type="number" 
-                    defaultValue="85" 
-                    className="mt-1"
-                  />
-                  <p className="text-sm text-gray-500 mt-1">
-                    Instant/exclusive release to top contractors
-                  </p>
-                </div>
-                <div>
-                  <Label htmlFor="medium-threshold">Medium Priority Threshold (≥)</Label>
-                  <Input 
-                    id="medium-threshold"
-                    type="number" 
-                    defaultValue="70" 
-                    className="mt-1"
-                  />
-                  <p className="text-sm text-gray-500 mt-1">
-                    2-4 hour delay before distribution
-                  </p>
-                </div>
-                <div>
-                  <Label htmlFor="low-delay">Low Priority Delay (hours)</Label>
-                  <Input 
-                    id="low-delay"
-                    type="number" 
-                    defaultValue="12" 
-                    className="mt-1"
-                  />
-                  <p className="text-sm text-gray-500 mt-1">
-                    12-24 hour delay or bundled offers
-                  </p>
-                </div>
-              </div>
-              <div className="mt-6">
-                <Button className="mr-4">Save Configuration</Button>
-                <Button variant="outline">Reset to Defaults</Button>
-              </div>
-              <div className="mt-6 p-4 bg-blue-50 rounded-lg">
-                <h4 className="font-semibold text-blue-900 mb-2">Distribution Rules</h4>
-                <ul className="text-sm text-blue-800 space-y-1">
-                  <li>• High-score leads (≥85%): Instant release to verified contractors with 1-2 hour exclusivity</li>
-                  <li>• Medium-score leads (70-84%): Released after 2-4 hour delay to all matching contractors</li>
-                  <li>• Low-score leads (&lt;70%): Released after 12-24 hours or included in bundled offers</li>
-                </ul>
-              </div>
-            </CardContent>
-          </Card>
-        )}
 
         {activeTab === 'utilities' && (
           <div className="space-y-6">
@@ -1970,6 +1910,65 @@ const AdminDashboard = () => {
             </Card>
 
             {/* Waitlist Management Section */}
+            <Card>
+              <CardHeader>
+                <CardTitle>Manual Lead Notifications</CardTitle>
+                <CardDescription>Send lead notifications to specific contractors</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-4">
+                  <div>
+                    <Label htmlFor="lead-select">Select Lead</Label>
+                    <Select value={manualNotification.lead_id} onValueChange={(value) => setManualNotification({...manualNotification, lead_id: value})}>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select a lead" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {leads.filter(lead => lead.status === 'valid' && !lead.claimed).map((lead) => (
+                          <SelectItem key={lead.id} value={lead.id}>
+                            {lead.customer_name} - {lead.service_category} - {lead.zip_code}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div>
+                    <Label htmlFor="contractor-select">Select Contractors</Label>
+                    <div className="max-h-40 overflow-y-auto border rounded p-2">
+                      {contractors.map((contractor) => (
+                        <div key={contractor.id} className="flex items-center space-x-2 py-1">
+                          <input
+                            type="checkbox"
+                            id={`contractor-${contractor.id}`}
+                            checked={manualNotification.contractor_ids.includes(contractor.id)}
+                            onChange={(e) => {
+                              if (e.target.checked) {
+                                setManualNotification({
+                                  ...manualNotification,
+                                  contractor_ids: [...manualNotification.contractor_ids, contractor.id]
+                                })
+                              } else {
+                                setManualNotification({
+                                  ...manualNotification,
+                                  contractor_ids: manualNotification.contractor_ids.filter(id => id !== contractor.id)
+                                })
+                              }
+                            }}
+                          />
+                          <label htmlFor={`contractor-${contractor.id}`} className="text-sm">
+                            {contractor.business_name} - {contractor.contact_name}
+                          </label>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                  <Button onClick={handleManualNotification} disabled={!manualNotification.lead_id || manualNotification.contractor_ids.length === 0}>
+                    Send Notifications
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
+
             <Card>
               <CardHeader>
                 <CardTitle>Pre-Launch Waitlist Management</CardTitle>
