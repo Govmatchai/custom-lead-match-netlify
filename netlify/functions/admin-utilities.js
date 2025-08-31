@@ -67,7 +67,7 @@ export const handler = async (event, context) => {
         .single()
 
       if (error) {
-        console.error('Lead creation error:', error)
+        console.error('❌ Lead creation error:', error)
         return {
           statusCode: 500,
           headers: {
@@ -78,8 +78,26 @@ export const handler = async (event, context) => {
         }
       }
 
+      console.log('✅ Lead created successfully:', {
+        id: lead.id,
+        customer_name: lead.customer_name,
+        service_category: lead.service_category,
+        sub_service: lead.sub_service,
+        zip_code: lead.zip_code,
+        status: lead.status
+      })
+      console.log('📋 Lead creation timestamp:', new Date().toISOString())
+
       try {
         console.log(`🚀 Triggering lead distribution for lead ${lead.id}`)
+        console.log(`📋 Distribution payload:`, {
+          lead_id: lead.id,
+          force_distribute: true,
+          service_category: lead.service_category,
+          sub_service: lead.sub_service,
+          zip_code: lead.zip_code
+        })
+        
         const distributionResponse = await fetch(`${process.env.URL || 'http://localhost:8888'}/.netlify/functions/distribute-leads`, {
           method: 'POST',
           headers: {
@@ -91,14 +109,22 @@ export const handler = async (event, context) => {
           })
         })
 
+        console.log(`📡 Distribution response status: ${distributionResponse.status}`)
+        console.log(`📡 Distribution response headers:`, Object.fromEntries(distributionResponse.headers.entries()))
+        
         if (distributionResponse.ok) {
           const distributionResult = await distributionResponse.json()
           console.log(`✅ Lead distribution triggered successfully:`, distributionResult)
+          console.log(`✅ Distribution success timestamp:`, new Date().toISOString())
         } else {
+          const errorText = await distributionResponse.text()
           console.error(`❌ Lead distribution failed with status ${distributionResponse.status}`)
+          console.error(`❌ Distribution error response:`, errorText)
+          console.error(`❌ Distribution failure timestamp:`, new Date().toISOString())
         }
       } catch (distributionError) {
         console.error('❌ Error triggering lead distribution:', distributionError)
+        console.error('❌ Distribution error stack:', distributionError.stack)
       }
 
       return {

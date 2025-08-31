@@ -31,8 +31,14 @@ export const handler = async (event, context) => {
 
   try {
     const { lead_id, contractor_ids } = JSON.parse(event.body)
+    
+    console.log(`📧 Manual notification triggered:`)
+    console.log(`   Timestamp: ${new Date().toISOString()}`)
+    console.log(`   Lead ID: ${lead_id}`)
+    console.log(`   Contractor IDs: ${contractor_ids}`)
 
     if (!lead_id || !contractor_ids || contractor_ids.length === 0) {
+      console.log(`❌ Manual notification validation failed: missing lead_id or contractor_ids`)
       return {
         statusCode: 400,
         headers: { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' },
@@ -60,6 +66,7 @@ export const handler = async (event, context) => {
       .in('id', contractor_ids)
 
     if (contractorsError || !contractors || contractors.length === 0) {
+      console.log(`❌ Manual notification contractors not found:`, contractorsError)
       return {
         statusCode: 404,
         headers: { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' },
@@ -67,7 +74,20 @@ export const handler = async (event, context) => {
       }
     }
 
+    console.log(`👥 Selected contractors for manual notification:`, contractors.map(c => ({
+      id: c.id,
+      business_name: c.business_name,
+      email: c.email,
+      wallet_balance: c.wallet_balance
+    })))
+    
+    console.log(`🔄 Calling notifyContractorsForLead for manual notification...`)
+    console.log(`🔄 Manual notification call timestamp: ${new Date().toISOString()}`)
+    
     const results = await notifyContractorsForLead(lead, contractors)
+    
+    console.log(`📬 Manual notification results:`, results)
+    console.log(`📬 Manual notification completion timestamp: ${new Date().toISOString()}`)
 
     for (const contractor of contractors) {
       await supabase

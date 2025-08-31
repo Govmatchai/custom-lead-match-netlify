@@ -1,4 +1,5 @@
 import { createClient } from '@supabase/supabase-js'
+import { sendEmail } from './lib/sendgrid.js'
 import dotenv from 'dotenv'
 
 dotenv.config({ path: '../../.env' })
@@ -90,8 +91,14 @@ export const handler = async (event, context) => {
       `
     }
 
-    console.log('Welcome email would be sent:', emailContent)
-
+    console.log('📧 Send welcome email: Email content prepared')
+    console.log('📧 Send welcome email timestamp:', new Date().toISOString())
+    console.log('📧 Send welcome email to:', email)
+    console.log('📧 Send welcome email subject:', emailContent.subject)
+    
+    const emailResult = await sendEmail(email, emailContent.subject, emailContent.html);
+    console.log('📧 Send welcome email result:', emailResult);
+    console.log('✅ Welcome email completion timestamp:', new Date().toISOString());
 
     return {
       statusCode: 200,
@@ -100,9 +107,10 @@ export const handler = async (event, context) => {
         'Access-Control-Allow-Origin': '*'
       },
       body: JSON.stringify({
-        success: true,
-        message: 'Welcome email sent successfully',
-        dashboard_url: dashboardUrl
+        success: emailResult.success,
+        message: emailResult.success ? 'Welcome email sent successfully' : 'Welcome email failed to send',
+        dashboard_url: dashboardUrl,
+        email_result: emailResult
       })
     }
   } catch (error) {

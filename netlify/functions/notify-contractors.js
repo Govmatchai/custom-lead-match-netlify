@@ -21,6 +21,12 @@ try {
 }
 
 export async function notifyContractorsForLead(lead, targetContractors) {
+  console.log(`📨 notifyContractorsForLead called with:`)
+  console.log(`   Lead ID: ${lead.id}`)
+  console.log(`   Lead service: ${lead.service_category} - ${lead.sub_service}`)
+  console.log(`   Lead ZIP: ${lead.zip_code}`)
+  console.log(`   Target contractors count: ${targetContractors.length}`)
+  
   const results = {
     sms_sent: 0,
     emails_sent: 0,
@@ -28,6 +34,7 @@ export async function notifyContractorsForLead(lead, targetContractors) {
   };
 
   for (const contractor of targetContractors) {
+    console.log(`🔄 Processing contractor ${contractor.id} (${contractor.business_name})`)
     try {
       const walletBalance = contractor.wallet_balance || 0;
 
@@ -41,23 +48,36 @@ export async function notifyContractorsForLead(lead, targetContractors) {
 
       const isInactive = !recentPurchases || recentPurchases.length === 0;
 
+      console.log(`   Contractor ${contractor.id} analysis:`)
+      console.log(`     Wallet balance: $${walletBalance}`)
+      console.log(`     Recent purchases: ${recentPurchases?.length || 0}`)
+      console.log(`     Is inactive: ${isInactive}`)
+
       if (isInactive) {
+        console.log(`📧 Sending inactive contractor email to ${contractor.email}`)
         await sendInactiveContractorEmail(contractor);
         results.emails_sent++;
+        console.log(`✅ Inactive contractor email sent to ${contractor.email}`)
       } else if (walletBalance >= 20.00) {
+        console.log(`📧📱 Sending wallet funded notifications to ${contractor.email}`)
         await sendWalletFundedNotifications(contractor, lead);
         results.sms_sent++;
         results.emails_sent++;
+        console.log(`✅ Wallet funded notifications sent to ${contractor.email}`)
       } else {
+        console.log(`📧 Sending no funds email to ${contractor.email}`)
         await sendNoFundsEmail(contractor, lead);
         results.emails_sent++;
+        console.log(`✅ No funds email sent to ${contractor.email}`)
       }
     } catch (error) {
-      console.error(`Error notifying contractor ${contractor.id}:`, error);
+      console.error(`❌ Error notifying contractor ${contractor.id}:`, error);
+      console.error(`❌ Error stack:`, error.stack);
       results.errors.push({ contractor_id: contractor.id, error: error.message });
     }
   }
 
+  console.log(`📊 Final notification results:`, results);
   return results;
 }
 
@@ -139,7 +159,14 @@ async function sendWalletFundedNotifications(contractor, lead) {
     </div>
   `;
 
-  await sendEmail(contractor.email, emailSubject, emailHtml);
+  console.log(`📧 Calling sendEmail for wallet funded notification:`)
+  console.log(`   To: ${contractor.email}`)
+  console.log(`   Subject: ${emailSubject}`)
+  console.log(`   Call timestamp: ${new Date().toISOString()}`)
+  
+  const emailResult = await sendEmail(contractor.email, emailSubject, emailHtml);
+  console.log(`📧 sendEmail result for ${contractor.email}:`, emailResult);
+  console.log(`📧 Result timestamp: ${new Date().toISOString()}`);
 }
 
 async function sendNoFundsEmail(contractor, lead) {
@@ -157,7 +184,14 @@ async function sendNoFundsEmail(contractor, lead) {
     </div>
   `;
 
-  await sendEmail(contractor.email, emailSubject, emailHtml);
+  console.log(`📧 Calling sendEmail for no funds notification:`)
+  console.log(`   To: ${contractor.email}`)
+  console.log(`   Subject: ${emailSubject}`)
+  console.log(`   Call timestamp: ${new Date().toISOString()}`)
+  
+  const emailResult = await sendEmail(contractor.email, emailSubject, emailHtml);
+  console.log(`📧 sendEmail result for ${contractor.email}:`, emailResult);
+  console.log(`📧 Result timestamp: ${new Date().toISOString()}`);
 }
 
 async function sendInactiveContractorEmail(contractor) {
@@ -175,7 +209,14 @@ async function sendInactiveContractorEmail(contractor) {
     </div>
   `;
 
-  await sendEmail(contractor.email, emailSubject, emailHtml);
+  console.log(`📧 Calling sendEmail for inactive contractor notification:`)
+  console.log(`   To: ${contractor.email}`)
+  console.log(`   Subject: ${emailSubject}`)
+  console.log(`   Call timestamp: ${new Date().toISOString()}`)
+  
+  const emailResult = await sendEmail(contractor.email, emailSubject, emailHtml);
+  console.log(`📧 sendEmail result for ${contractor.email}:`, emailResult);
+  console.log(`📧 Result timestamp: ${new Date().toISOString()}`);
 }
 
 export const handler = async (event, context) => {

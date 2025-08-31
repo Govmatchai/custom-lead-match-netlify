@@ -272,8 +272,17 @@ async function distributeLead(lead) {
   }
 
   console.log(`📧 Sending notifications for lead ${lead.id} to ${targetContractors.length} contractors`)
+  console.log(`👥 Target contractors for notifications:`, targetContractors.map(c => ({
+    id: c.id,
+    business_name: c.business_name,
+    email: c.email,
+    wallet_balance: c.wallet_balance,
+    is_sms_enabled: c.is_sms_enabled
+  })))
   
+  console.log(`🔄 Calling notifyContractorsForLead function...`)
   const notificationResults = await notifyContractorsForLead(lead, targetContractors)
+  console.log(`📬 Notification results received:`, notificationResults)
   
   for (const contractor of targetContractors) {
     await supabase
