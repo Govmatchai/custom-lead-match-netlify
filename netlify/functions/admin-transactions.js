@@ -36,8 +36,8 @@ export const handler = async (event, context) => {
       .from('lead_sales')
       .select(`
         *,
-        contractors (business_name, contact_name),
-        leads (customer_name, service_category, sub_service)
+        contractors!inner (business_name, contact_name),
+        leads!inner (customer_name, service_category, sub_service)
       `)
       .order('purchased_at', { ascending: false })
 

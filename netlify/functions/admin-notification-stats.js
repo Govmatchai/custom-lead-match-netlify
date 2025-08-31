@@ -67,45 +67,53 @@ export const handler = async (event, context) => {
     };
 
     try {
-      const emailStatsResponse = await sgMail.request({
-        method: 'GET',
-        url: '/v3/stats',
-        qs: {
-          start_date: startDate.toISOString().split('T')[0],
-          end_date: endDate.toISOString().split('T')[0]
-        }
-      });
+      if (!process.env.SENDGRID_API_KEY || process.env.SENDGRID_API_KEY === 'your_sendgrid_api_key_here') {
+        console.log('SendGrid API key not configured, using default stats');
+      } else {
+        const emailStatsResponse = await sgMail.request({
+          method: 'GET',
+          url: '/v3/stats',
+          qs: {
+            start_date: startDate.toISOString().split('T')[0],
+            end_date: endDate.toISOString().split('T')[0]
+          }
+        });
 
-      if (emailStatsResponse[1] && emailStatsResponse[1].length > 0) {
-        const stats = emailStatsResponse[1][0].stats[0].metrics;
-        emailStats = {
-          delivered: stats.delivered || 0,
-          opens: stats.opens || 0,
-          clicks: stats.clicks || 0,
-          bounces: stats.bounces || 0,
-          delivery_rate: stats.delivered > 0 ? Math.round((stats.delivered / (stats.delivered + stats.bounces)) * 100) : 95
-        };
+        if (emailStatsResponse[1] && emailStatsResponse[1].length > 0) {
+          const stats = emailStatsResponse[1][0].stats[0].metrics;
+          emailStats = {
+            delivered: stats.delivered || 0,
+            opens: stats.opens || 0,
+            clicks: stats.clicks || 0,
+            bounces: stats.bounces || 0,
+            delivery_rate: stats.delivered > 0 ? Math.round((stats.delivered / (stats.delivered + stats.bounces)) * 100) : 95
+          };
+        }
       }
     } catch (error) {
       console.log('SendGrid stats not available, using defaults:', error.message);
     }
 
     try {
-      const messages = await twilioClient.messages.list({
-        dateSentAfter: startDate,
-        dateSentBefore: endDate,
-        limit: 1000
-      });
+      if (!process.env.TWILIO_ACCOUNT_SID || process.env.TWILIO_ACCOUNT_SID === 'your_twilio_account_sid_here') {
+        console.log('Twilio credentials not configured, using default stats');
+      } else {
+        const messages = await twilioClient.messages.list({
+          dateSentAfter: startDate,
+          dateSentBefore: endDate,
+          limit: 1000
+        });
 
-      const delivered = messages.filter(m => m.status === 'delivered').length;
-      const failed = messages.filter(m => ['failed', 'undelivered'].includes(m.status)).length;
-      
-      smsStats = {
-        sent: messages.length,
-        delivered,
-        failed,
-        delivery_rate: messages.length > 0 ? Math.round((delivered / messages.length) * 100) : 98
-      };
+        const delivered = messages.filter(m => m.status === 'delivered').length;
+        const failed = messages.filter(m => ['failed', 'undelivered'].includes(m.status)).length;
+        
+        smsStats = {
+          sent: messages.length,
+          delivered,
+          failed,
+          delivery_rate: messages.length > 0 ? Math.round((delivered / messages.length) * 100) : 98
+        };
+      }
     } catch (error) {
       console.log('Twilio stats not available, using defaults:', error.message);
     }

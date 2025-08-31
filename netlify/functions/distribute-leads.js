@@ -222,6 +222,8 @@ async function distributeLead(lead) {
     return
   }
 
+  console.log(`📧 Sending notifications for lead ${lead.id} to ${targetContractors.length} contractors`)
+  
   const notificationResults = await notifyContractorsForLead(lead, targetContractors)
   
   for (const contractor of targetContractors) {
@@ -233,10 +235,12 @@ async function distributeLead(lead) {
         event_data: {
           lead_id: lead.id,
           service_category: lead.service_category,
-          sub_service: lead.sub_service
+          sub_service: lead.sub_service,
+          notification_results: notificationResults
         }
       })
   }
   
   console.log(`✅ Lead ${lead.id} notifications sent:`, notificationResults)
+  return notificationResults
 }

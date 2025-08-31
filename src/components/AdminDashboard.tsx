@@ -613,6 +613,7 @@ const AdminDashboard = () => {
   }
 
   const handleManualNotification = async () => {
+    setLoading(true)
     try {
       const response = await fetch('/.netlify/functions/send-manual-notification', {
         method: 'POST',
@@ -620,14 +621,20 @@ const AdminDashboard = () => {
         body: JSON.stringify(manualNotification)
       })
       if (response.ok) {
-        alert('Notifications sent successfully!')
+        setSuccessMessage('Notifications sent successfully!')
         setManualNotification({ lead_id: '', contractor_ids: [] })
+        setTimeout(() => setSuccessMessage(''), 5000)
       } else {
-        alert('Failed to send notifications')
+        const errorData = await response.json()
+        setErrorMessage(`Failed to send notifications: ${errorData.detail || 'Unknown error'}`)
+        setTimeout(() => setErrorMessage(''), 5000)
       }
     } catch (error) {
       console.error('Error sending notifications:', error)
-      alert('Error sending notifications')
+      setErrorMessage('Error sending notifications')
+      setTimeout(() => setErrorMessage(''), 5000)
+    } finally {
+      setLoading(false)
     }
   }
 
@@ -1493,11 +1500,6 @@ const AdminDashboard = () => {
           </Card>
         )}
 
-        {false && (
-          <Card>
-            <CardHeader>
-              <CardTitle>Lead Management & Scoring</CardTitle>
-              <CardDescription>View leads with AI scores, validation status and manage quality</CardDescription>
               <div className="flex gap-4 mt-4">
                 <select value={statusFilter} onChange={(e) => setStatusFilter(e.target.value)} className="w-48 px-3 py-2 border border-gray-300 rounded-md">
                   <option value="all">All Statuses</option>
@@ -1962,8 +1964,12 @@ const AdminDashboard = () => {
                       ))}
                     </div>
                   </div>
-                  <Button onClick={handleManualNotification} disabled={!manualNotification.lead_id || manualNotification.contractor_ids.length === 0}>
-                    Send Notifications
+                  <Button 
+                    onClick={handleManualNotification} 
+                    disabled={!manualNotification.lead_id || manualNotification.contractor_ids.length === 0 || loading}
+                    className={loading ? 'opacity-75 cursor-not-allowed' : ''}
+                  >
+                    {loading ? 'Sending...' : 'Send Notifications'}
                   </Button>
                 </div>
               </CardContent>
