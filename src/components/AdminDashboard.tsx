@@ -1818,6 +1818,16 @@ const AdminDashboard = () => {
                   >
                     {loading ? 'Sending...' : 'Send Notifications'}
                   </Button>
+                  {successMessage && (
+                    <div className="mt-2 p-2 bg-green-100 border border-green-400 text-green-700 rounded">
+                      {successMessage}
+                    </div>
+                  )}
+                  {errorMessage && (
+                    <div className="mt-2 p-2 bg-red-100 border border-red-400 text-red-700 rounded">
+                      {errorMessage}
+                    </div>
+                  )}
                 </div>
               </CardContent>
             </Card>
