@@ -6,7 +6,11 @@ import dotenv from 'dotenv';
 dotenv.config({ path: '../../.env' });
 
 const supabase = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_SERVICE_KEY);
-const twilioClient = twilio(process.env.TWILIO_ACCOUNT_SID, process.env.TWILIO_AUTH_TOKEN);
+
+let twilioClient = null;
+if (process.env.TWILIO_ACCOUNT_SID && process.env.TWILIO_ACCOUNT_SID !== 'your_twilio_account_sid_here') {
+  twilioClient = twilio(process.env.TWILIO_ACCOUNT_SID, process.env.TWILIO_AUTH_TOKEN);
+}
 
 export async function notifyContractorsForLead(lead, targetContractors) {
   const results = {
@@ -64,6 +68,11 @@ async function sendWalletFundedNotifications(contractor, lead) {
     
     if (formattedPhone.includes('555') && process.env.NODE_ENV !== 'production') {
       console.log(`⚠️ Skipping SMS to test number ${formattedPhone} in development`);
+      return;
+    }
+    
+    if (!twilioClient) {
+      console.log(`⚠️ Twilio not configured, skipping SMS to ${formattedPhone}`);
       return;
     }
     

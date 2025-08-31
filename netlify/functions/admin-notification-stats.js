@@ -5,7 +5,11 @@ import dotenv from 'dotenv';
 dotenv.config({ path: '../../.env' });
 
 sgMail.setApiKey(process.env.SENDGRID_API_KEY);
-const twilioClient = twilio(process.env.TWILIO_ACCOUNT_SID, process.env.TWILIO_AUTH_TOKEN);
+
+let twilioClient = null;
+if (process.env.TWILIO_ACCOUNT_SID && process.env.TWILIO_ACCOUNT_SID !== 'your_twilio_account_sid_here') {
+  twilioClient = twilio(process.env.TWILIO_ACCOUNT_SID, process.env.TWILIO_AUTH_TOKEN);
+}
 
 function subDays(date, days) {
   const result = new Date(date);
@@ -99,7 +103,7 @@ export const handler = async (event, context) => {
     }
 
     try {
-      if (!process.env.TWILIO_ACCOUNT_SID || process.env.TWILIO_ACCOUNT_SID === 'your_twilio_account_sid_here') {
+      if (!twilioClient || !process.env.TWILIO_ACCOUNT_SID || process.env.TWILIO_ACCOUNT_SID === 'your_twilio_account_sid_here') {
         console.log('Twilio credentials not configured, using default stats');
       } else {
         try {

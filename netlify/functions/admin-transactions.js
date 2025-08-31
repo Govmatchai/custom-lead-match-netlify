@@ -33,7 +33,7 @@ export const handler = async (event, context) => {
 
   try {
     const { data: transactions, error: transactionsError } = await supabase
-      .from('lead_sales')
+      .from('lead_purchases')
       .select(`
         *,
         contractors (business_name, contact_name),
