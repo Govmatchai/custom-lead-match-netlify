@@ -88,8 +88,6 @@ const AdminDashboard = () => {
   const [loading, setLoading] = useState(false)
   const [activeTab, setActiveTab] = useState<'stats' | 'contractors' | 'leads' | 'transactions' | 'pricing' | 'utilities' | 'sms-controls' | 'launch-queue'>('stats')
   const [emailVerificationStats, setEmailVerificationStats] = useState<any>(null)
-  const [statusFilter, setStatusFilter] = useState('all')
-  const [industryFilter, setIndustryFilter] = useState('all')
   const [transactions, setTransactions] = useState<Transaction[]>([])
   const [totalRevenue, setTotalRevenue] = useState<string>('0.00')
   const [pricing, setPricing] = useState<PricingSettings | null>(null)
