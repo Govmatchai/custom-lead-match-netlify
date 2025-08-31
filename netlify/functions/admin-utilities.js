@@ -78,6 +78,29 @@ export const handler = async (event, context) => {
         }
       }
 
+      try {
+        console.log(`🚀 Triggering lead distribution for lead ${lead.id}`)
+        const distributionResponse = await fetch(`${process.env.URL || 'http://localhost:8888'}/.netlify/functions/distribute-leads`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({
+            lead_id: lead.id,
+            force_distribute: true
+          })
+        })
+
+        if (distributionResponse.ok) {
+          const distributionResult = await distributionResponse.json()
+          console.log(`✅ Lead distribution triggered successfully:`, distributionResult)
+        } else {
+          console.error(`❌ Lead distribution failed with status ${distributionResponse.status}`)
+        }
+      } catch (distributionError) {
+        console.error('❌ Error triggering lead distribution:', distributionError)
+      }
+
       return {
         statusCode: 200,
         headers: {
