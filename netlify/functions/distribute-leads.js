@@ -10,7 +10,18 @@ const supabase = createClient(
   process.env.SUPABASE_SERVICE_KEY
 )
 
-const twilioClient = twilio(process.env.TWILIO_ACCOUNT_SID, process.env.TWILIO_AUTH_TOKEN)
+let twilioClient = null;
+try {
+  if (process.env.TWILIO_ACCOUNT_SID && 
+      process.env.TWILIO_ACCOUNT_SID !== 'your_twilio_account_sid_here' &&
+      process.env.TWILIO_ACCOUNT_SID.startsWith('AC') &&
+      process.env.TWILIO_AUTH_TOKEN && 
+      process.env.TWILIO_AUTH_TOKEN !== 'your_twilio_auth_token_here') {
+    twilioClient = twilio(process.env.TWILIO_ACCOUNT_SID, process.env.TWILIO_AUTH_TOKEN);
+  }
+} catch (error) {
+  console.log('Twilio initialization failed:', error.message);
+}
 
 export const handler = async (event, context) => {
   if (event.httpMethod === 'OPTIONS') {

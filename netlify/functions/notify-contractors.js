@@ -8,8 +8,16 @@ dotenv.config({ path: '../../.env' });
 const supabase = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_SERVICE_KEY);
 
 let twilioClient = null;
-if (process.env.TWILIO_ACCOUNT_SID && process.env.TWILIO_ACCOUNT_SID !== 'your_twilio_account_sid_here') {
-  twilioClient = twilio(process.env.TWILIO_ACCOUNT_SID, process.env.TWILIO_AUTH_TOKEN);
+try {
+  if (process.env.TWILIO_ACCOUNT_SID && 
+      process.env.TWILIO_ACCOUNT_SID !== 'your_twilio_account_sid_here' &&
+      process.env.TWILIO_ACCOUNT_SID.startsWith('AC') &&
+      process.env.TWILIO_AUTH_TOKEN && 
+      process.env.TWILIO_AUTH_TOKEN !== 'your_twilio_auth_token_here') {
+    twilioClient = twilio(process.env.TWILIO_ACCOUNT_SID, process.env.TWILIO_AUTH_TOKEN);
+  }
+} catch (error) {
+  console.log('Twilio initialization failed:', error.message);
 }
 
 export async function notifyContractorsForLead(lead, targetContractors) {

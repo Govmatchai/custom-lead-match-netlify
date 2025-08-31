@@ -4,11 +4,27 @@ import dotenv from 'dotenv';
 
 dotenv.config({ path: '../../.env' });
 
-sgMail.setApiKey(process.env.SENDGRID_API_KEY);
+try {
+  if (process.env.SENDGRID_API_KEY && 
+      process.env.SENDGRID_API_KEY !== 'your_sendgrid_api_key_here' &&
+      process.env.SENDGRID_API_KEY.startsWith('SG.')) {
+    sgMail.setApiKey(process.env.SENDGRID_API_KEY);
+  }
+} catch (error) {
+  console.log('SendGrid initialization failed:', error.message);
+}
 
 let twilioClient = null;
-if (process.env.TWILIO_ACCOUNT_SID && process.env.TWILIO_ACCOUNT_SID !== 'your_twilio_account_sid_here') {
-  twilioClient = twilio(process.env.TWILIO_ACCOUNT_SID, process.env.TWILIO_AUTH_TOKEN);
+try {
+  if (process.env.TWILIO_ACCOUNT_SID && 
+      process.env.TWILIO_ACCOUNT_SID !== 'your_twilio_account_sid_here' &&
+      process.env.TWILIO_ACCOUNT_SID.startsWith('AC') &&
+      process.env.TWILIO_AUTH_TOKEN && 
+      process.env.TWILIO_AUTH_TOKEN !== 'your_twilio_auth_token_here') {
+    twilioClient = twilio(process.env.TWILIO_ACCOUNT_SID, process.env.TWILIO_AUTH_TOKEN);
+  }
+} catch (error) {
+  console.log('Twilio initialization failed:', error.message);
 }
 
 function subDays(date, days) {
