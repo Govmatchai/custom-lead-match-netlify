@@ -9,10 +9,27 @@ const supabase = createClient(
 )
 
 export const handler = async (event, context) => {
+  const corsHeaders = {
+    'Access-Control-Allow-Origin': '*',
+    'Access-Control-Allow-Headers': 'Content-Type, Authorization, X-Requested-With',
+    'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS',
+    'Access-Control-Max-Age': '86400',
+    'Content-Type': 'application/json',
+    'Vary': 'Origin'
+  }
+
+  if (event.httpMethod === 'OPTIONS') {
+    return {
+      statusCode: 200,
+      headers: corsHeaders,
+      body: ''
+    }
+  }
+
   if (event.httpMethod !== 'POST') {
     return {
       statusCode: 405,
-      headers: { 'Content-Type': 'application/json' },
+      headers: corsHeaders,
       body: JSON.stringify({ detail: 'Method not allowed' })
     }
   }
@@ -50,21 +67,21 @@ export const handler = async (event, context) => {
       console.error('Setup error:', createError)
       return {
         statusCode: 500,
-        headers: { 'Content-Type': 'application/json' },
+        headers: corsHeaders,
         body: JSON.stringify({ detail: 'Failed to setup table', error: createError.message })
       }
     }
 
     return {
       statusCode: 200,
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ message: 'Notification logs table setup complete' })
+      headers: corsHeaders,
+      body: JSON.stringify({ message: 'Notification logs table setup complete', success: true })
     }
   } catch (error) {
     console.error('Handler error:', error)
     return {
       statusCode: 500,
-      headers: { 'Content-Type': 'application/json' },
+      headers: corsHeaders,
       body: JSON.stringify({ detail: 'Internal server error', error: error.message })
     }
   }
