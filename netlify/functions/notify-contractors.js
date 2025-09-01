@@ -52,22 +52,22 @@ export async function notifyContractorsForLead(lead, targetContractors) {
       console.log(`     Recent purchases: ${recentPurchases?.length || 0}`)
       console.log(`     Is inactive: ${isInactive}`)
 
-      if (walletBalance >= 20.00) {
+      if (isInactive) {
+        console.log(`📧 Sending inactive contractor email to ${contractor.email}`)
+        await sendInactiveContractorEmail(contractor);
+        results.emails_sent++;
+        console.log(`✅ Inactive contractor email sent to ${contractor.email}`)
+      } else if (walletBalance >= 20.00) {
         console.log(`📧📱 Sending wallet funded notifications to ${contractor.email}`)
         await sendWalletFundedNotifications(contractor, lead);
         results.sms_sent++;
         results.emails_sent++;
         console.log(`✅ Wallet funded notifications sent to ${contractor.email}`)
-      } else if (isInactive) {
-        console.log(`📧 Sending urgent lead notification to inactive contractor ${contractor.email}`)
-        await sendUrgentLeadNotification(contractor, lead);
-        results.emails_sent++;
-        console.log(`✅ Urgent lead notification sent to inactive contractor ${contractor.email}`)
       } else {
-        console.log(`📧 Sending urgent lead notification to ${contractor.email}`)
-        await sendUrgentLeadNotification(contractor, lead);
+        console.log(`📧 Sending no funds email to ${contractor.email}`)
+        await sendNoFundsEmail(contractor, lead);
         results.emails_sent++;
-        console.log(`✅ Urgent lead notification sent to ${contractor.email}`)
+        console.log(`✅ No funds email sent to ${contractor.email}`)
       }
     } catch (error) {
       console.error(`❌ Error notifying contractor ${contractor.id}:`, error);
@@ -198,37 +198,6 @@ async function sendNoFundsEmail(contractor, lead) {
   const emailResult = await sendEmail(contractor.email, emailSubject, emailHtml);
   
   await logger.info('SENDGRID RESULT NO FUNDS', {
-    result: emailResult,
-    timestamp: new Date().toISOString()
-  }, lead.id, contractor.id, contractor.email)
-}
-
-async function sendUrgentLeadNotification(contractor, lead) {
-  const emailSubject = '🚨 New Lead Available – Claim It Before Another Contractor Does!';
-  const emailHtml = `
-    <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
-      <p>Hi ${contractor.contact_name || contractor.business_name},</p>
-      <p>A new customer in your service area is waiting to hear from you:</p>
-      <p>📍 <strong>ZIP Code:</strong> ${lead.zip_code}<br>
-      🔧 <strong>Service Requested:</strong> ${lead.sub_service}<br>
-      ⏱️ <strong>Urgency:</strong> ${lead.urgency_level || 'High Priority'}</p>
-      <p>This lead is exclusive – only one contractor can claim it. Don't wait, because every minute counts and the customer is expecting a call right away.</p>
-      <p style="text-align: center; margin: 30px 0;">
-        <a href="https://customleadmatch.com/dashboard" style="background-color: #2563eb; color: white; padding: 15px 30px; text-decoration: none; border-radius: 5px; font-weight: bold;">👉 Log in to your dashboard now</a>
-      </p>
-      <p>Best regards,<br>The Custom Lead Match Team</p>
-    </div>
-  `;
-
-  await logger.info('CALLING SENDGRID FOR URGENT LEAD', {
-    to: contractor.email,
-    subject: emailSubject,
-    timestamp: new Date().toISOString()
-  }, lead.id, contractor.id, contractor.email)
-  
-  const emailResult = await sendEmail(contractor.email, emailSubject, emailHtml);
-  
-  await logger.info('SENDGRID RESULT URGENT LEAD', {
     result: emailResult,
     timestamp: new Date().toISOString()
   }, lead.id, contractor.id, contractor.email)
