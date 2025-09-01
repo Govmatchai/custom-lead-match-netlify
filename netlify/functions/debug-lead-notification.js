@@ -11,21 +11,28 @@ const supabase = createClient(
 )
 
 export const handler = async (event, context) => {
+  const corsHeaders = {
+    'Access-Control-Allow-Origin': '*',
+    'Access-Control-Allow-Headers': 'Content-Type, Authorization, X-Requested-With',
+    'Access-Control-Allow-Methods': 'POST, OPTIONS, GET',
+    'Access-Control-Max-Age': '86400'
+  }
+
   if (event.httpMethod === 'OPTIONS') {
     return {
       statusCode: 200,
-      headers: {
-        'Access-Control-Allow-Origin': '*',
-        'Access-Control-Allow-Headers': 'Content-Type',
-        'Access-Control-Allow-Methods': 'POST, OPTIONS'
-      }
+      headers: corsHeaders,
+      body: ''
     }
   }
 
   if (event.httpMethod !== 'POST') {
     return {
       statusCode: 405,
-      headers: { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' },
+      headers: { 
+        'Content-Type': 'application/json', 
+        ...corsHeaders 
+      },
       body: JSON.stringify({ detail: 'Method not allowed' })
     }
   }
@@ -211,7 +218,10 @@ export const handler = async (event, context) => {
     console.error('🔧 Debug endpoint error:', error)
     return {
       statusCode: 500,
-      headers: { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' },
+      headers: { 
+        'Content-Type': 'application/json', 
+        ...corsHeaders 
+      },
       body: JSON.stringify({ detail: 'Internal server error', error: error.message })
     }
   }
