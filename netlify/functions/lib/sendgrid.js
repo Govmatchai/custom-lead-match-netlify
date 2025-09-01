@@ -36,7 +36,7 @@ export async function sendEmail(to, subject, html) {
 
   const msg = {
     to,
-    from: 'support@customleadmatch.com',
+    from: 'Custom Lead Match Team <noreply@customleadmatch.com>',
     subject,
     html,
   };
