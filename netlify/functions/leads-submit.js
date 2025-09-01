@@ -4,7 +4,11 @@ import { validateLead } from './lead-validation.js'
 import { ProductionLogger } from './lib/logger.js'
 import dotenv from 'dotenv'
 
-dotenv.config({ path: '../../.env' })
+try {
+  dotenv.config({ path: '../../.env' })
+} catch (error) {
+  console.log('dotenv config failed, using environment variables directly')
+}
 
 const supabase = createClient(
   process.env.SUPABASE_URL,
