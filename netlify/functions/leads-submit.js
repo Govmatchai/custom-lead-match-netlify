@@ -230,12 +230,15 @@ export const handler = async (event, context) => {
           }
         }
 
+        const debugHeaders = {
+          'Content-Type': 'application/json',
+          'Access-Control-Allow-Origin': '*',
+          ...logger.getLogsAsHeaders()
+        }
+
         return {
           statusCode: 200,
-          headers: {
-            'Content-Type': 'application/json',
-            'Access-Control-Allow-Origin': '*'
-          },
+          headers: debugHeaders,
           body: JSON.stringify({
             message: status === 'valid' ? 'Lead submitted successfully! Matching contractors have been notified.' : 
                      status === 'pending_review' ? 'Lead received and is being reviewed for quality.' :
@@ -244,6 +247,7 @@ export const handler = async (event, context) => {
                      'Lead received but requires additional review.',
             lead_id: leadWithoutTrigger.id,
             status,
+            debug_logs: logger.getLogsAsString(),
             validation_summary: {
               required_fields: validationFlags.required_fields_valid,
               phone_valid: validationFlags.phone_valid,
@@ -282,12 +286,15 @@ export const handler = async (event, context) => {
 
     console.log(`Lead ${lead.id} created successfully with status: ${status}`)
 
+    const debugHeaders = {
+      'Content-Type': 'application/json',
+      'Access-Control-Allow-Origin': '*',
+      ...logger.getLogsAsHeaders()
+    }
+
     return {
       statusCode: 200,
-      headers: {
-        'Content-Type': 'application/json',
-        'Access-Control-Allow-Origin': '*'
-      },
+      headers: debugHeaders,
       body: JSON.stringify({
         message: status === 'valid' ? 'Lead submitted successfully! Matching contractors have been notified.' : 
                  status === 'pending_review' ? 'Lead received and is being reviewed for quality.' :
@@ -296,6 +303,7 @@ export const handler = async (event, context) => {
                  'Lead received but requires additional review.',
         lead_id: lead.id,
         status,
+        debug_logs: logger.getLogsAsString(),
         validation_summary: {
           required_fields: validationFlags.required_fields_valid,
           phone_valid: validationFlags.phone_valid,

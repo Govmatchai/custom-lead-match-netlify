@@ -1,4 +1,5 @@
 import { createClient } from '@supabase/supabase-js'
+import { initNotificationLogging } from '../init-notification-logging.js'
 import dotenv from 'dotenv'
 
 dotenv.config({ path: '../../.env' })
@@ -7,6 +8,14 @@ const supabase = createClient(
   process.env.SUPABASE_URL,
   process.env.SUPABASE_SERVICE_KEY
 )
+
+let tableInitialized = false
+async function ensureTableExists() {
+  if (!tableInitialized) {
+    await initNotificationLogging()
+    tableInitialized = true
+  }
+}
 
 export class ProductionLogger {
   constructor(functionName) {
@@ -36,6 +45,8 @@ export class ProductionLogger {
     })
 
     try {
+      await ensureTableExists()
+      
       await supabase
         .from('notification_logs')
         .insert({
@@ -49,6 +60,16 @@ export class ProductionLogger {
         })
     } catch (dbError) {
       console.error('Failed to log to database:', dbError.message)
+      try {
+        await supabase
+          .from('leads')
+          .update({ 
+            notes: `${timestamp} [${level}] ${this.functionName}: ${message} | ${JSON.stringify(context)}` 
+          })
+          .eq('id', leadId || -1)
+      } catch (fallbackError) {
+        console.error('Fallback logging also failed:', fallbackError.message)
+      }
     }
   }
 

@@ -71,16 +71,20 @@ export const handler = async (event, context) => {
           })
           .eq('id', lead.id)
 
+        const debugHeaders = {
+          'Content-Type': 'application/json',
+          'Access-Control-Allow-Origin': '*',
+          ...logger.getLogsAsHeaders()
+        }
+
         return {
           statusCode: 200,
-          headers: {
-            'Content-Type': 'application/json',
-            'Access-Control-Allow-Origin': '*'
-          },
+          headers: debugHeaders,
           body: JSON.stringify({
             message: `Lead ${lead_id} distributed successfully`,
             leads_processed: 1,
-            leads_distributed: 1
+            leads_distributed: 1,
+            debug_logs: logger.getLogsAsString()
           })
         }
       }
@@ -124,16 +128,20 @@ export const handler = async (event, context) => {
       }
     }
 
+    const debugHeaders = {
+      'Content-Type': 'application/json',
+      'Access-Control-Allow-Origin': '*',
+      ...logger.getLogsAsHeaders()
+    }
+
     return {
       statusCode: 200,
-      headers: {
-        'Content-Type': 'application/json',
-        'Access-Control-Allow-Origin': '*'
-      },
+      headers: debugHeaders,
       body: JSON.stringify({
         message: `Lead distribution completed`,
         leads_processed: leadsToDistribute?.length || 0,
-        leads_distributed: distributedCount
+        leads_distributed: distributedCount,
+        debug_logs: logger.getLogsAsString()
       })
     }
   } catch (error) {

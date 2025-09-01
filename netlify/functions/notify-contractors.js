@@ -1,11 +1,13 @@
 import { createClient } from '@supabase/supabase-js';
 import twilio from 'twilio';
 import { sendEmail } from './lib/sendgrid.js';
+import { ProductionLogger } from './lib/logger.js';
 import dotenv from 'dotenv';
 
 dotenv.config({ path: '../../.env' });
 
 const supabase = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_SERVICE_KEY);
+const logger = new ProductionLogger('notify-contractors');
 
 let twilioClient = null;
 try {
