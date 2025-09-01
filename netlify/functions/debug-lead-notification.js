@@ -11,29 +11,21 @@ const supabase = createClient(
 )
 
 export const handler = async (event, context) => {
-  const corsHeaders = {
-    'Access-Control-Allow-Origin': '*',
-    'Access-Control-Allow-Headers': 'Content-Type, Authorization, X-Requested-With',
-    'Access-Control-Allow-Methods': 'POST, OPTIONS, GET',
-    'Access-Control-Max-Age': '86400',
-    'Access-Control-Allow-Credentials': 'false'
-  }
-
   if (event.httpMethod === 'OPTIONS') {
     return {
       statusCode: 200,
-      headers: corsHeaders,
-      body: ''
+      headers: {
+        'Access-Control-Allow-Origin': '*',
+        'Access-Control-Allow-Headers': 'Content-Type',
+        'Access-Control-Allow-Methods': 'POST, OPTIONS'
+      }
     }
   }
 
   if (event.httpMethod !== 'POST') {
     return {
       statusCode: 405,
-      headers: { 
-        'Content-Type': 'application/json', 
-        ...corsHeaders 
-      },
+      headers: { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' },
       body: JSON.stringify({ detail: 'Method not allowed' })
     }
   }
@@ -67,7 +59,10 @@ export const handler = async (event, context) => {
       
       return {
         statusCode: 200,
-        headers: { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' },
+        headers: { 
+          'Content-Type': 'application/json', 
+          'Access-Control-Allow-Origin': '*' 
+        },
         body: JSON.stringify({
           test_type: 'direct_email',
           success: emailResult.success,
@@ -83,7 +78,10 @@ export const handler = async (event, context) => {
       if (!lead_id) {
         return {
           statusCode: 400,
-          headers: { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' },
+          headers: { 
+            'Content-Type': 'application/json', 
+            'Access-Control-Allow-Origin': '*' 
+          },
           body: JSON.stringify({ detail: 'lead_id required for full_notification_flow test' })
         }
       }
@@ -98,7 +96,10 @@ export const handler = async (event, context) => {
         console.log(`🔧 Lead not found:`, leadError)
         return {
           statusCode: 404,
-          headers: { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' },
+          headers: { 
+            'Content-Type': 'application/json', 
+            'Access-Control-Allow-Origin': '*' 
+          },
           body: JSON.stringify({ detail: 'Lead not found' })
         }
       }
@@ -120,7 +121,10 @@ export const handler = async (event, context) => {
         console.log(`🔧 Contractor not found:`, contractorError)
         return {
           statusCode: 404,
-          headers: { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' },
+          headers: { 
+            'Content-Type': 'application/json', 
+            'Access-Control-Allow-Origin': '*' 
+          },
           body: JSON.stringify({ detail: 'Contractor not found' })
         }
       }
@@ -138,7 +142,10 @@ export const handler = async (event, context) => {
       
       return {
         statusCode: 200,
-        headers: { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' },
+        headers: { 
+          'Content-Type': 'application/json', 
+          'Access-Control-Allow-Origin': '*' 
+        },
         body: JSON.stringify({
           test_type: 'full_notification_flow',
           lead: {
@@ -197,7 +204,10 @@ export const handler = async (event, context) => {
       
       return {
         statusCode: 200,
-        headers: { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' },
+        headers: { 
+          'Content-Type': 'application/json', 
+          'Access-Control-Allow-Origin': '*' 
+        },
         body: JSON.stringify({
           test_type: 'welcome_email_comparison',
           success: welcomeResult.success,
@@ -209,7 +219,10 @@ export const handler = async (event, context) => {
     
     return {
       statusCode: 400,
-      headers: { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' },
+      headers: { 
+        'Content-Type': 'application/json', 
+        'Access-Control-Allow-Origin': '*' 
+      },
       body: JSON.stringify({ 
         detail: 'Invalid test_type. Use: direct_email, full_notification_flow, or welcome_email_comparison' 
       })
@@ -221,7 +234,7 @@ export const handler = async (event, context) => {
       statusCode: 500,
       headers: { 
         'Content-Type': 'application/json', 
-        ...corsHeaders 
+        'Access-Control-Allow-Origin': '*' 
       },
       body: JSON.stringify({ detail: 'Internal server error', error: error.message })
     }
