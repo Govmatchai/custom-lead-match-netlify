@@ -1,3 +1,4 @@
+
 import { createClient } from '@supabase/supabase-js'
 
 const supabase = createClient(
@@ -86,18 +87,6 @@ class ProductionLogger {
         })
     } catch (dbError) {
       console.error('Database logging failed, using fallback:', dbError.message)
-      try {
-        if (leadId) {
-          await supabase
-            .from('leads')
-            .update({ 
-              notes: `${timestamp} [${level}] ${this.functionName}: ${message} | ${JSON.stringify(context)}` 
-            })
-            .eq('id', leadId)
-        }
-      } catch (fallbackError) {
-        console.error('Fallback logging also failed:', fallbackError.message)
-      }
     }
   }
 
@@ -135,7 +124,10 @@ export const handler = async (event, context) => {
   if (event.httpMethod !== 'POST') {
     return {
       statusCode: 405,
-      headers: corsHeaders,
+      headers: {
+        'Content-Type': 'application/json',
+        'Access-Control-Allow-Origin': '*'
+      },
       body: JSON.stringify({ detail: 'Method not allowed' })
     }
   }
@@ -149,7 +141,19 @@ export const handler = async (event, context) => {
       clientIP = clientIP.split(',')[0].trim()
     }
 
-    await logger.log('INFO', 'LEAD SUBMISSION STARTED', {
+    console.log('🔍 Lead submission received at:', new Date().toISOString())
+    console.log('📝 Lead data:')
+    console.log('  - customer_name:', customer_name)
+    console.log('  - service_category:', service_category)
+    console.log('  - sub_service:', sub_service)
+    console.log('  - zip_code:', zip_code)
+    console.log('  - phone:', phone)
+    console.log('  - email:', email)
+    console.log('  - description:', description)
+    console.log('🌐 Client IP:', clientIP)
+    console.log('📦 Raw body:', event.body)
+
+    console.log('📊 LEAD SUBMISSION RECEIVED:', {
       customer_name,
       service_category,
       sub_service,
@@ -171,7 +175,19 @@ export const handler = async (event, context) => {
       zip_code_formatted: zip_code
     }
     
-    await logger.log('INFO', 'VALIDATION COMPLETED', { status, validationFlags })
+    console.log('📊 Validation completed:', { status, validationFlags })
+
+    await logger.log('INFO', 'LEAD SUBMISSION STARTED', {
+      customer_name,
+      service_category,
+      sub_service,
+      zip_code,
+      phone,
+      email,
+      description,
+      clientIP,
+      timestamp: new Date().toISOString()
+    })
 
     const { data: lead, error: leadError } = await supabase
       .from('leads')
@@ -190,23 +206,6 @@ export const handler = async (event, context) => {
       }])
       .select()
       .single()
-
-    if (leadError) {
-      await logger.log('ERROR', 'LEAD CREATION FAILED', {
-        error: leadError.message,
-        leadData: { customer_name, service_category, sub_service, zip_code, phone, email }
-      })
-      
-      return {
-        statusCode: 500,
-        headers: { ...corsHeaders, ...logger.getLogsAsHeaders() },
-        body: JSON.stringify({
-          message: 'Unable to process lead at this time. Please try again later.',
-          error: leadError.message,
-          status: 'error'
-        })
-      }
-    }
 
     if (lead && status === 'valid') {
       await logger.log('INFO', 'LEAD CREATED SUCCESSFULLY', {
@@ -254,6 +253,26 @@ export const handler = async (event, context) => {
       }
     }
 
+
+    if (leadError) {
+      await logger.log('ERROR', 'LEAD CREATION FAILED', {
+        error: leadError.message,
+        leadData: { customer_name, service_category, sub_service, zip_code, phone, email }
+      })
+      
+      return {
+        statusCode: 500,
+        headers: { ...corsHeaders, ...logger.getLogsAsHeaders() },
+        body: JSON.stringify({
+          message: 'Unable to process lead at this time. Please try again later.',
+          error: leadError.message,
+          status: 'error'
+        })
+      }
+    }
+
+    console.log(`Lead ${lead.id} created successfully with status: ${status}`)
+
     const debugHeaders = { ...corsHeaders, ...logger.getLogsAsHeaders() }
 
     return {
@@ -282,8 +301,11 @@ export const handler = async (event, context) => {
     console.error('Error:', error)
     return {
       statusCode: 500,
-      headers: corsHeaders,
-      body: JSON.stringify({ detail: 'Internal server error', error: error.message })
+      headers: {
+        'Content-Type': 'application/json',
+        'Access-Control-Allow-Origin': '*'
+      },
+      body: JSON.stringify({ detail: 'Internal server error' })
     }
   }
 }
