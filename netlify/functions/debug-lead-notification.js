@@ -1,13 +1,6 @@
 import { createClient } from '@supabase/supabase-js'
 import { notifyContractorsForLead } from './notify-contractors.js'
 import { sendEmail } from './lib/sendgrid.js'
-import dotenv from 'dotenv'
-
-try {
-  dotenv.config({ path: '../../.env' })
-} catch (error) {
-  console.log('dotenv config failed, using environment variables directly')
-}
 
 const supabase = createClient(
   process.env.SUPABASE_URL,
