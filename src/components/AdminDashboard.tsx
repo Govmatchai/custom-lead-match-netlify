@@ -17,6 +17,8 @@ interface Contractor {
   contact_name: string
   email: string
   phone: string
+  industry: string
+  sub_service: string
   service_categories: string[]
   zip_codes: string[]
   wallet_balance: number
