@@ -15,7 +15,8 @@ export const handler = async (event, context) => {
     'Access-Control-Allow-Origin': '*',
     'Access-Control-Allow-Headers': 'Content-Type, Authorization, X-Requested-With',
     'Access-Control-Allow-Methods': 'POST, OPTIONS, GET',
-    'Access-Control-Max-Age': '86400'
+    'Access-Control-Max-Age': '86400',
+    'Access-Control-Allow-Credentials': 'false'
   }
 
   if (event.httpMethod === 'OPTIONS') {
