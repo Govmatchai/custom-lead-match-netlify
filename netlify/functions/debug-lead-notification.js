@@ -83,13 +83,14 @@ export const handler = async (event, context) => {
         html: testEmailHtml,
       }
 
+      let emailResult
       try {
         const result = await sgMail.default.send(msg)
         console.log(`✅ Debug email sent successfully to ${contractor_email}`)
-        const emailResult = { success: true, statusCode: result[0]?.statusCode }
+        emailResult = { success: true, statusCode: result[0]?.statusCode }
       } catch (error) {
         console.error(`❌ Debug email failed to ${contractor_email}:`, error.message)
-        const emailResult = { success: false, error: error.message }
+        emailResult = { success: false, error: error.message }
       }
       
       console.log(`🔧 Direct email test result:`, emailResult)
