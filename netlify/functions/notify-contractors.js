@@ -144,16 +144,18 @@ async function sendWalletFundedNotifications(contractor, lead) {
       });
   }
 
-  const emailSubject = 'New Exclusive Lead Available – Claim It Now';
+  const emailSubject = '🚨 New Lead Available – Claim It Before Another Contractor Does!';
   const emailHtml = `
     <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
-      <h2>New Lead Alert!</h2>
-      <p>Hi ${contractor.contact_name},</p>
-      <p>A new customer in your area is looking for <strong>${lead.sub_service}</strong>. Because you have funds in your wallet, you can claim this lead instantly.</p>
+      <p>Hi ${contractor.contact_name || contractor.business_name},</p>
+      <p>A new customer in your service area is waiting to hear from you:</p>
+      <p>📍 <strong>ZIP Code:</strong> ${lead.zip_code}<br>
+      🔧 <strong>Service Requested:</strong> ${lead.sub_service}<br>
+      ⏱️ <strong>Urgency:</strong> ${lead.urgency_level || 'High Priority'}</p>
+      <p>This lead is exclusive – only one contractor can claim it. Don't wait, because every minute counts and the customer is expecting a call right away.</p>
       <p style="text-align: center; margin: 30px 0;">
-        <a href="https://customleadmatch.com/dashboard" style="background-color: #2563eb; color: white; padding: 15px 30px; text-decoration: none; border-radius: 5px; font-weight: bold;">👉 Claim Lead Now</a>
+        <a href="https://customleadmatch.com/dashboard" style="background-color: #2563eb; color: white; padding: 15px 30px; text-decoration: none; border-radius: 5px; font-weight: bold;">👉 Log in to your dashboard now</a>
       </p>
-      <p>Remember: Leads are exclusive – once claimed, they're gone.</p>
       <p>Best regards,<br>The Custom Lead Match Team</p>
     </div>
   `;
