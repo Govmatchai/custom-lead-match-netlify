@@ -13,9 +13,11 @@ const supabase = createClient(
 export const handler = async (event, context) => {
   const corsHeaders = {
     'Access-Control-Allow-Origin': '*',
-    'Access-Control-Allow-Headers': 'Content-Type, Authorization, X-Requested-With',
-    'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS',
+    'Access-Control-Allow-Headers': 'Content-Type, Authorization, X-Requested-With, Accept, Origin, Cache-Control, Pragma',
+    'Access-Control-Allow-Methods': 'GET, POST, OPTIONS, PUT, DELETE',
     'Access-Control-Max-Age': '86400',
+    'Access-Control-Allow-Credentials': 'false',
+    'Access-Control-Expose-Headers': 'X-Debug-Log-0, X-Debug-Log-1, X-Debug-Log-2, X-Debug-Log-3, X-Debug-Log-4, X-Debug-Log-5',
     'Content-Type': 'application/json',
     'Vary': 'Origin'
   }

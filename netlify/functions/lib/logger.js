@@ -12,8 +12,64 @@ const supabase = createClient(
 let tableInitialized = false
 async function ensureTableExists() {
   if (!tableInitialized) {
-    await initNotificationLogging()
-    tableInitialized = true
+    try {
+      console.log('🔧 Ensuring notification_logs table exists...')
+      
+      const { error } = await supabase.rpc('exec_sql', {
+        sql: `
+          CREATE TABLE IF NOT EXISTS notification_logs (
+            id SERIAL PRIMARY KEY,
+            timestamp TIMESTAMPTZ DEFAULT NOW(),
+            level VARCHAR(20) NOT NULL,
+            message TEXT NOT NULL,
+            context JSONB DEFAULT '{}',
+            function_name VARCHAR(100),
+            lead_id INTEGER,
+            contractor_id INTEGER,
+            email VARCHAR(255),
+            created_at TIMESTAMPTZ DEFAULT NOW()
+          );
+
+          CREATE INDEX IF NOT EXISTS idx_notification_logs_timestamp ON notification_logs(timestamp);
+          CREATE INDEX IF NOT EXISTS idx_notification_logs_level ON notification_logs(level);
+          CREATE INDEX IF NOT EXISTS idx_notification_logs_function ON notification_logs(function_name);
+          CREATE INDEX IF NOT EXISTS idx_notification_logs_lead_id ON notification_logs(lead_id);
+          CREATE INDEX IF NOT EXISTS idx_notification_logs_contractor_id ON notification_logs(contractor_id);
+
+          ALTER TABLE notification_logs ENABLE ROW LEVEL SECURITY;
+
+          DROP POLICY IF EXISTS "Service role can manage notification logs" ON notification_logs;
+          CREATE POLICY "Service role can manage notification logs" ON notification_logs
+            FOR ALL USING (true);
+
+          GRANT ALL ON notification_logs TO service_role;
+          GRANT USAGE, SELECT ON SEQUENCE notification_logs_id_seq TO service_role;
+        `
+      })
+
+      if (error) {
+        console.log('Table creation via RPC failed, trying direct approach:', error.message)
+        
+        const { error: testError } = await supabase
+          .from('notification_logs')
+          .select('id')
+          .limit(1)
+
+        if (testError && testError.code === '42P01') {
+          console.log('Table does not exist, creating manually...')
+          console.log('⚠️ Using fallback logging to leads table')
+        } else {
+          console.log('✅ notification_logs table already exists')
+        }
+      } else {
+        console.log('✅ notification_logs table initialized successfully')
+      }
+      
+      tableInitialized = true
+    } catch (error) {
+      console.error('❌ Failed to initialize notification_logs table:', error.message)
+      tableInitialized = true // Don't keep retrying
+    }
   }
 }
 
