@@ -2,9 +2,6 @@ import { createClient } from '@supabase/supabase-js'
 import twilio from 'twilio'
 import { notifyContractorsForLead } from './notify-contractors.js'
 import { ProductionLogger } from './lib/logger.js'
-import dotenv from 'dotenv'
-
-dotenv.config({ path: '../../.env' })
 
 const supabase = createClient(
   process.env.SUPABASE_URL,

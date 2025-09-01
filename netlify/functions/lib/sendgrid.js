@@ -1,12 +1,6 @@
 import sgMail from '@sendgrid/mail';
 import { ProductionLogger } from './logger.js';
-import dotenv from 'dotenv';
 
-try {
-  dotenv.config({ path: '../../.env' });
-} catch (error) {
-  console.log('dotenv config failed, using environment variables directly');
-}
 
 const logger = new ProductionLogger('sendgrid');
 
