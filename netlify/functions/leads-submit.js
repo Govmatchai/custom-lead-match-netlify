@@ -42,15 +42,17 @@ export const handler = async (event, context) => {
       clientIP = clientIP.split(',')[0].trim()
     }
 
-    console.log('🔍 Lead submission received:')
-    console.log('- customer_name:', customer_name)
-    console.log('- service_category:', service_category)
-    console.log('- sub_service:', sub_service)
-    console.log('- zip_code:', zip_code)
-    console.log('- phone:', phone)
-    console.log('- email:', email)
-    console.log('- description:', description)
-    console.log('Raw body:', event.body)
+    console.log('🔍 Lead submission received at:', new Date().toISOString())
+    console.log('📝 Lead data:')
+    console.log('  - customer_name:', customer_name)
+    console.log('  - service_category:', service_category)
+    console.log('  - sub_service:', sub_service)
+    console.log('  - zip_code:', zip_code)
+    console.log('  - phone:', phone)
+    console.log('  - email:', email)
+    console.log('  - description:', description)
+    console.log('🌐 Client IP:', clientIP)
+    console.log('📦 Raw body:', event.body)
 
     const { status, validationFlags } = await validateLead(data, clientIP)
     
@@ -125,8 +127,15 @@ export const handler = async (event, context) => {
         if (distributeResponse.ok) {
           const distributionResult = await distributeResponse.json()
           console.log(`✅ Lead ${lead.id} distributed to ${distributionResult.contractors_notified || 0} contractors`)
+          console.log(`📊 Distribution results:`, distributionResult)
+          console.log(`📧 Email notifications sent: ${distributionResult.emails_sent || 0}`)
+          console.log(`📱 SMS notifications sent: ${distributionResult.sms_sent || 0}`)
+          console.log(`❌ Notification errors: ${distributionResult.errors?.length || 0}`)
         } else {
           console.log(`⚠️ Lead distribution failed for ${lead.id}`)
+          console.log(`⚠️ Distribution response status: ${distributeResponse.status}`)
+          const errorText = await distributeResponse.text()
+          console.log(`⚠️ Distribution error details:`, errorText)
         }
       } catch (distributionError) {
         console.error('Distribution error:', distributionError)
@@ -174,9 +183,17 @@ export const handler = async (event, context) => {
             })
             
             if (matchResponse.ok) {
+              const matchResult = await matchResponse.json()
               console.log('✅ Contractor matching triggered successfully')
+              console.log(`📊 Matching results:`, matchResult)
+              console.log(`📧 Email notifications sent: ${matchResult.emails_sent || 0}`)
+              console.log(`📱 SMS notifications sent: ${matchResult.sms_sent || 0}`)
+              console.log(`❌ Matching errors: ${matchResult.errors?.length || 0}`)
             } else {
               console.log('⚠️ Contractor matching failed, but lead is stored')
+              console.log(`⚠️ Matching response status: ${matchResponse.status}`)
+              const errorText = await matchResponse.text()
+              console.log(`⚠️ Matching error details:`, errorText)
             }
           } catch (matchError) {
             console.error('Contractor matching error:', matchError)
