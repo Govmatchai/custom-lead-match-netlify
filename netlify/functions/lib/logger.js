@@ -11,6 +11,7 @@ const supabase = createClient(
 export class ProductionLogger {
   constructor(functionName) {
     this.functionName = functionName
+    this.logs = []
   }
 
   async log(level, message, context = {}, leadId = null, contractorId = null, email = null) {
@@ -22,6 +23,17 @@ export class ProductionLogger {
     } else {
       console.log(logMessage, context)
     }
+
+    this.logs.push({
+      timestamp,
+      level,
+      message,
+      context,
+      function_name: this.functionName,
+      lead_id: leadId,
+      contractor_id: contractorId,
+      email
+    })
 
     try {
       await supabase
@@ -50,6 +62,20 @@ export class ProductionLogger {
 
   async debug(message, context = {}, leadId = null, contractorId = null, email = null) {
     await this.log('DEBUG', message, context, leadId, contractorId, email)
+  }
+
+  getLogsAsHeaders() {
+    const headers = {}
+    this.logs.forEach((log, index) => {
+      headers[`X-Debug-Log-${index}`] = `${log.timestamp} [${log.level}] ${log.function_name}: ${log.message}`
+    })
+    return headers
+  }
+
+  getLogsAsString() {
+    return this.logs.map(log => 
+      `${log.timestamp} [${log.level}] ${log.function_name}: ${log.message}`
+    ).join('\n')
   }
 }
 
