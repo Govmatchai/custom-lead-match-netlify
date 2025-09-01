@@ -80,11 +80,12 @@ const AdminDashboard = () => {
   const [password, setPassword] = useState('')
   const [showPassword, setShowPassword] = useState(false)
   const [authError, setAuthError] = useState('')
-  const [loading, setLoading] = useState(false)
-  const [activeTab, setActiveTab] = useState<'stats' | 'contractors' | 'leads' | 'transactions' | 'pricing' | 'utilities' | 'sms-controls' | 'launch-queue'>('stats')
   const [stats, setStats] = useState<AdminStats | null>(null)
   const [contractors, setContractors] = useState<Contractor[]>([])
   const [leads, setLeads] = useState<Lead[]>([])
+  const [loading, setLoading] = useState(false)
+  const [activeTab, setActiveTab] = useState<'stats' | 'contractors' | 'leads' | 'transactions' | 'pricing' | 'utilities' | 'sms-controls' | 'launch-queue'>('stats')
+  const [emailVerificationStats, setEmailVerificationStats] = useState<any>(null)
   const [transactions, setTransactions] = useState<Transaction[]>([])
   const [totalRevenue, setTotalRevenue] = useState<string>('0.00')
   const [pricing, setPricing] = useState<PricingSettings | null>(null)
@@ -99,13 +100,12 @@ const AdminDashboard = () => {
   const [dashboardStats, setDashboardStats] = useState<any>(null)
   const [notificationStats, setNotificationStats] = useState<any>(null)
   const [waitlistAnalytics, setWaitlistAnalytics] = useState<any>(null)
-  const [emailVerificationStats, setEmailVerificationStats] = useState<any>(null)
   const [selectedContractors, setSelectedContractors] = useState<string[]>([])
   const [selectAll, setSelectAll] = useState(false)
-  const [smsConfig, setSmsConfig] = useState<any>(null)
-  const [smsAnalytics, setSmsAnalytics] = useState<any>(null)
   const [successMessage, setSuccessMessage] = useState('')
   const [errorMessage, setErrorMessage] = useState('')
+  const [smsConfig, setSmsConfig] = useState<any>(null)
+  const [smsAnalytics, setSmsAnalytics] = useState<any>(null)
   const [lastActivity, setLastActivity] = useState(Date.now())
   const [sessionTimeout, setSessionTimeout] = useState<NodeJS.Timeout | null>(null)
   const [isRefreshing, setIsRefreshing] = useState(false)
@@ -176,6 +176,13 @@ const AdminDashboard = () => {
       if (pricingResponse.ok) {
         const pricingData = await pricingResponse.json()
         setPricing(pricingData)
+        if (pricingData.category_pricing) {
+          const prices: { [key: string]: string } = {}
+          Object.entries(pricingData.category_pricing).forEach(([key, value]) => {
+            prices[key] = String(value)
+          })
+          setCategoryPrices(prices)
+        }
       }
 
       if (dashboardResponse.ok) {
@@ -205,27 +212,61 @@ const AdminDashboard = () => {
     }
   }
 
-  const handleManualNotification = async () => {
-    setLoading(true)
-    setSuccessMessage('')
-    setErrorMessage('')
-    
+  const fetchSmsConfig = async () => {
     try {
+      const response = await fetch('/.netlify/functions/sms-config')
+      if (response.ok) {
+        const data = await response.json()
+        setSmsConfig(data)
+      }
+    } catch (error) {
+      console.error('Error fetching SMS config:', error)
+    }
+  }
+
+  const fetchSmsAnalytics = async () => {
+    try {
+      const response = await fetch('/.netlify/functions/sms-analytics')
+      if (response.ok) {
+        const data = await response.json()
+        setSmsAnalytics(data)
+      }
+    } catch (error) {
+      console.error('Error fetching SMS analytics:', error)
+    }
+  }
+
+  const handleManualNotification = async () => {
+    if (!manualNotification.lead_id || !manualNotification.contractor_ids?.length) {
+      setErrorMessage('Please select a lead and at least one contractor')
+      setTimeout(() => setErrorMessage(''), 5000)
+      return
+    }
+
+    setLoading(true)
+    try {
+      console.log('Sending manual notification:', manualNotification)
       const response = await fetch('/.netlify/functions/send-manual-notification', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(manualNotification)
       })
       
+      const responseData = await response.json()
+      console.log('Manual notification response:', responseData)
+      
       if (response.ok) {
         setSuccessMessage('Notifications sent successfully!')
         setManualNotification({ lead_id: '', contractor_ids: [] })
+        setTimeout(() => setSuccessMessage(''), 5000)
       } else {
-        setErrorMessage('Failed to send notifications')
+        setErrorMessage(`Failed to send notifications: ${responseData.detail || 'Unknown error'}`)
+        setTimeout(() => setErrorMessage(''), 5000)
       }
     } catch (error) {
       console.error('Error sending notifications:', error)
       setErrorMessage('Error sending notifications')
+      setTimeout(() => setErrorMessage(''), 5000)
     } finally {
       setLoading(false)
     }
@@ -239,15 +280,19 @@ const AdminDashboard = () => {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ action: 'create_lead', ...newLead })
       })
+      
       if (response.ok) {
-        setSuccessMessage('Lead created successfully!')
+        setSuccessMessage('Test lead created successfully!')
         setNewLead({ customer_name: '', phone: '', email: '', service_category: '', sub_service: '', zip_code: '', description: '' })
         fetchAdminData()
+        setTimeout(() => setSuccessMessage(''), 5000)
       } else {
-        setErrorMessage('Failed to create lead')
+        setErrorMessage('Failed to create test lead')
+        setTimeout(() => setErrorMessage(''), 5000)
       }
     } catch (error) {
-      setErrorMessage('Error creating lead')
+      setErrorMessage('Error creating test lead')
+      setTimeout(() => setErrorMessage(''), 5000)
     } finally {
       setLoading(false)
     }
@@ -274,6 +319,7 @@ const AdminDashboard = () => {
   const handleBulkDeleteContractors = async () => {
     if (selectedContractors.length === 0) {
       setErrorMessage('No contractors selected for deletion')
+      setTimeout(() => setErrorMessage(''), 5000)
       return
     }
 
@@ -284,9 +330,6 @@ const AdminDashboard = () => {
     if (!confirmDelete) return
 
     setLoading(true)
-    setErrorMessage('')
-    setSuccessMessage('')
-
     try {
       const response = await fetch('/.netlify/functions/admin-bulk-delete-contractors', {
         method: 'POST',
@@ -294,19 +337,19 @@ const AdminDashboard = () => {
         body: JSON.stringify({ contractor_ids: selectedContractors })
       })
 
-      const result = await response.json()
-
       if (response.ok) {
-        setSuccessMessage(`Successfully deleted ${result.deleted_count} contractor(s)`)
+        setSuccessMessage(`Successfully deleted ${selectedContractors.length} contractor(s)`)
         setSelectedContractors([])
         setSelectAll(false)
-        await fetchAdminData()
+        fetchAdminData()
+        setTimeout(() => setSuccessMessage(''), 5000)
       } else {
-        setErrorMessage(result.detail || 'Failed to delete contractors')
+        setErrorMessage('Failed to delete contractors')
+        setTimeout(() => setErrorMessage(''), 5000)
       }
     } catch (error) {
-      console.error('Bulk delete error:', error)
-      setErrorMessage('Failed to delete contractors')
+      setErrorMessage('Error deleting contractors')
+      setTimeout(() => setErrorMessage(''), 5000)
     } finally {
       setLoading(false)
     }
@@ -326,14 +369,15 @@ const AdminDashboard = () => {
 
       if (response.ok) {
         setSuccessMessage('Contractor deleted successfully')
-        await fetchAdminData()
+        fetchAdminData()
+        setTimeout(() => setSuccessMessage(''), 5000)
       } else {
-        const error = await response.json()
-        setErrorMessage(error.detail || 'Failed to delete contractor')
+        setErrorMessage('Failed to delete contractor')
+        setTimeout(() => setErrorMessage(''), 5000)
       }
     } catch (error) {
-      console.error('Delete contractor error:', error)
-      setErrorMessage('Failed to delete contractor')
+      setErrorMessage('Error deleting contractor')
+      setTimeout(() => setErrorMessage(''), 5000)
     } finally {
       setLoading(false)
     }
@@ -353,14 +397,15 @@ const AdminDashboard = () => {
 
       if (response.ok) {
         setSuccessMessage('Lead deleted successfully')
-        await fetchAdminData()
+        fetchAdminData()
+        setTimeout(() => setSuccessMessage(''), 5000)
       } else {
-        const error = await response.json()
-        setErrorMessage(error.detail || 'Failed to delete lead')
+        setErrorMessage('Failed to delete lead')
+        setTimeout(() => setErrorMessage(''), 5000)
       }
     } catch (error) {
-      console.error('Delete lead error:', error)
-      setErrorMessage('Failed to delete lead')
+      setErrorMessage('Error deleting lead')
+      setTimeout(() => setErrorMessage(''), 5000)
     } finally {
       setLoading(false)
     }
@@ -368,100 +413,176 @@ const AdminDashboard = () => {
 
   const handleRefresh = async () => {
     setIsRefreshing(true)
-    setErrorMessage('')
-    setSuccessMessage('')
-    
+    setLastActivity(Date.now())
     try {
       await fetchAdminData()
-      setSuccessMessage('Dashboard data refreshed successfully')
+      await fetchSmsConfig()
+      await fetchSmsAnalytics()
+      setSuccessMessage('Dashboard refreshed successfully')
+      setTimeout(() => setSuccessMessage(''), 3000)
     } catch (error) {
-      setErrorMessage('Failed to refresh dashboard data')
+      setErrorMessage('Failed to refresh dashboard')
+      setTimeout(() => setErrorMessage(''), 3000)
     } finally {
       setIsRefreshing(false)
     }
   }
 
+  const resetSessionTimeout = () => {
+    setLastActivity(Date.now())
+    if (sessionTimeout) {
+      clearTimeout(sessionTimeout)
+    }
+    const timeout = setTimeout(() => {
+      setIsAuthenticated(false)
+      setPassword('')
+      alert('Session expired due to inactivity. Please log in again.')
+    }, 10 * 60 * 1000)
+    setSessionTimeout(timeout)
+  }
+
+  const handleUserActivity = () => {
+    resetSessionTimeout()
+  }
+
+  useEffect(() => {
+    if (isAuthenticated) {
+      fetchAdminData()
+      fetchSmsConfig()
+      fetchSmsAnalytics()
+      resetSessionTimeout()
+      
+      const events = ['mousedown', 'mousemove', 'keypress', 'scroll', 'touchstart', 'click']
+      events.forEach(event => {
+        document.addEventListener(event, handleUserActivity, true)
+      })
+      
+      return () => {
+        events.forEach(event => {
+          document.removeEventListener(event, handleUserActivity, true)
+        })
+        if (sessionTimeout) {
+          clearTimeout(sessionTimeout)
+        }
+      }
+    }
+  }, [isAuthenticated, dateRange])
+
   if (!isAuthenticated) {
     return (
-      <div className="min-h-screen bg-gray-50 flex flex-col justify-center py-12 sm:px-6 lg:px-8">
-        <div className="sm:mx-auto sm:w-full sm:max-w-md">
-          <h2 className="mt-6 text-center text-3xl font-extrabold text-gray-900">
-            Admin Login
-          </h2>
-          <p className="mt-2 text-center text-sm text-gray-600">
-            Enter the admin password to access the dashboard
-          </p>
-        </div>
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
+        <Card className="w-full max-w-md">
+          <CardHeader>
+            <CardTitle className="text-2xl text-center">Admin Login</CardTitle>
+            <CardDescription className="text-center">
+              Enter the admin password to access the dashboard
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            {authError && (
+              <Alert className="mb-4 border-red-200 bg-red-50">
+                <AlertDescription className="text-red-700">{authError}</AlertDescription>
+              </Alert>
+            )}
 
-        <div className="mt-8 sm:mx-auto sm:w-full sm:max-w-md">
-          <div className="bg-white py-8 px-4 shadow sm:rounded-lg sm:px-10">
-            <form className="space-y-6" onSubmit={handleLogin}>
-              <div>
-                <label htmlFor="password" className="block text-sm font-medium text-gray-700">
-                  Admin password
-                </label>
-                <div className="mt-1 relative">
-                  <input
-                    id="password"
-                    name="password"
-                    type={showPassword ? "text" : "password"}
-                    required
-                    className="appearance-none block w-full px-3 py-2 border border-gray-300 rounded-md placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-                    placeholder="Admin password"
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                  />
-                  <button
-                    type="button"
-                    className="absolute inset-y-0 right-0 pr-3 flex items-center"
-                    onClick={() => setShowPassword(!showPassword)}
-                  >
-                    {showPassword ? (
-                      <XCircle className="h-5 w-5 text-gray-400" />
-                    ) : (
-                      <Eye className="h-5 w-5 text-gray-400" />
-                    )}
-                  </button>
-                </div>
-              </div>
-
-              {authError && (
-                <div className="text-red-600 text-sm">{authError}</div>
-              )}
-
-              <div>
+            <form onSubmit={handleLogin} className="space-y-4">
+              <div className="relative">
+                <Input
+                  type={showPassword ? 'text' : 'password'}
+                  placeholder="Admin password"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  required
+                />
                 <button
-                  type="submit"
-                  disabled={loading}
-                  className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50"
+                  type="button"
+                  onClick={() => setShowPassword(!showPassword)}
+                  className="absolute right-3 top-1/2 transform -translate-y-1/2"
                 >
-                  {loading ? 'Logging in...' : 'Login'}
+                  {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                 </button>
               </div>
+              <Button type="submit" className="w-full" disabled={loading}>
+                {loading ? 'Logging in...' : 'Login'}
+              </Button>
             </form>
-          </div>
-        </div>
+            
+            <div className="mt-4 text-center">
+              <button
+                type="button"
+                onClick={() => setShowForgotPassword(true)}
+                className="text-sm text-blue-600 hover:text-blue-800 underline"
+              >
+                Forgot your password?
+              </button>
+            </div>
+          </CardContent>
+        </Card>
+        
+        <ForgotPasswordModal
+          isOpen={showForgotPassword}
+          onClose={() => setShowForgotPassword(false)}
+          userType="admin"
+        />
       </div>
     )
   }
 
   return (
     <div className="min-h-screen bg-gray-50">
-      <div className="bg-white shadow">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center py-6">
-            <div className="flex items-center">
-              <h1 className="text-2xl font-bold text-gray-900">Admin Dashboard</h1>
-            </div>
-            <div className="flex items-center space-x-4">
-              <button
-                onClick={() => setIsAuthenticated(false)}
-                className="text-gray-500 hover:text-gray-700"
-              >
-                Logout
-              </button>
-            </div>
+      <div className="bg-white shadow-sm border-b border-gray-200 px-6 py-4">
+        <div className="flex justify-between items-center">
+          <div>
+            <h1 className="text-2xl font-bold text-gray-900">Admin Dashboard</h1>
+            <p className="text-sm text-gray-500 mt-1">
+              Last refreshed: {new Date(lastActivity).toLocaleTimeString()}
+            </p>
           </div>
+          <div className="flex items-center space-x-4">
+            <Button 
+              onClick={handleRefresh} 
+              disabled={isRefreshing}
+              variant="outline"
+              className="flex items-center space-x-2"
+            >
+              <RefreshCw className={`w-4 h-4 ${isRefreshing ? 'animate-spin' : ''}`} />
+              <span>{isRefreshing ? 'Refreshing...' : 'Refresh'}</span>
+            </Button>
+            <Button 
+              onClick={() => {
+                setIsAuthenticated(false)
+                setPassword('')
+              }}
+              variant="outline"
+            >
+              Logout
+            </Button>
+          </div>
+        </div>
+      </div>
+
+      {successMessage && (
+        <Alert className="mx-6 mt-4 border-green-200 bg-green-50">
+          <CheckCircle className="w-4 h-4 text-green-600" />
+          <AlertDescription className="text-green-700">{successMessage}</AlertDescription>
+        </Alert>
+      )}
+      {errorMessage && (
+        <Alert className="mx-6 mt-4 border-red-200 bg-red-50">
+          <AlertCircle className="w-4 h-4 text-red-600" />
+          <AlertDescription className="text-red-700">{errorMessage}</AlertDescription>
+        </Alert>
+      )}
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <div className="mb-8 flex items-center space-x-4">
+          <Logo className="max-w-xs" width={200} height={60} />
+          <div>
+            <h1 className="text-3xl font-bold text-gray-900">Admin Dashboard</h1>
+            <p className="text-gray-600">Manage contractors and leads</p>
+          </div>
+        </div>
+
+        <div className="mb-6">
           <div className="border-b border-gray-200">
             <nav className="-mb-px flex space-x-8">
               <button
@@ -472,7 +593,7 @@ const AdminDashboard = () => {
                     : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
                 }`}
               >
-                Dashboard
+                Statistics
               </button>
               <button
                 onClick={() => setActiveTab('contractors')}
@@ -495,16 +616,6 @@ const AdminDashboard = () => {
                 Leads
               </button>
               <button
-                onClick={() => setActiveTab('utilities')}
-                className={`py-2 px-1 border-b-2 font-medium text-sm ${
-                  activeTab === 'utilities'
-                    ? 'border-blue-500 text-blue-600'
-                    : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
-                }`}
-              >
-                Admin Utilities
-              </button>
-              <button
                 onClick={() => setActiveTab('transactions')}
                 className={`py-2 px-1 border-b-2 font-medium text-sm ${
                   activeTab === 'transactions'
@@ -523,6 +634,16 @@ const AdminDashboard = () => {
                 }`}
               >
                 Lead Pricing
+              </button>
+              <button
+                onClick={() => setActiveTab('utilities')}
+                className={`py-2 px-1 border-b-2 font-medium text-sm ${
+                  activeTab === 'utilities'
+                    ? 'border-blue-500 text-blue-600'
+                    : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                }`}
+              >
+                Admin Utilities
               </button>
               <button
                 onClick={() => setActiveTab('sms-controls')}
@@ -547,20 +668,6 @@ const AdminDashboard = () => {
             </nav>
           </div>
         </div>
-      </div>
-
-      <div className="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
-        {successMessage && (
-          <div className="mb-4 bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded">
-            {successMessage}
-          </div>
-        )}
-        
-        {errorMessage && (
-          <div className="mb-4 bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded">
-            {errorMessage}
-          </div>
-        )}
 
         {activeTab === 'stats' && (
           <div className="space-y-6">
@@ -605,6 +712,94 @@ const AdminDashboard = () => {
                 color="green"
               />
             </div>
+
+            {waitlistAnalytics && (
+              <div className="mt-8">
+                <h3 className="text-xl font-bold mb-4">Pre-Launch Waitlist Analytics</h3>
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                  <MetricCard
+                    title="Total Waitlist"
+                    value={waitlistAnalytics.totalWaitlist || 0}
+                    icon={<Users className="h-4 w-4" />}
+                    color="blue"
+                  />
+                  <MetricCard
+                    title="Landing Page Views"
+                    value={waitlistAnalytics.totalPageViews || 0}
+                    icon={<Eye className="h-4 w-4" />}
+                    color="green"
+                  />
+                  <MetricCard
+                    title="Recent Signups (7d)"
+                    value={waitlistAnalytics.recentSignups || 0}
+                    icon={<Plus className="h-4 w-4" />}
+                    color="blue"
+                  />
+                  <MetricCard
+                    title="Launch Notified"
+                    value={waitlistAnalytics.notifiedCount || 0}
+                    icon={<CheckCircle className="h-4 w-4" />}
+                    color="green"
+                  />
+                </div>
+              </div>
+            )}
+
+            <div className="bg-gray-50 p-6 rounded-lg">
+              <h3 className="text-lg font-bold mb-4 text-gray-900">Platform KPIs</h3>
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                <MetricCard
+                  title="Total Contractors"
+                  value={stats?.total_contractors || 0}
+                  icon={<Users className="h-4 w-4" />}
+                  color="blue"
+                />
+                <MetricCard
+                  title="Total Leads"
+                  value={stats?.total_leads || 0}
+                  icon={<FileText className="h-4 w-4" />}
+                  color="green"
+                />
+                <MetricCard
+                  title="Claimed Leads"
+                  value={stats?.claimed_leads || 0}
+                  icon={<CheckCircle className="h-4 w-4" />}
+                  color="green"
+                />
+                <MetricCard
+                  title="Unclaimed Leads"
+                  value={stats?.unclaimed_leads || 0}
+                  icon={<Clock className="h-4 w-4" />}
+                  color="yellow"
+                />
+              </div>
+            </div>
+
+            {emailVerificationStats && (
+              <div className="bg-blue-50 p-6 rounded-lg">
+                <h3 className="text-lg font-bold mb-4 text-blue-900">Email Verification Status</h3>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                  <MetricCard
+                    title="Verified Emails"
+                    value={emailVerificationStats.verified || 0}
+                    icon={<CheckCircle className="h-4 w-4" />}
+                    color="green"
+                  />
+                  <MetricCard
+                    title="Unverified Emails"
+                    value={emailVerificationStats.unverified || 0}
+                    icon={<AlertTriangle className="h-4 w-4" />}
+                    color="yellow"
+                  />
+                  <MetricCard
+                    title="Invalid Emails"
+                    value={emailVerificationStats.invalid || 0}
+                    icon={<XCircle className="h-4 w-4" />}
+                    color="red"
+                  />
+                </div>
+              </div>
+            )}
           </div>
         )}
 
@@ -634,17 +829,16 @@ const AdminDashboard = () => {
                         onClick={handleBulkDeleteContractors}
                         variant="destructive"
                         size="sm"
-                        disabled={loading}
+                        className="flex items-center space-x-2"
                       >
-                        <Trash2 className="h-4 w-4 mr-2" />
-                        Delete Selected ({selectedContractors.length})
+                        <Trash2 className="h-4 w-4" />
+                        <span>Delete Selected ({selectedContractors.length})</span>
                       </Button>
                     )}
                   </div>
-                  <Button onClick={handleRefresh} variant="outline" size="sm" disabled={isRefreshing}>
-                    <RefreshCw className={`h-4 w-4 mr-2 ${isRefreshing ? 'animate-spin' : ''}`} />
-                    Refresh
-                  </Button>
+                  <div className="text-sm text-gray-500">
+                    {contractors.length} total contractors
+                  </div>
                 </div>
               )}
               
@@ -665,13 +859,16 @@ const AdminDashboard = () => {
                         Industry
                       </th>
                       <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        Service
+                      </th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                         ZIP Codes
                       </th>
                       <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                        Wallet Balance
+                        Wallet
                       </th>
                       <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                        Joined
+                        Registered
                       </th>
                       <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                         Actions
@@ -685,12 +882,20 @@ const AdminDashboard = () => {
                           <input
                             type="checkbox"
                             checked={selectedContractors.includes(contractor.id)}
-                            onChange={() => handleSelectContractor(contractor.id)}
+                            onChange={() => {
+                              setSelectedContractors(prev => 
+                                prev.includes(contractor.id)
+                                  ? prev.filter(id => id !== contractor.id)
+                                  : [...prev, contractor.id]
+                              )
+                            }}
                             className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
                           />
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap">
-                          <div className="text-sm font-medium text-gray-900">{contractor.business_name}</div>
+                          <div className="text-sm font-medium text-gray-900">
+                            {contractor.business_name}
+                          </div>
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap">
                           <div className="text-sm text-gray-900">{contractor.contact_name}</div>
@@ -698,26 +903,31 @@ const AdminDashboard = () => {
                           <div className="text-sm text-gray-500">{contractor.phone}</div>
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap">
-                          <div className="text-sm text-gray-900">{contractor.industry}</div>
-                          <div className="text-sm text-gray-500">{contractor.sub_service}</div>
+                          <div className="text-sm text-gray-900">{contractor.industry || 'Not specified'}</div>
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap">
-                          <div className="text-sm text-gray-900">{contractor.zip_codes?.join(', ')}</div>
+                          <div className="text-sm text-gray-900">{contractor.sub_service || 'Not specified'}</div>
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap">
-                          <div className="text-sm font-medium text-green-600">${contractor.wallet_balance?.toFixed(2) || '0.00'}</div>
+                          <div className="text-sm text-gray-900">
+                            {Array.isArray(contractor.zip_codes) ? contractor.zip_codes.join(', ') : contractor.zip_codes}
+                          </div>
                         </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                          {new Date(contractor.created_at).toLocaleDateString()}
+                        <td className="px-6 py-4 whitespace-nowrap">
+                          <div className="text-sm text-gray-900">${contractor.wallet_balance}</div>
                         </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                        <td className="px-6 py-4 whitespace-nowrap">
+                          <div className="text-sm text-gray-900">
+                            {new Date(contractor.created_at).toLocaleDateString()}
+                          </div>
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                           <Button
                             onClick={() => handleDeleteContractor(contractor.id)}
                             variant="destructive"
                             size="sm"
-                            disabled={loading}
                           >
-                            <Trash2 className="h-4 w-4" />
+                            Delete
                           </Button>
                         </td>
                       </tr>
@@ -740,9 +950,9 @@ const AdminDashboard = () => {
         {activeTab === 'leads' && (
           <Card>
             <CardHeader>
-              <CardTitle>All Leads</CardTitle>
+              <CardTitle>Lead Management</CardTitle>
               <CardDescription>
-                View and manage all customer leads in the system
+                View and manage customer leads
               </CardDescription>
             </CardHeader>
             <CardContent>
@@ -761,6 +971,9 @@ const AdminDashboard = () => {
                       </th>
                       <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                         Status
+                      </th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        Score
                       </th>
                       <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                         Created
@@ -782,29 +995,37 @@ const AdminDashboard = () => {
                           <div className="text-sm text-gray-900">{lead.service_category}</div>
                           <div className="text-sm text-gray-500">{lead.sub_service}</div>
                         </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                          {lead.zip_code}
+                        <td className="px-6 py-4 whitespace-nowrap">
+                          <div className="text-sm text-gray-900">{lead.zip_code}</div>
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap">
                           <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
                             lead.claimed 
                               ? 'bg-green-100 text-green-800' 
-                              : 'bg-yellow-100 text-yellow-800'
+                              : lead.is_archived 
+                                ? 'bg-gray-100 text-gray-800'
+                                : 'bg-yellow-100 text-yellow-800'
                           }`}>
-                            {lead.claimed ? 'Claimed' : 'Available'}
+                            {lead.claimed ? 'Claimed' : lead.is_archived ? 'Archived' : 'Available'}
                           </span>
                         </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                          {new Date(lead.created_at).toLocaleDateString()}
+                        <td className="px-6 py-4 whitespace-nowrap">
+                          <div className="text-sm text-gray-900">
+                            {lead.lead_score ? `${lead.lead_score}/100` : 'Not scored'}
+                          </div>
                         </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                        <td className="px-6 py-4 whitespace-nowrap">
+                          <div className="text-sm text-gray-900">
+                            {new Date(lead.created_at).toLocaleDateString()}
+                          </div>
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                           <Button
                             onClick={() => handleDeleteLead(lead.id)}
                             variant="destructive"
                             size="sm"
-                            disabled={loading}
                           >
-                            <Trash2 className="h-4 w-4" />
+                            Delete
                           </Button>
                         </td>
                       </tr>
@@ -817,7 +1038,7 @@ const AdminDashboard = () => {
                 <div className="text-center py-8">
                   <FileText className="mx-auto h-12 w-12 text-gray-400" />
                   <h3 className="mt-2 text-sm font-medium text-gray-900">No leads</h3>
-                  <p className="mt-1 text-sm text-gray-500">No customer leads have been submitted yet.</p>
+                  <p className="mt-1 text-sm text-gray-500">No leads have been submitted yet.</p>
                 </div>
               )}
             </CardContent>
@@ -829,14 +1050,16 @@ const AdminDashboard = () => {
             <CardHeader>
               <CardTitle>Transaction Logs</CardTitle>
               <CardDescription>
-                View all lead purchase transactions and revenue data
+                View revenue and transaction history
               </CardDescription>
             </CardHeader>
             <CardContent>
-              <div className="mb-4">
-                <div className="bg-gray-50 p-4 rounded-lg">
-                  <div className="text-2xl font-bold text-green-600">${totalRevenue}</div>
-                  <div className="text-sm text-gray-500">Total Revenue</div>
+              <div className="mb-4 p-4 bg-green-50 rounded-lg">
+                <div className="text-2xl font-bold text-green-600">
+                  Total Revenue: ${totalRevenue}
+                </div>
+                <div className="text-sm text-gray-600">
+                  From {transactions.length} transactions
                 </div>
               </div>
               
@@ -844,9 +1067,6 @@ const AdminDashboard = () => {
                 <table className="min-w-full divide-y divide-gray-200">
                   <thead className="bg-gray-50">
                     <tr>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                        Transaction ID
-                      </th>
                       <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                         Contractor
                       </th>
@@ -864,30 +1084,31 @@ const AdminDashboard = () => {
                   <tbody className="bg-white divide-y divide-gray-200">
                     {transactions.map((transaction) => (
                       <tr key={transaction.id}>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm font-mono text-gray-900">
-                          {transaction.id}
-                        </td>
                         <td className="px-6 py-4 whitespace-nowrap">
                           <div className="text-sm font-medium text-gray-900">
-                            {transaction.contractors?.business_name}
+                            {transaction.contractors?.business_name || 'Unknown'}
                           </div>
                           <div className="text-sm text-gray-500">
-                            {transaction.contractors?.contact_name}
+                            {transaction.contractors?.contact_name || 'Unknown'}
                           </div>
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap">
                           <div className="text-sm text-gray-900">
-                            {transaction.leads?.customer_name}
+                            {transaction.leads?.customer_name || 'Unknown'}
                           </div>
                           <div className="text-sm text-gray-500">
-                            {transaction.leads?.service_category} - {transaction.leads?.sub_service}
+                            {transaction.leads?.service_category || 'Unknown'} - {transaction.leads?.sub_service || 'Unknown'}
                           </div>
                         </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-green-600">
-                          ${transaction.amount.toFixed(2)}
+                        <td className="px-6 py-4 whitespace-nowrap">
+                          <div className="text-sm font-medium text-green-600">
+                            ${transaction.amount}
+                          </div>
                         </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                          {new Date(transaction.purchased_at).toLocaleDateString()}
+                        <td className="px-6 py-4 whitespace-nowrap">
+                          <div className="text-sm text-gray-900">
+                            {new Date(transaction.purchased_at).toLocaleDateString()}
+                          </div>
                         </td>
                       </tr>
                     ))}
@@ -915,46 +1136,45 @@ const AdminDashboard = () => {
               </CardDescription>
             </CardHeader>
             <CardContent>
-              <div className="space-y-4">
+              <div className="space-y-6">
                 {pricing?.categories?.map((category) => (
                   <div key={category} className="flex items-center justify-between p-4 border rounded-lg">
                     <div>
                       <h4 className="font-medium text-gray-900">{category}</h4>
-                      <p className="text-sm text-gray-500">Current price: ${pricing.category_pricing[category] || '0.00'}</p>
+                      <p className="text-sm text-gray-500">Current price per lead</p>
                     </div>
                     <div className="flex items-center space-x-2">
+                      <span className="text-sm text-gray-500">$</span>
                       <Input
                         type="number"
+                        value={categoryPrices[category] || ''}
+                        onChange={(e) => setCategoryPrices(prev => ({
+                          ...prev,
+                          [category]: e.target.value
+                        }))}
+                        className="w-20"
                         step="0.01"
                         min="0"
-                        value={categoryPrices[category] || ''}
-                        onChange={(e) => setCategoryPrices({
-                          ...categoryPrices,
-                          [category]: e.target.value
-                        })}
-                        placeholder="New price"
-                        className="w-24"
                       />
                       <Button
                         onClick={() => {
                         }}
                         size="sm"
-                        disabled={!categoryPrices[category]}
                       >
                         Update
                       </Button>
                     </div>
                   </div>
                 ))}
+                
+                {(!pricing?.categories || pricing.categories.length === 0) && (
+                  <div className="text-center py-8">
+                    <Settings className="mx-auto h-12 w-12 text-gray-400" />
+                    <h3 className="mt-2 text-sm font-medium text-gray-900">No pricing configured</h3>
+                    <p className="mt-1 text-sm text-gray-500">Configure pricing for service categories.</p>
+                  </div>
+                )}
               </div>
-              
-              {(!pricing?.categories || pricing.categories.length === 0) && (
-                <div className="text-center py-8">
-                  <Settings className="mx-auto h-12 w-12 text-gray-400" />
-                  <h3 className="mt-2 text-sm font-medium text-gray-900">No pricing configured</h3>
-                  <p className="mt-1 text-sm text-gray-500">Service category pricing has not been set up yet.</p>
-                </div>
-              )}
             </CardContent>
           </Card>
         )}
