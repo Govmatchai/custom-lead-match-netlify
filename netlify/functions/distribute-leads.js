@@ -1,6 +1,7 @@
 import { createClient } from '@supabase/supabase-js'
 import twilio from 'twilio'
 import { notifyContractorsForLead } from './notify-contractors.js'
+import { ProductionLogger } from './lib/logger.js'
 import dotenv from 'dotenv'
 
 dotenv.config({ path: '../../.env' })
@@ -9,6 +10,8 @@ const supabase = createClient(
   process.env.SUPABASE_URL,
   process.env.SUPABASE_SERVICE_KEY
 )
+
+const logger = new ProductionLogger('distribute-leads')
 
 let twilioClient = null;
 try {
@@ -192,6 +195,13 @@ async function distributeLead(lead) {
 
   console.log(`🔍 Looking for contractors with industry: ${contractorIndustry}, sub_service: ${contractorSubService}, zip_code: ${lead.zip_code}`)
 
+  await logger.info('SEARCHING FOR CONTRACTORS', {
+    leadId: lead.id,
+    contractorIndustry,
+    contractorSubService,
+    zipCode: lead.zip_code
+  }, lead.id)
+
   const { data: contractors, error } = await supabase
     .from('contractors')
     .select('*')
@@ -201,6 +211,20 @@ async function distributeLead(lead) {
     .gt('lead_credits', 0)
 
   console.log(`📋 Found ${contractors?.length || 0} contractors matching criteria`)
+
+  await logger.info('CONTRACTORS FOUND', {
+    leadId: lead.id,
+    contractorCount: contractors?.length || 0,
+    contractors: contractors?.map(c => ({
+      id: c.id,
+      businessName: c.business_name,
+      email: c.email,
+      industry: c.industry,
+      subService: c.sub_service,
+      zipCodes: c.zip_codes,
+      leadCredits: c.lead_credits
+    })) || []
+  }, lead.id)
 
   if (error) {
     console.error(`❌ Database error finding contractors for lead ${lead.id}:`, error)
@@ -281,8 +305,24 @@ async function distributeLead(lead) {
   })))
   
   console.log(`🔄 Calling notifyContractorsForLead function...`)
+  
+  await logger.info('CALLING NOTIFY CONTRACTORS', {
+    leadId: lead.id,
+    targetContractorCount: targetContractors.length,
+    targetContractors: targetContractors.map(c => ({
+      id: c.id,
+      businessName: c.business_name,
+      email: c.email
+    }))
+  }, lead.id)
+  
   const notificationResults = await notifyContractorsForLead(lead, targetContractors)
   console.log(`📬 Notification results received:`, notificationResults)
+  
+  await logger.info('NOTIFICATION RESULTS RECEIVED', {
+    leadId: lead.id,
+    notificationResults
+  }, lead.id)
   
   for (const contractor of targetContractors) {
     await supabase

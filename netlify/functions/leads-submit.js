@@ -1,6 +1,7 @@
 import { createClient } from '@supabase/supabase-js'
 import { randomBytes } from 'crypto'
 import { validateLead } from './lead-validation.js'
+import { ProductionLogger } from './lib/logger.js'
 import dotenv from 'dotenv'
 
 dotenv.config({ path: '../../.env' })
@@ -9,6 +10,8 @@ const supabase = createClient(
   process.env.SUPABASE_URL,
   process.env.SUPABASE_SERVICE_KEY
 )
+
+const logger = new ProductionLogger('leads-submit')
 
 export const handler = async (event, context) => {
   if (event.httpMethod === 'OPTIONS') {
@@ -53,6 +56,18 @@ export const handler = async (event, context) => {
     console.log('  - description:', description)
     console.log('🌐 Client IP:', clientIP)
     console.log('📦 Raw body:', event.body)
+
+    await logger.info('LEAD SUBMISSION RECEIVED', {
+      customer_name,
+      service_category,
+      sub_service,
+      zip_code,
+      phone,
+      email,
+      description,
+      clientIP,
+      timestamp: new Date().toISOString()
+    })
 
     const { status, validationFlags } = await validateLead(data, clientIP)
     
@@ -131,11 +146,26 @@ export const handler = async (event, context) => {
           console.log(`📧 Email notifications sent: ${distributionResult.emails_sent || 0}`)
           console.log(`📱 SMS notifications sent: ${distributionResult.sms_sent || 0}`)
           console.log(`❌ Notification errors: ${distributionResult.errors?.length || 0}`)
+          
+          await logger.info('LEAD DISTRIBUTION SUCCESS', {
+            leadId: lead.id,
+            contractorsNotified: distributionResult.contractors_notified || 0,
+            emailsSent: distributionResult.emails_sent || 0,
+            smsSent: distributionResult.sms_sent || 0,
+            errors: distributionResult.errors?.length || 0,
+            distributionResult
+          }, lead.id)
         } else {
           console.log(`⚠️ Lead distribution failed for ${lead.id}`)
           console.log(`⚠️ Distribution response status: ${distributeResponse.status}`)
           const errorText = await distributeResponse.text()
           console.log(`⚠️ Distribution error details:`, errorText)
+          
+          await logger.error('LEAD DISTRIBUTION FAILED', {
+            leadId: lead.id,
+            status: distributeResponse.status,
+            errorText
+          }, lead.id)
         }
       } catch (distributionError) {
         console.error('Distribution error:', distributionError)

@@ -159,14 +159,18 @@ async function sendWalletFundedNotifications(contractor, lead) {
     </div>
   `;
 
-  console.log(`📧 Calling sendEmail for wallet funded notification:`)
-  console.log(`   To: ${contractor.email}`)
-  console.log(`   Subject: ${emailSubject}`)
-  console.log(`   Call timestamp: ${new Date().toISOString()}`)
+  await logger.info('CALLING SENDGRID FOR WALLET FUNDED', {
+    to: contractor.email,
+    subject: emailSubject,
+    timestamp: new Date().toISOString()
+  }, lead.id, contractor.id, contractor.email)
   
   const emailResult = await sendEmail(contractor.email, emailSubject, emailHtml);
-  console.log(`📧 sendEmail result for ${contractor.email}:`, emailResult);
-  console.log(`📧 Result timestamp: ${new Date().toISOString()}`);
+  
+  await logger.info('SENDGRID RESULT WALLET FUNDED', {
+    result: emailResult,
+    timestamp: new Date().toISOString()
+  }, lead.id, contractor.id, contractor.email)
 }
 
 async function sendNoFundsEmail(contractor, lead) {
@@ -184,14 +188,18 @@ async function sendNoFundsEmail(contractor, lead) {
     </div>
   `;
 
-  console.log(`📧 Calling sendEmail for no funds notification:`)
-  console.log(`   To: ${contractor.email}`)
-  console.log(`   Subject: ${emailSubject}`)
-  console.log(`   Call timestamp: ${new Date().toISOString()}`)
+  await logger.info('CALLING SENDGRID FOR NO FUNDS', {
+    to: contractor.email,
+    subject: emailSubject,
+    timestamp: new Date().toISOString()
+  }, lead.id, contractor.id, contractor.email)
   
   const emailResult = await sendEmail(contractor.email, emailSubject, emailHtml);
-  console.log(`📧 sendEmail result for ${contractor.email}:`, emailResult);
-  console.log(`📧 Result timestamp: ${new Date().toISOString()}`);
+  
+  await logger.info('SENDGRID RESULT NO FUNDS', {
+    result: emailResult,
+    timestamp: new Date().toISOString()
+  }, lead.id, contractor.id, contractor.email)
 }
 
 async function sendInactiveContractorEmail(contractor) {
@@ -209,14 +217,18 @@ async function sendInactiveContractorEmail(contractor) {
     </div>
   `;
 
-  console.log(`📧 Calling sendEmail for inactive contractor notification:`)
-  console.log(`   To: ${contractor.email}`)
-  console.log(`   Subject: ${emailSubject}`)
-  console.log(`   Call timestamp: ${new Date().toISOString()}`)
+  await logger.info('CALLING SENDGRID FOR INACTIVE', {
+    to: contractor.email,
+    subject: emailSubject,
+    timestamp: new Date().toISOString()
+  }, null, contractor.id, contractor.email)
   
   const emailResult = await sendEmail(contractor.email, emailSubject, emailHtml);
-  console.log(`📧 sendEmail result for ${contractor.email}:`, emailResult);
-  console.log(`📧 Result timestamp: ${new Date().toISOString()}`);
+  
+  await logger.info('SENDGRID RESULT INACTIVE', {
+    result: emailResult,
+    timestamp: new Date().toISOString()
+  }, null, contractor.id, contractor.email)
 }
 
 export const handler = async (event, context) => {
