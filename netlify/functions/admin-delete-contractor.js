@@ -127,61 +127,6 @@ export const handler = async (event, context) => {
       }
     }
 
-    const { error: contractorLeadsError } = await supabase
-      .from('contractor_leads')
-      .delete()
-      .eq('contractor_id', contractor_id)
-
-    if (contractorLeadsError) {
-      console.error('Error deleting contractor leads:', contractorLeadsError)
-      return {
-        statusCode: 500,
-        headers: {
-          'Content-Type': 'application/json',
-          'Access-Control-Allow-Origin': '*'
-        },
-        body: JSON.stringify({ detail: 'Failed to delete contractor leads' })
-      }
-    }
-
-    try {
-      const { error: leadSalesError } = await supabase
-        .from('lead_sales')
-        .delete()
-        .eq('contractor_id', contractor_id)
-
-      if (leadSalesError) {
-        console.log('Note: lead_sales deletion failed (table may not exist):', leadSalesError.message)
-      }
-    } catch (err) {
-      console.log('Note: lead_sales deletion failed (table may not exist):', err.message)
-    }
-
-    try {
-      const { error: notificationLogsError } = await supabase
-        .from('notification_logs')
-        .delete()
-        .eq('contractor_id', contractor_id)
-
-      if (notificationLogsError) {
-        console.log('Note: notification_logs deletion failed (may be data type mismatch):', notificationLogsError.message)
-      }
-    } catch (err) {
-      console.log('Note: notification_logs deletion failed (may be data type mismatch):', err.message)
-    }
-
-    try {
-      const { error: contractorNotificationsError } = await supabase
-        .from('contractor_notifications')
-        .delete()
-        .eq('contractor_id', contractor_id)
-
-      if (contractorNotificationsError) {
-        console.log('Note: contractor_notifications deletion failed (table may not exist):', contractorNotificationsError.message)
-      }
-    } catch (err) {
-      console.log('Note: contractor_notifications deletion failed (table may not exist):', err.message)
-    }
 
     const { error } = await supabase
       .from('contractors')
