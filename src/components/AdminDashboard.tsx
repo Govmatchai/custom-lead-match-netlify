@@ -237,7 +237,7 @@ const AdminDashboard: React.FC = () => {
     setLoading(true)
     try {
       const response = await fetch('/.netlify/functions/admin-delete-contractor', {
-        method: 'POST',
+        method: 'DELETE',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ contractor_id: contractorId })
       })
@@ -265,7 +265,7 @@ const AdminDashboard: React.FC = () => {
     setLoading(true)
     try {
       const response = await fetch('/.netlify/functions/admin-bulk-delete-contractors', {
-        method: 'POST',
+        method: 'DELETE',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ contractor_ids: selectedContractors })
       })
