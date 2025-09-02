@@ -265,7 +265,8 @@ export const handler = async (event, context) => {
       body: JSON.stringify({
         success: true,
         message: 'Lead purchased successfully!',
-        lead: updatedLead
+        lead: updatedLead,
+        new_wallet_balance: currentBalance - leadPrice
       })
     }
   } catch (error) {

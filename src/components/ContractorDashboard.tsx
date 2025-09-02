@@ -373,6 +373,14 @@ const ContractorDashboard = () => {
       if (data.success) {
         setSuccessMessage('Lead purchased! Check your dashboard for details.')
         setConfirmPurchase(null)
+        
+        if (data.new_wallet_balance !== undefined) {
+          setDashboardData(prev => prev ? ({
+            ...prev,
+            wallet_balance: data.new_wallet_balance.toString()
+          }) : prev)
+        }
+        
         await fetchDashboardData()
         setErrorMessage('')
         
@@ -877,6 +885,8 @@ const ContractorDashboard = () => {
                       const leadPrice = categoryPricing?.[lead.service_category] || 20.00
                       const walletBalance = parseFloat(dashboardData?.wallet_balance || '0')
                       const canPurchase = walletBalance >= leadPrice
+                      
+                      console.log(`Lead ${lead.id}: price=${leadPrice}, wallet=${walletBalance}, canPurchase=${canPurchase}`)
                       
                       return (
                         <div key={lead.id} className="border rounded-lg p-4 bg-green-50">
