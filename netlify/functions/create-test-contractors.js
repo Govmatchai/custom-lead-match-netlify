@@ -46,7 +46,6 @@ export const handler = async (event, context) => {
         zip_codes: ['98765'],
         service_zips: ['98765'],
         wallet_balance: 50.00,
-        active: true,
         is_sms_enabled: true,
         sms_opt_in: true
       },
@@ -63,7 +62,6 @@ export const handler = async (event, context) => {
         zip_codes: ['98765'],
         service_zips: ['98765'],
         wallet_balance: 50.00,
-        active: true,
         is_sms_enabled: true,
         sms_opt_in: true
       }
