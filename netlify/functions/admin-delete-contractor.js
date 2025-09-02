@@ -127,6 +127,22 @@ export const handler = async (event, context) => {
       }
     }
 
+    const { error: contractorLeadsError } = await supabase
+      .from('contractor_leads')
+      .delete()
+      .eq('contractor_id', contractor_id)
+
+    if (contractorLeadsError) {
+      console.error('Error deleting contractor leads:', contractorLeadsError)
+      return {
+        statusCode: 500,
+        headers: {
+          'Content-Type': 'application/json',
+          'Access-Control-Allow-Origin': '*'
+        },
+        body: JSON.stringify({ detail: 'Failed to delete contractor leads' })
+      }
+    }
 
     const { error } = await supabase
       .from('contractors')
