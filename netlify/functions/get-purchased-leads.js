@@ -86,6 +86,7 @@ export const handler = async (event, context) => {
         status,
         created_at,
         purchased_at,
+        price_paid,
         leads (
           id,
           customer_name,
@@ -119,11 +120,27 @@ export const handler = async (event, context) => {
     console.log('Processing purchased leads:', purchasedLeads?.length || 0)
     
     const activePurchasedLeads = purchasedLeads?.map(cl => ({
-      ...cl.leads,
-      contractor_lead_id: cl.id,
-      contractor_lead_status: cl.status,
-      purchased_at: cl.purchased_at
-    })).filter(lead => lead.id && !lead.is_archived) || []
+      id: cl.id,
+      contractor_id: contractor_id,
+      lead_id: cl.leads?.id || 'unknown',
+      price_paid: cl.price_paid || 20.00,
+      zip_code: cl.leads?.zip_code || '',
+      purchased_at: cl.purchased_at,
+      created_at: cl.created_at,
+      status: cl.status,
+      leads: {
+        id: cl.leads?.id || '',
+        customer_name: cl.leads?.customer_name || '',
+        customer_email: cl.leads?.email || '',
+        customer_phone: cl.leads?.phone || '',
+        service_category: cl.leads?.service_category || '',
+        sub_service: cl.leads?.sub_service || '',
+        zip_code: cl.leads?.zip_code || '',
+        description: cl.leads?.description || '',
+        created_at: cl.leads?.created_at || '',
+        is_archived: cl.leads?.is_archived || false
+      }
+    })).filter(lead => lead.leads.id && !lead.leads.is_archived) || []
     
     const archivedPurchasedLeads = purchasedLeads?.filter(lead => lead.leads?.is_archived) || []
     const completedLeads = purchasedLeads?.filter(lead => lead.status === 'completed') || []

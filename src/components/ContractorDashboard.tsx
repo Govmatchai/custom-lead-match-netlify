@@ -717,7 +717,7 @@ const ContractorDashboard = () => {
             </CardContent>
           </Card>
 
-          <Card>
+          <Card id="wallet-funding-section">
             <CardHeader>
               <CardTitle>Fund Wallet</CardTitle>
               <CardDescription>Add funds to your wallet balance for purchasing leads</CardDescription>
@@ -1000,9 +1000,18 @@ const ContractorDashboard = () => {
                           </div>
                           {!canPurchase && (
                             <div className="mt-2 p-2 bg-red-50 border border-red-200 rounded">
-                              <p className="text-sm text-red-700">
+                              <p className="text-sm text-red-700 mb-2">
                                 Insufficient wallet balance. Add funds to purchase this lead.
                               </p>
+                              <Button
+                                onClick={() => {
+                                  document.getElementById('wallet-funding-section')?.scrollIntoView({ behavior: 'smooth' })
+                                }}
+                                size="sm"
+                                className="bg-green-600 hover:bg-green-700 text-white"
+                              >
+                                Add Funds to Wallet
+                              </Button>
                             </div>
                           )}
                         </div>
@@ -1559,7 +1568,7 @@ const ContractorDashboard = () => {
               <DialogHeader>
                 <DialogTitle>Confirm Purchase</DialogTitle>
                 <DialogDescription>
-                  Are you sure you want to purchase this lead for $10.00?
+                  Are you sure you want to purchase this lead for ${categoryPricing?.[confirmPurchase.service_category] || 20.00}?
                 </DialogDescription>
               </DialogHeader>
               <div className="space-y-4">

@@ -158,7 +158,8 @@ export const handler = async (event, context) => {
       .from('contractor_leads')
       .update({ 
         status: 'purchased',
-        purchased_at: new Date().toISOString()
+        purchased_at: new Date().toISOString(),
+        price_paid: leadPrice
       })
       .eq('contractor_id', contractor_id)
       .eq('lead_id', lead_id)
