@@ -34,36 +34,32 @@ export const handler = async (event, context) => {
   try {
     const contractors = [
       {
+        business_name: 'Fresh HVAC Co',
+        contact_name: 'Fresh HVAC Contact',
         email: 'freshhvac15@example.com',
+        phone: '555-123-1515',
         username: 'freshhvac15',
         password_hash: '$2b$10$abcdefghijklmnopqrstuvwxyz123456789',
-        business_name: 'Fresh HVAC Co',
-        company_name: 'Fresh HVAC Co',
-        phone: '555-123-1515',
-        service_category: 'Home Services',
         industry: 'home_services',
         sub_service: 'hvac',
         zip_codes: ['98765'],
-        service_zips: ['98765'],
-        wallet_balance: 50.00,
-        is_sms_enabled: true,
-        sms_opt_in: true
+        sms_opt_in: true,
+        lead_credits: 3,
+        wallet_balance: 50.00
       },
       {
+        business_name: 'Gov HVAC LLC',
+        contact_name: 'Gov HVAC Contact',
         email: 'govhvac01@example.com',
+        phone: '555-123-0101',
         username: 'govhvac01',
         password_hash: '$2b$10$abcdefghijklmnopqrstuvwxyz123456789',
-        business_name: 'Gov HVAC LLC',
-        company_name: 'Gov HVAC LLC',
-        phone: '555-123-0101',
-        service_category: 'Home Services',
         industry: 'home_services',
         sub_service: 'hvac',
         zip_codes: ['98765'],
-        service_zips: ['98765'],
-        wallet_balance: 50.00,
-        is_sms_enabled: true,
-        sms_opt_in: true
+        sms_opt_in: true,
+        lead_credits: 3,
+        wallet_balance: 50.00
       }
     ]
 
