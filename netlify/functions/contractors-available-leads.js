@@ -81,6 +81,8 @@ export const handler = async (event, context) => {
       }
     }
 
+    console.log('Querying contractor_leads for contractor:', contractor_id)
+    
     const { data: contractorLeadsData, error: leadsError } = await supabase
       .from('contractor_leads')
       .select(`
@@ -104,15 +106,31 @@ export const handler = async (event, context) => {
       .eq('status', 'available')
       .order('created_at', { ascending: false })
 
+    console.log('Contractor leads query result:', { contractorLeadsData, leadsError })
+
+    if (leadsError) {
+      console.error('Available leads query error:', leadsError)
+      return {
+        statusCode: 500,
+        headers: {
+          'Content-Type': 'application/json',
+          'Access-Control-Allow-Origin': '*'
+        },
+        body: JSON.stringify({ 
+          detail: 'Database query error', 
+          error: leadsError.message,
+          debug: { contractor_id, query_attempted: true }
+        })
+      }
+    }
+
     const availableLeads = contractorLeadsData?.map(cl => ({
       ...cl.leads,
       contractor_lead_id: cl.id,
       contractor_lead_status: cl.status
     })) || []
 
-    if (leadsError) {
-      console.error('Available leads query error:', leadsError)
-    }
+    console.log('Mapped available leads:', availableLeads)
 
     return {
       statusCode: 200,
