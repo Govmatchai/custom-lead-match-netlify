@@ -86,7 +86,6 @@ export const handler = async (event, context) => {
         status,
         created_at,
         purchased_at,
-        price_paid,
         leads (
           id,
           customer_name,
@@ -123,7 +122,7 @@ export const handler = async (event, context) => {
       id: cl.id,
       contractor_id: contractor_id,
       lead_id: cl.leads?.id || 'unknown',
-      price_paid: cl.price_paid || 20.00,
+      price_paid: 20.00,
       zip_code: cl.leads?.zip_code || '',
       purchased_at: cl.purchased_at,
       created_at: cl.created_at,
