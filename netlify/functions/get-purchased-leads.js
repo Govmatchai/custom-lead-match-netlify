@@ -64,6 +64,8 @@ export const handler = async (event, context) => {
       }
     }
 
+    console.log('Querying purchased leads for contractor:', contractor_id)
+    
     const { data: purchasedLeads, error: purchasedError } = await supabase
       .from('contractor_leads')
       .select(`
@@ -87,6 +89,8 @@ export const handler = async (event, context) => {
       .eq('status', 'purchased')
       .order('purchased_at', { ascending: false })
 
+    console.log('Purchased leads query result:', { purchasedLeads, purchasedError })
+
     if (purchasedError) {
       console.error('Error fetching purchased leads:', purchasedError)
       return {
@@ -99,9 +103,23 @@ export const handler = async (event, context) => {
       }
     }
 
-    const activePurchasedLeads = purchasedLeads.filter(lead => lead.status === 'purchased' && !lead.leads?.is_archived)
-    const archivedPurchasedLeads = purchasedLeads.filter(lead => lead.leads?.is_archived)
-    const completedLeads = purchasedLeads.filter(lead => lead.status === 'completed')
+    console.log('Processing purchased leads:', purchasedLeads?.length || 0)
+    
+    const activePurchasedLeads = purchasedLeads?.map(cl => ({
+      ...cl.leads,
+      contractor_lead_id: cl.id,
+      contractor_lead_status: cl.status,
+      purchased_at: cl.purchased_at
+    })).filter(lead => lead.id && !lead.is_archived) || []
+    
+    const archivedPurchasedLeads = purchasedLeads?.filter(lead => lead.leads?.is_archived) || []
+    const completedLeads = purchasedLeads?.filter(lead => lead.status === 'completed') || []
+    
+    console.log('Final processed leads:', { 
+      active: activePurchasedLeads.length, 
+      archived: archivedPurchasedLeads.length, 
+      completed: completedLeads.length 
+    })
 
     return {
       statusCode: 200,
