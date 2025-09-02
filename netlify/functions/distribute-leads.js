@@ -207,13 +207,23 @@ async function distributeLead(lead) {
     zipCode: lead.zip_code
   }, lead.id)
 
-  const { data: contractors, error } = await supabase
+  let contractorQuery = supabase
     .from('contractors')
     .select('*')
     .eq('industry', contractorIndustry)
-    .eq('sub_service', contractorSubService)
     .contains('zip_codes', [lead.zip_code])
     .gt('lead_credits', 0)
+
+  if (contractorIndustry === 'home_services' && 
+      (lead.service_category === 'HVAC' || lead.service_category === 'hvac' || 
+       contractorSubService?.includes('hvac') || contractorSubService?.includes('air conditioning') || 
+       contractorSubService?.includes('heating'))) {
+    contractorQuery = contractorQuery.eq('sub_service', 'hvac')
+  } else {
+    contractorQuery = contractorQuery.eq('sub_service', contractorSubService)
+  }
+
+  const { data: contractors, error } = await contractorQuery
 
   console.log(`📋 Found ${contractors?.length || 0} contractors matching criteria`)
 
