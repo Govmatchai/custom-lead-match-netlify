@@ -215,6 +215,32 @@ export const handler = async (event, context) => {
         if (contractorId) {
           const result = await createTransaction(contractorId, amount, 'Payment Intent', paymentIntent.id, customerEmail)
           console.log('Payment Intent transaction result:', result)
+          
+          if (result.success && !result.duplicate) {
+            const { data: contractor, error: contractorError } = await supabase
+              .from('contractors')
+              .select('wallet_balance')
+              .eq('id', contractorId)
+              .single()
+
+            if (contractorError) {
+              console.error('Failed to fetch contractor for wallet update:', contractorError)
+            } else {
+              const currentBalance = contractor.wallet_balance || 0
+              const newBalance = currentBalance + amount
+              
+              const { error: balanceUpdateError } = await supabase
+                .from('contractors')
+                .update({ wallet_balance: newBalance })
+                .eq('id', contractorId)
+
+              if (balanceUpdateError) {
+                console.error('Failed to update contractor wallet balance:', balanceUpdateError)
+              } else {
+                console.log(`Updated contractor ${contractorId} wallet balance from $${currentBalance} to $${newBalance}`)
+              }
+            }
+          }
         } else {
           console.log('No contractor_id found in payment intent metadata')
         }
@@ -246,6 +272,32 @@ export const handler = async (event, context) => {
         if (contractorId) {
           const result = await createTransaction(contractorId, amount, 'Charge', charge.id, customerEmail)
           console.log('Charge transaction result:', result)
+          
+          if (result.success && !result.duplicate) {
+            const { data: contractor, error: contractorError } = await supabase
+              .from('contractors')
+              .select('wallet_balance')
+              .eq('id', contractorId)
+              .single()
+
+            if (contractorError) {
+              console.error('Failed to fetch contractor for wallet update:', contractorError)
+            } else {
+              const currentBalance = contractor.wallet_balance || 0
+              const newBalance = currentBalance + amount
+              
+              const { error: balanceUpdateError } = await supabase
+                .from('contractors')
+                .update({ wallet_balance: newBalance })
+                .eq('id', contractorId)
+
+              if (balanceUpdateError) {
+                console.error('Failed to update contractor wallet balance:', balanceUpdateError)
+              } else {
+                console.log(`Updated contractor ${contractorId} wallet balance from $${currentBalance} to $${newBalance}`)
+              }
+            }
+          }
         } else {
           console.log('No contractor_id found in charge metadata')
         }
@@ -300,6 +352,30 @@ export const handler = async (event, context) => {
             } else {
               console.log(`Successfully added $${depositAmount} to contractor ${contractor_id} wallet via Checkout Session`)
               console.log('Inserted checkout session transaction:', data)
+              
+              const { data: contractor, error: contractorError } = await supabase
+                .from('contractors')
+                .select('wallet_balance')
+                .eq('id', contractor_id)
+                .single()
+
+              if (contractorError) {
+                console.error('Failed to fetch contractor for wallet update:', contractorError)
+              } else {
+                const currentBalance = contractor.wallet_balance || 0
+                const newBalance = currentBalance + depositAmount
+                
+                const { error: balanceUpdateError } = await supabase
+                  .from('contractors')
+                  .update({ wallet_balance: newBalance })
+                  .eq('id', contractor_id)
+
+                if (balanceUpdateError) {
+                  console.error('Failed to update contractor wallet balance:', balanceUpdateError)
+                } else {
+                  console.log(`Updated contractor ${contractor_id} wallet balance from $${currentBalance} to $${newBalance}`)
+                }
+              }
               
               try {
                 const emailUrl = `${process.env.URL || 'https://customleadmatch.netlify.app'}/.netlify/functions/email-lead-confirmation`
