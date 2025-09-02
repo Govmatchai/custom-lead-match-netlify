@@ -107,6 +107,26 @@ export const handler = async (event, context) => {
           return { id: contractorId, success: false, error: `Failed to delete contractor leads: ${contractorLeadsError.message}` }
         }
 
+        try {
+          await supabase.from('notification_logs').delete().eq('contractor_id', parseInt(contractorId.replace(/-/g, '').substring(0, 8), 16))
+        } catch (err) { /* ignore */ }
+        
+        try {
+          await supabase.from('contractor_activity_log').delete().eq('contractor_id', contractorId)
+        } catch (err) { /* ignore */ }
+        
+        try {
+          await supabase.from('sms_send_log').delete().eq('contractor_id', contractorId)
+        } catch (err) { /* ignore */ }
+        
+        try {
+          await supabase.from('lead_sales').delete().eq('contractor_id', contractorId)
+        } catch (err) { /* ignore */ }
+        
+        try {
+          await supabase.from('contractor_notifications').delete().eq('contractor_id', contractorId)
+        } catch (err) { /* ignore */ }
+
         const { error } = await supabase
           .from('contractors')
           .delete()
