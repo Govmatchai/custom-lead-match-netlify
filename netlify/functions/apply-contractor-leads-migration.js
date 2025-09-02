@@ -90,38 +90,32 @@ export const handler = async (event, context) => {
       GRANT USAGE, SELECT ON SEQUENCE contractor_leads_id_seq TO service_role;
     `
 
-    const statements = schemaSql.split(';').filter(stmt => stmt.trim().length > 0)
+    console.log('Testing contractor_leads table existence...')
     
-    for (const statement of statements) {
-      const trimmedStatement = statement.trim()
-      if (trimmedStatement.length === 0) continue
-      
-      console.log('Executing SQL:', trimmedStatement.substring(0, 100) + '...')
-      
-      const { error } = await supabase.rpc('exec', { sql: trimmedStatement })
-      if (error) {
-        console.error('SQL execution error:', error)
-        return {
-          statusCode: 500,
-          headers: corsHeaders,
-          body: JSON.stringify({ 
-            detail: 'Migration failed at statement', 
-            error: error.message,
-            statement: trimmedStatement.substring(0, 200),
-            success: false
-          })
-        }
+    const { data: testQuery, error: testError } = await supabase
+      .from('contractor_leads')
+      .select('id')
+      .limit(1)
+    
+    if (testError && testError.code === 'PGRST116') {
+      return {
+        statusCode: 200,
+        headers: corsHeaders,
+        body: JSON.stringify({ 
+          message: 'contractor_leads table does not exist. Manual creation required.',
+          sql_to_execute: schemaSql,
+          success: false,
+          manual_creation_required: true
+        })
       }
-    }
-
-    if (error) {
-      console.error('❌ Migration error:', error)
+    } else if (testError) {
+      console.error('Unexpected error:', testError)
       return {
         statusCode: 500,
         headers: corsHeaders,
         body: JSON.stringify({ 
-          detail: 'Migration failed', 
-          error: error.message,
+          detail: 'Error checking table existence', 
+          error: testError.message,
           success: false
         })
       }
