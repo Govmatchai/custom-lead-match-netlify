@@ -1,0 +1,172 @@
+⬥ Injecting environment variable values for all scopes
+⬥ Ignored general context env var: LANG (defined in process)
+⬥ Ignored .env file env var: SUPABASE_URL (defined in process)
+⬥ Ignored .env file env var: SUPABASE_ANON_KEY (defined in process)
+⬥ Ignored .env file env var: SUPABASE_SERVICE_KEY (defined in process)
+⬥ Ignored .env file env var: TWILIO_ACCOUNT_SID (defined in process)
+⬥ Ignored .env file env var: TWILIO_AUTH_TOKEN (defined in process)
+⬥ Ignored .env file env var: TWILIO_PHONE_NUMBER (defined in process)
+⬥ Ignored .env file env var: SENDGRID_API_KEY (defined in process)
+⬥ Ignored .env file env var: STRIPE_SECRET_KEY (defined in process)
+⬥ Ignored .env file env var: STRIPE_PUBLISHABLE_KEY (defined in process)
+⬥ Ignored .env file env var: STRIPE_WEBHOOK_SECRET (defined in process)
+⬥ Ignored .env file env var: ADMIN_PASSWORD (defined in process)
+⬥ Ignored .env file env var: NETLIFY_BUILD_HOOK (defined in process)
+⬥ Ignored .env file env var: RECAPTCHA_SECRET_KEY (defined in process)
+⬥ Ignored .env file env var: EMAIL_VALIDATION_API_KEY (defined in process)
+⬥ Ignored .env file env var: VITE_SUPABASE_URL (defined in process)
+⬥ Ignored .env file env var: VITE_SUPABASE_ANON_KEY (defined in process)
+⬥ Ignored .env file env var: VITE_STRIPE_PUBLISHABLE_KEY (defined in process)
+⬥ Injected netlify.toml file env vars: NODE_VERSION, SECRETS_SCAN_OMIT_PATHS
+⬥ Setting up local dev server
+
+⬥ Starting Vite dev server
+⠋ Waiting for Vite dev server to be ready on port 5173
+[1G
+> custom-lead-match-netlify@0.0.0 dev
+> vite
+
+⠙ Waiting for Vite dev server to be ready on port 5173
+[1GThe CJS build of Vite's Node API is deprecated. See https://vite.dev/guide/troubleshooting.html#vite-cjs-node-api-deprecated for more details.
+⠹ Waiting for Vite dev server to be ready on port 5173
+[1G
+  VITE v5.4.19  ready in 171 ms
+
+⠸ Waiting for Vite dev server to be ready on port 5173
+[1G  ➜  Local:   http://localhost:5173/
+  ➜  Network: http://172.16.0.2:5173/
+⠼ Waiting for Vite dev server to be ready on port 5173
+✔ Vite dev server ready on port 5173
+​
+A "_headers" file is present in the repository but is missing in the publish directory "dist".
+
+   ╭─────────────────────── ⬥  ────────────────────────╮
+   │                                                   │
+   │   Local dev server ready: http://localhost:8888   │
+   │                                                   │
+   ╰───────────────────────────────────────────────────╯
+
+⬥ Loaded function test-minimal
+⬥ Loaded function test-basic
+⬥ Loaded function twilio-delivery-status
+⬥ Loaded function sub-services
+⬥ Loaded function hello
+⬥ Loaded function test-simple
+⬥ Loaded function industries
+⬥ Loaded function healthz
+⬥ Loaded function validation-metrics
+⬥ Loaded function complete-lead
+⬥ Loaded function leads-claim-post
+⬥ Loaded function admin-stats
+⬥ Loaded function test-contractors-minimal
+⬥ Loaded function admin-auth
+⬥ Loaded function contractors-signup-new
+⬥ Loaded function admin-pricing
+⬥ Loaded function update-contractor-sms
+⬥ Loaded function admin-reset-credits
+⬥ Loaded function admin-bulk-delete-contractors
+⬥ Loaded function generate-landing-page
+⬥ Loaded function get-lead-purchase-history
+⬥ Loaded function contractor-add-transaction
+⬥ Loaded function forgot-password
+⬥ Loaded function admin-dashboard-stats
+⬥ Loaded function test-contractors-insert
+⬥ Loaded function contractors-available-leads
+⬥ Loaded function admin-transactions
+⬥ Loaded function purchase-lead
+⬥ Loaded function admin-leads
+⬥ Loaded function leads-claim-get
+⬥ Loaded function update-contractor-profile
+⬥ Loaded function add-launch-notified-column
+⬥ Loaded function test-contractors-table
+⬥ Loaded function sms-config
+⬥ Loaded function sms-analytics
+⬥ Loaded function contractor-wallet-balance
+⬥ Loaded function archive-lead
+⬥ Loaded function score-leads
+⬥ Loaded function contractors-signup-test
+⬥ Loaded function send-welcome-email
+⬥ Loaded function lead-validation
+⬥ Loaded function claim-lead
+⬥ Loaded function admin-waitlist-notifications
+⬥ Loaded function admin-delete-lead
+⬥ Loaded function get-category-pricing
+⬥ Loaded function contractors-signup-minimal
+⬥ Loaded function reset-password
+⬥ Loaded function get-purchased-leads
+⬥ Loaded function migrate-credits-to-wallet
+⬥ Loaded function admin-contractors
+⬥ Loaded function archive-leads
+⬥ Loaded function convert-waitlist-to-contractor
+⬥ Loaded function admin-delete-contractor
+⬥ Loaded function contractors-dashboard
+⬥ Loaded function contractor-login
+⬥ Loaded function contractors-signup
+⬥ Loaded function leads-submit
+⬥ Loaded function score-lead
+⬥ Loaded function mark-lead-complete
+⬥ Loaded function test-claim-lead
+⬥ Loaded function apply-schema-migration
+⬥ Loaded function setup-waitlist-table
+⬥ Loaded function contractor-auth-check
+⬥ Loaded function admin-wallet-adjust
+⬥ Loaded function admin-utilities
+⬥ Loaded function health
+⬥ Loaded function stripe-webhook
+⬥ Loaded function contractors-purchase-credits
+⬥ Loaded function test-messaging-scenarios
+⬥ Loaded function test-contractor-notifications
+⬥ Loaded function email-launch-day
+⬥ Loaded function notify-contractors
+⬥ Loaded function email-password-reset
+⬥ Loaded function email-support-reply
+⬥ Loaded function admin-notification-stats
+⬥ Loaded function test-error-handling
+⬥ Loaded function distribute-leads
+⬥ Loaded function send-inactive-contractor-email
+⬥ Loaded function test-production-messaging
+⬥ Loaded function test-sms-send
+⬥ Loaded function send-lead-alert
+⬥ Loaded function email-launching-soon
+⬥ Loaded function email-lead-confirmation
+⬥ Loaded function contractor-waitlist-signup
+⬥ Loaded function contractor-eligibility
+⬥ Loaded function email-welcome
+⬥ Loaded function test-sms-delivery
+(node:548154) [DEP0060] DeprecationWarning: The `util._extend` API is deprecated. Please use Object.assign() instead.
+(Use `node --trace-deprecation ...` to show where the warning was created)
+
+  #  Node.js[548154]: void node::ResetStdio() at ../src/node.cc:756
+  #  Assertion failed: !(err != 0) || (err == -1 && (*__errno_location ()) == 1)
+
+----- Native stack trace -----
+
+ 1: 0xf76da7 node::Assert(node::AssertionInfo const&) [node]
+ 2: 0xf23a44  [node]
+ 3: 0x7fe3297d7495  [/lib/x86_64-linux-gnu/libc.so.6]
+ 4: 0x7fe3297d7610 on_exit [/lib/x86_64-linux-gnu/libc.so.6]
+ 5: 0xe7aa4f node::DefaultProcessExitHandlerInternal(node::Environment*, node::ExitCode) [node]
+ 6: 0xee32ef node::Environment::Exit(node::ExitCode) [node]
+ 7: 0x7fe3225cf5e2 
+
+  #  Node.js[548154]: void node::ResetStdio() at ../src/node.cc:756
+  #  Assertion failed: !(err != 0) || (err == -1 && (*__errno_location ()) == 1)
+
+----- Native stack trace -----
+
+ 1: 0xf76da7 node::Assert(node::AssertionInfo const&) [node]
+ 2: 0xf23a44  [node]
+ 3: 0xf24162 node::TrapWebAssemblyOrContinue(int, siginfo_t*, void*) [node]
+ 4: 0x7fe3297d4520  [/lib/x86_64-linux-gnu/libc.so.6]
+ 5: 0x1908087 v8::internal::tracing::TraceEventHelper::GetTracingController() [node]
+ 6: 0x13bb455 v8::internal::Isolate::CaptureDetailedStackTrace(int, v8::StackTrace::StackTraceOptions) [node]
+ 7: 0x1248e43 v8::StackTrace::CurrentStackTrace(v8::Isolate*, int, v8::StackTrace::StackTraceOptions) [node]
+ 8: 0xf76cf6 node::GetCurrentStackTrace(v8::Isolate*, int) [node]
+ 9: 0xec2e1b node::DumpJavaScriptBacktrace(_IO_FILE*) [node]
+10: 0xf76db3 node::Assert(node::AssertionInfo const&) [node]
+11: 0xf23a44  [node]
+12: 0x7fe3297d7495  [/lib/x86_64-linux-gnu/libc.so.6]
+13: 0x7fe3297d7610 on_exit [/lib/x86_64-linux-gnu/libc.so.6]
+14: 0xe7aa4f node::DefaultProcessExitHandlerInternal(node::Environment*, node::ExitCode) [node]
+15: 0xee32ef node::Environment::Exit(node::ExitCode) [node]
+16: 0x7fe3225cf5e2 
