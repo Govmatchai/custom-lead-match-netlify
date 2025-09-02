@@ -144,6 +144,33 @@ export const handler = async (event, context) => {
       }
     }
 
+    const { error: leadSalesError } = await supabase
+      .from('lead_sales')
+      .delete()
+      .eq('contractor_id', contractor_id)
+
+    if (leadSalesError) {
+      console.error('Error deleting lead sales:', leadSalesError)
+    }
+
+    const { error: notificationLogsError } = await supabase
+      .from('notification_logs')
+      .delete()
+      .eq('contractor_id', contractor_id)
+
+    if (notificationLogsError) {
+      console.error('Error deleting notification logs:', notificationLogsError)
+    }
+
+    const { error: contractorNotificationsError } = await supabase
+      .from('contractor_notifications')
+      .delete()
+      .eq('contractor_id', contractor_id)
+
+    if (contractorNotificationsError) {
+      console.error('Error deleting contractor notifications:', contractorNotificationsError)
+    }
+
     const { error } = await supabase
       .from('contractors')
       .delete()
