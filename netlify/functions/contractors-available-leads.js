@@ -129,7 +129,7 @@ export const handler = async (event, context) => {
 
     const { data: leadsData, error: leadsError } = await supabase
       .from('leads')
-      .select('id, service_category, sub_service, zip_code, description, created_at, customer_name, customer_phone, customer_email')
+      .select('id, service_category, sub_service, zip_code, description, created_at, customer_name, phone, email')
       .in('id', leadIds)
 
     console.log('Leads query result:', { leadsData, leadsError })
