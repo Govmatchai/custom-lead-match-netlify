@@ -83,33 +83,59 @@ export const handler = async (event, context) => {
 
     console.log('Querying contractor_leads for contractor:', contractor_id)
     
-    const { data: contractorLeadsData, error: leadsError } = await supabase
+    const { data: contractorLeadsData, error: clError } = await supabase
       .from('contractor_leads')
-      .select(`
-        id,
-        status,
-        created_at,
-        leads (
-          id,
-          service_category,
-          sub_service,
-          zip_code,
-          description,
-          urgency,
-          created_at,
-          customer_name,
-          customer_phone,
-          customer_email
-        )
-      `)
+      .select('id, lead_id, status, created_at')
       .eq('contractor_id', contractor_id)
       .eq('status', 'available')
       .order('created_at', { ascending: false })
 
-    console.log('Contractor leads query result:', { contractorLeadsData, leadsError })
+    console.log('Contractor leads query result:', { contractorLeadsData, clError })
+
+    if (clError) {
+      console.error('Contractor leads query error:', clError)
+      return {
+        statusCode: 500,
+        headers: {
+          'Content-Type': 'application/json',
+          'Access-Control-Allow-Origin': '*'
+        },
+        body: JSON.stringify({ 
+          detail: 'Database query error', 
+          error: clError.message,
+          debug: { contractor_id, step: 'contractor_leads_query' }
+        })
+      }
+    }
+
+    if (!contractorLeadsData || contractorLeadsData.length === 0) {
+      console.log('No contractor_leads entries found for contractor:', contractor_id)
+      return {
+        statusCode: 200,
+        headers: {
+          'Content-Type': 'application/json',
+          'Access-Control-Allow-Origin': '*'
+        },
+        body: JSON.stringify({
+          available_leads: [],
+          total_available: 0,
+          debug: { contractor_id, contractor_leads_count: 0 }
+        })
+      }
+    }
+
+    const leadIds = contractorLeadsData.map(cl => cl.lead_id)
+    console.log('Fetching leads for IDs:', leadIds)
+
+    const { data: leadsData, error: leadsError } = await supabase
+      .from('leads')
+      .select('id, service_category, sub_service, zip_code, description, urgency, created_at, customer_name, customer_phone, customer_email')
+      .in('id', leadIds)
+
+    console.log('Leads query result:', { leadsData, leadsError })
 
     if (leadsError) {
-      console.error('Available leads query error:', leadsError)
+      console.error('Leads query error:', leadsError)
       return {
         statusCode: 500,
         headers: {
@@ -119,18 +145,25 @@ export const handler = async (event, context) => {
         body: JSON.stringify({ 
           detail: 'Database query error', 
           error: leadsError.message,
-          debug: { contractor_id, query_attempted: true }
+          debug: { contractor_id, step: 'leads_query', lead_ids: leadIds }
         })
       }
     }
 
-    const availableLeads = contractorLeadsData?.map(cl => ({
-      ...cl.leads,
-      contractor_lead_id: cl.id,
-      contractor_lead_status: cl.status
-    })) || []
+    const availableLeads = contractorLeadsData.map(cl => {
+      const lead = leadsData?.find(l => l.id === cl.lead_id)
+      if (!lead) {
+        console.warn('Lead not found for contractor_lead:', cl.id, 'lead_id:', cl.lead_id)
+        return null
+      }
+      return {
+        ...lead,
+        contractor_lead_id: cl.id,
+        contractor_lead_status: cl.status
+      }
+    }).filter(Boolean)
 
-    console.log('Mapped available leads:', availableLeads)
+    console.log('Final available leads after manual join:', availableLeads)
 
     return {
       statusCode: 200,
