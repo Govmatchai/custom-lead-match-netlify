@@ -45,7 +45,7 @@ export const handler = async (event, context) => {
       }
     }
 
-    if (!debug && !session_token) {
+    if (!session_token) {
       return {
         statusCode: 400,
         headers: {
@@ -56,24 +56,23 @@ export const handler = async (event, context) => {
       }
     }
 
-    if (!debug) {
-      const { data: session, error: sessionError } = await supabase
-        .from('contractor_sessions')
-        .select('*')
-        .eq('session_token', session_token)
-        .eq('contractor_id', contractor_id)
-        .gt('expires_at', new Date().toISOString())
-        .single()
+    const { data: session, error: sessionError } = await supabase
+      .from('contractor_sessions')
+      .select('*')
+      .eq('session_token', session_token)
+      .eq('contractor_id', contractor_id)
+      .gt('expires_at', new Date().toISOString())
+      .single()
 
-      if (sessionError || !session) {
-        return {
-          statusCode: 401,
-          headers: {
-            'Content-Type': 'application/json',
-            'Access-Control-Allow-Origin': '*'
-          },
-          body: JSON.stringify({ success: false, message: 'Invalid or expired session' })
-        }
+    if (sessionError || !session) {
+      console.error('Session validation error:', sessionError)
+      return {
+        statusCode: 401,
+        headers: {
+          'Content-Type': 'application/json',
+          'Access-Control-Allow-Origin': '*'
+        },
+        body: JSON.stringify({ success: false, message: 'Invalid or expired session' })
       }
     }
 
