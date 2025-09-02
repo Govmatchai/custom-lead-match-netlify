@@ -94,8 +94,8 @@ export const handler = async (event, context) => {
           service_category,
           zip_code,
           customer_name,
-          customer_phone,
-          customer_email,
+          phone,
+          email,
           description
         )
       `)
