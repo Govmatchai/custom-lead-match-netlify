@@ -96,8 +96,7 @@ export const handler = async (event, context) => {
           customer_name,
           customer_phone,
           customer_email,
-          description,
-          urgency
+          description
         )
       `)
       .eq('contractor_id', contractor_id)

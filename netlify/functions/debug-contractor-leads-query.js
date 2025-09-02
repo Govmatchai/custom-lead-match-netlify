@@ -55,7 +55,6 @@ export const handler = async (event, context) => {
           sub_service,
           zip_code,
           description,
-          urgency,
           created_at,
           customer_name,
           customer_phone,
