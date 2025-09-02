@@ -136,8 +136,10 @@ const ContractorDashboard = () => {
     if (paymentStatus === 'success') {
       setFundAmount('')
       setFundAmountError('')
+      setSuccessMessage('Wallet funded successfully!')
       setTimeout(() => {
         fetchDashboardData()
+        setSuccessMessage('')
       }, 2000)
     } else if (paymentStatus === 'cancelled') {
       setFundAmountError('Payment was cancelled')
