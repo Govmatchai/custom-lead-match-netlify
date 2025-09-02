@@ -144,31 +144,43 @@ export const handler = async (event, context) => {
       }
     }
 
-    const { error: leadSalesError } = await supabase
-      .from('lead_sales')
-      .delete()
-      .eq('contractor_id', contractor_id)
+    try {
+      const { error: leadSalesError } = await supabase
+        .from('lead_sales')
+        .delete()
+        .eq('contractor_id', contractor_id)
 
-    if (leadSalesError) {
-      console.error('Error deleting lead sales:', leadSalesError)
+      if (leadSalesError) {
+        console.log('Note: lead_sales deletion failed (table may not exist):', leadSalesError.message)
+      }
+    } catch (err) {
+      console.log('Note: lead_sales deletion failed (table may not exist):', err.message)
     }
 
-    const { error: notificationLogsError } = await supabase
-      .from('notification_logs')
-      .delete()
-      .eq('contractor_id', contractor_id)
+    try {
+      const { error: notificationLogsError } = await supabase
+        .from('notification_logs')
+        .delete()
+        .eq('contractor_id', contractor_id)
 
-    if (notificationLogsError) {
-      console.error('Error deleting notification logs:', notificationLogsError)
+      if (notificationLogsError) {
+        console.log('Note: notification_logs deletion failed (may be data type mismatch):', notificationLogsError.message)
+      }
+    } catch (err) {
+      console.log('Note: notification_logs deletion failed (may be data type mismatch):', err.message)
     }
 
-    const { error: contractorNotificationsError } = await supabase
-      .from('contractor_notifications')
-      .delete()
-      .eq('contractor_id', contractor_id)
+    try {
+      const { error: contractorNotificationsError } = await supabase
+        .from('contractor_notifications')
+        .delete()
+        .eq('contractor_id', contractor_id)
 
-    if (contractorNotificationsError) {
-      console.error('Error deleting contractor notifications:', contractorNotificationsError)
+      if (contractorNotificationsError) {
+        console.log('Note: contractor_notifications deletion failed (table may not exist):', contractorNotificationsError.message)
+      }
+    } catch (err) {
+      console.log('Note: contractor_notifications deletion failed (table may not exist):', err.message)
     }
 
     const { error } = await supabase
