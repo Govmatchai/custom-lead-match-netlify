@@ -81,7 +81,7 @@ const AdminDashboard = () => {
   const [showPassword, setShowPassword] = useState(false)
   const [authError, setAuthError] = useState('')
   const [stats, setStats] = useState<AdminStats | null>(null)
-  const [contractors, setContractors] = useState<Contractor[]>([])
+  const [contractors, setContractors] = useState<any[]>([])
   const [leads, setLeads] = useState<Lead[]>([])
   const [loading, setLoading] = useState(false)
   const [activeTab, setActiveTab] = useState<'stats' | 'contractors' | 'leads' | 'transactions' | 'pricing' | 'utilities' | 'sms-controls' | 'launch-queue'>('stats')
@@ -90,12 +90,19 @@ const AdminDashboard = () => {
   const [totalRevenue, setTotalRevenue] = useState<string>('0.00')
   const [pricing, setPricing] = useState<PricingSettings | null>(null)
   const [categoryPrices, setCategoryPrices] = useState<{ [key: string]: string }>({})
-  const [walletAdjustment, setWalletAdjustment] = useState({ contractor_id: '', amount: '', notes: '' })
   const [manualNotification, setManualNotification] = useState<{ lead_id: string; contractor_ids: string[] }>({ lead_id: '', contractor_ids: [] })
   const [showForgotPassword, setShowForgotPassword] = useState(false)
   const [newLead, setNewLead] = useState({
     customer_name: '', phone: '', email: '', service_category: '', sub_service: '', zip_code: '', description: ''
   })
+  const [leadSearch, setLeadSearch] = useState('')
+  const [leadStatusFilter, setLeadStatusFilter] = useState('all')
+  const [walletAdjustment, setWalletAdjustment] = useState({
+    contractor_id: '',
+    amount: '',
+    notes: ''
+  })
+  const [isRefreshing, setIsRefreshing] = useState(false)
   const [dateRange, setDateRange] = useState('30')
   const [dashboardStats, setDashboardStats] = useState<any>(null)
   const [notificationStats, setNotificationStats] = useState<any>(null)
@@ -108,7 +115,6 @@ const AdminDashboard = () => {
   const [smsAnalytics, setSmsAnalytics] = useState<any>(null)
   const [lastActivity, setLastActivity] = useState(Date.now())
   const [sessionTimeout, setSessionTimeout] = useState<NodeJS.Timeout | null>(null)
-  const [isRefreshing, setIsRefreshing] = useState(false)
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -444,6 +450,72 @@ const AdminDashboard = () => {
   const handleUserActivity = () => {
     resetSessionTimeout()
   }
+
+  const handleExportCSV = (data: any[], filename: string) => {
+    if (!data || data.length === 0) {
+      setErrorMessage('No data to export')
+      setTimeout(() => setErrorMessage(''), 3000)
+      return
+    }
+    
+    const csv = [
+      Object.keys(data[0]).join(','),
+      ...data.map(row => Object.values(row).map(val => 
+        typeof val === 'string' && val.includes(',') ? `"${val}"` : val
+      ).join(','))
+    ].join('\n')
+    
+    const blob = new Blob([csv], { type: 'text/csv' })
+    const url = window.URL.createObjectURL(blob)
+    const a = document.createElement('a')
+    a.href = url
+    a.download = filename
+    a.click()
+    window.URL.revokeObjectURL(url)
+  }
+
+  const handleWalletAdjustment = async () => {
+    if (!walletAdjustment.contractor_id || !walletAdjustment.amount) {
+      setErrorMessage('Contractor ID and amount are required')
+      setTimeout(() => setErrorMessage(''), 5000)
+      return
+    }
+
+    setLoading(true)
+    try {
+      const response = await fetch('/.netlify/functions/admin-wallet-adjust', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(walletAdjustment)
+      })
+
+      if (response.ok) {
+        setSuccessMessage('Wallet balance adjusted successfully!')
+        setWalletAdjustment({ contractor_id: '', amount: '', notes: '' })
+        fetchAdminData()
+        setTimeout(() => setSuccessMessage(''), 5000)
+      } else {
+        setErrorMessage('Failed to adjust wallet balance')
+        setTimeout(() => setErrorMessage(''), 5000)
+      }
+    } catch (error) {
+      setErrorMessage('Error adjusting wallet balance')
+      setTimeout(() => setErrorMessage(''), 5000)
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  const filteredLeads = leads.filter(lead => {
+    const matchesSearch = !leadSearch || 
+      lead.customer_name?.toLowerCase().includes(leadSearch.toLowerCase()) ||
+      lead.service_category?.toLowerCase().includes(leadSearch.toLowerCase()) ||
+      lead.zip_code?.includes(leadSearch)
+    
+    const matchesStatus = leadStatusFilter === 'all' || lead.status === leadStatusFilter
+    
+    return matchesSearch && matchesStatus
+  })
 
   useEffect(() => {
     if (isAuthenticated) {
@@ -871,6 +943,12 @@ const AdminDashboard = () => {
                         Registered
                       </th>
                       <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        Leads Purchased
+                      </th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        Total Spend
+                      </th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                         Actions
                       </th>
                     </tr>
@@ -921,6 +999,16 @@ const AdminDashboard = () => {
                             {new Date(contractor.created_at).toLocaleDateString()}
                           </div>
                         </td>
+                        <td className="px-6 py-4 whitespace-nowrap">
+                          <div className="text-sm text-gray-900">
+                            {(contractor as any).total_leads_purchased || 0}
+                          </div>
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap">
+                          <div className="text-sm font-medium text-green-600">
+                            ${((contractor as any).total_spend || 0).toFixed(2)}
+                          </div>
+                        </td>
                         <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                           <Button
                             onClick={() => handleDeleteContractor(contractor.id)}
@@ -947,15 +1035,103 @@ const AdminDashboard = () => {
           </Card>
         )}
 
+        {activeTab === 'contractors' && (
+          <Card className="mt-6">
+            <CardHeader>
+              <CardTitle>Adjust Contractor Wallet Balance</CardTitle>
+              <CardDescription>
+                Add or deduct funds from a contractor's wallet
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div>
+                  <Label htmlFor="contractor_select">Select Contractor</Label>
+                  <select
+                    value={walletAdjustment.contractor_id}
+                    onChange={(e) => setWalletAdjustment({...walletAdjustment, contractor_id: e.target.value})}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  >
+                    <option value="">Choose contractor...</option>
+                    {contractors.map(contractor => (
+                      <option key={contractor.id} value={contractor.id}>
+                        {contractor.business_name} - ${contractor.wallet_balance}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+                <div>
+                  <Label htmlFor="adjustment_amount">Amount ($)</Label>
+                  <Input
+                    id="adjustment_amount"
+                    type="number"
+                    step="0.01"
+                    value={walletAdjustment.amount}
+                    onChange={(e) => setWalletAdjustment({...walletAdjustment, amount: e.target.value})}
+                    placeholder="Enter amount (+ or -)"
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="adjustment_notes">Notes</Label>
+                  <Input
+                    id="adjustment_notes"
+                    type="text"
+                    value={walletAdjustment.notes}
+                    onChange={(e) => setWalletAdjustment({...walletAdjustment, notes: e.target.value})}
+                    placeholder="Reason for adjustment"
+                  />
+                </div>
+              </div>
+              <Button
+                onClick={handleWalletAdjustment}
+                disabled={!walletAdjustment.contractor_id || !walletAdjustment.amount || loading}
+                className="mt-4"
+              >
+                {loading ? 'Adjusting...' : 'Adjust Wallet Balance'}
+              </Button>
+            </CardContent>
+          </Card>
+        )}
+
         {activeTab === 'leads' && (
           <Card>
             <CardHeader>
               <CardTitle>Lead Management</CardTitle>
               <CardDescription>
-                View and manage customer leads
+                View and manage customer leads with contractor assignments
               </CardDescription>
             </CardHeader>
             <CardContent>
+              <div className="mb-4 flex items-center justify-between">
+                <div className="flex items-center space-x-4">
+                  <Input
+                    placeholder="Search leads..."
+                    value={leadSearch}
+                    onChange={(e) => setLeadSearch(e.target.value)}
+                    className="w-64"
+                  />
+                  <select
+                    value={leadStatusFilter}
+                    onChange={(e) => setLeadStatusFilter(e.target.value)}
+                    className="px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  >
+                    <option value="all">All Statuses</option>
+                    <option value="available">Available</option>
+                    <option value="purchased">Purchased</option>
+                    <option value="expired">Expired</option>
+                    <option value="archived">Archived</option>
+                  </select>
+                </div>
+                <Button
+                  onClick={() => handleExportCSV(filteredLeads, `leads-${new Date().toISOString().split('T')[0]}.csv`)}
+                  variant="outline"
+                  size="sm"
+                  className="flex items-center space-x-2"
+                >
+                  <Download className="h-4 w-4" />
+                  <span>Export CSV</span>
+                </Button>
+              </div>
               <div className="overflow-x-auto">
                 <table className="min-w-full divide-y divide-gray-200">
                   <thead className="bg-gray-50">
@@ -984,7 +1160,7 @@ const AdminDashboard = () => {
                     </tr>
                   </thead>
                   <tbody className="bg-white divide-y divide-gray-200">
-                    {leads.map((lead) => (
+                    {filteredLeads.map((lead) => (
                       <tr key={lead.id}>
                         <td className="px-6 py-4 whitespace-nowrap">
                           <div className="text-sm font-medium text-gray-900">{lead.customer_name}</div>
@@ -1019,6 +1195,30 @@ const AdminDashboard = () => {
                             {new Date(lead.created_at).toLocaleDateString()}
                           </div>
                         </td>
+                        <td className="px-6 py-4">
+                          <div className="text-sm text-gray-900">
+                            {lead.contractor_leads && lead.contractor_leads.length > 0 ? (
+                              <div className="space-y-1">
+                                {lead.contractor_leads.map((cl) => (
+                                  <div key={cl.id} className="flex items-center space-x-2">
+                                    <span className="text-xs font-medium">
+                                      {cl.contractors?.business_name || 'Unknown'}
+                                    </span>
+                                    <span className={`px-2 py-1 text-xs rounded-full ${
+                                      cl.status === 'purchased' ? 'bg-green-100 text-green-800' :
+                                      cl.status === 'available' ? 'bg-blue-100 text-blue-800' :
+                                      'bg-gray-100 text-gray-800'
+                                    }`}>
+                                      {cl.status}
+                                    </span>
+                                  </div>
+                                ))}
+                              </div>
+                            ) : (
+                              <span className="text-gray-500">No assignments</span>
+                            )}
+                          </div>
+                        </td>
                         <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                           <Button
                             onClick={() => handleDeleteLead(lead.id)}
@@ -1034,11 +1234,13 @@ const AdminDashboard = () => {
                 </table>
               </div>
               
-              {leads.length === 0 && (
+              {filteredLeads.length === 0 && (
                 <div className="text-center py-8">
                   <FileText className="mx-auto h-12 w-12 text-gray-400" />
                   <h3 className="mt-2 text-sm font-medium text-gray-900">No leads</h3>
-                  <p className="mt-1 text-sm text-gray-500">No leads have been submitted yet.</p>
+                  <p className="mt-1 text-sm text-gray-500">
+                    {leadSearch || leadStatusFilter !== 'all' ? 'No leads match your filters.' : 'No leads have been submitted yet.'}
+                  </p>
                 </div>
               )}
             </CardContent>
@@ -1054,13 +1256,24 @@ const AdminDashboard = () => {
               </CardDescription>
             </CardHeader>
             <CardContent>
-              <div className="mb-4 p-4 bg-green-50 rounded-lg">
-                <div className="text-2xl font-bold text-green-600">
-                  Total Revenue: ${totalRevenue}
+              <div className="mb-4 flex items-center justify-between">
+                <div className="p-4 bg-green-50 rounded-lg">
+                  <div className="text-2xl font-bold text-green-600">
+                    Total Revenue: ${totalRevenue}
+                  </div>
+                  <div className="text-sm text-gray-600">
+                    From {transactions.length} transactions
+                  </div>
                 </div>
-                <div className="text-sm text-gray-600">
-                  From {transactions.length} transactions
-                </div>
+                <Button
+                  onClick={() => handleExportCSV(transactions, `transactions-${new Date().toISOString().split('T')[0]}.csv`)}
+                  variant="outline"
+                  size="sm"
+                  className="flex items-center space-x-2"
+                >
+                  <Download className="h-4 w-4" />
+                  <span>Export CSV</span>
+                </Button>
               </div>
               
               <div className="overflow-x-auto">
@@ -1068,10 +1281,13 @@ const AdminDashboard = () => {
                   <thead className="bg-gray-50">
                     <tr>
                       <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        Type
+                      </th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                         Contractor
                       </th>
                       <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                        Lead
+                        Description
                       </th>
                       <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                         Amount
@@ -1085,29 +1301,35 @@ const AdminDashboard = () => {
                     {transactions.map((transaction) => (
                       <tr key={transaction.id}>
                         <td className="px-6 py-4 whitespace-nowrap">
+                          <span className={`px-2 py-1 text-xs rounded-full ${
+                            (transaction as any).type === 'wallet_funding' ? 'bg-blue-100 text-blue-800' : 'bg-green-100 text-green-800'
+                          }`}>
+                            {(transaction as any).type === 'wallet_funding' ? 'Wallet Funding' : 'Lead Purchase'}
+                          </span>
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap">
                           <div className="text-sm font-medium text-gray-900">
-                            {transaction.contractors?.business_name || 'Unknown'}
+                            {(transaction as any).contractors?.business_name || 'Unknown'}
                           </div>
                           <div className="text-sm text-gray-500">
-                            {transaction.contractors?.contact_name || 'Unknown'}
+                            {(transaction as any).contractors?.contact_name || 'Unknown'}
                           </div>
                         </td>
-                        <td className="px-6 py-4 whitespace-nowrap">
+                        <td className="px-6 py-4">
                           <div className="text-sm text-gray-900">
-                            {transaction.leads?.customer_name || 'Unknown'}
-                          </div>
-                          <div className="text-sm text-gray-500">
-                            {transaction.leads?.service_category || 'Unknown'} - {transaction.leads?.sub_service || 'Unknown'}
+                            {(transaction as any).description}
                           </div>
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap">
-                          <div className="text-sm font-medium text-green-600">
+                          <div className={`text-sm font-medium ${
+                            (transaction as any).type === 'wallet_funding' ? 'text-blue-600' : 'text-green-600'
+                          }`}>
                             ${transaction.amount}
                           </div>
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap">
                           <div className="text-sm text-gray-900">
-                            {new Date(transaction.purchased_at).toLocaleDateString()}
+                            {new Date((transaction as any).date).toLocaleDateString()}
                           </div>
                         </td>
                       </tr>

@@ -32,17 +32,34 @@ export const handler = async (event, context) => {
   }
 
   try {
-    const { data: transactions, error: transactionsError } = await supabase
-      .from('lead_purchases')
+    const { data: walletTransactions, error: walletError } = await supabase
+      .from('transactions')
       .select(`
-        *,
+        id,
+        contractor_id,
+        amount,
+        source,
+        notes,
+        created_at,
+        contractors (business_name, contact_name)
+      `)
+      .order('created_at', { ascending: false })
+
+    const { data: leadTransactions, error: leadError } = await supabase
+      .from('contractor_leads')
+      .select(`
+        id,
+        contractor_id,
+        price_paid,
+        purchased_at,
         contractors (business_name, contact_name),
         leads (customer_name, service_category, sub_service)
       `)
+      .eq('status', 'purchased')
       .order('purchased_at', { ascending: false })
 
-    if (transactionsError) {
-      console.error('Transactions query error:', transactionsError)
+    if (walletError || leadError) {
+      console.error('Transactions query error:', walletError || leadError)
       return {
         statusCode: 500,
         headers: {
@@ -53,7 +70,31 @@ export const handler = async (event, context) => {
       }
     }
 
-    const totalRevenue = transactions.reduce((sum, transaction) => sum + parseFloat(transaction.amount), 0)
+    const allTransactions = [
+      ...(walletTransactions || []).map(t => ({
+        id: t.id,
+        type: 'wallet_funding',
+        contractor_id: t.contractor_id,
+        amount: t.amount,
+        description: t.source === 'stripe' ? 'Wallet Funding (Stripe)' : t.notes || 'Wallet Adjustment',
+        date: t.created_at,
+        contractors: t.contractors
+      })),
+      ...(leadTransactions || []).map(t => ({
+        id: t.id,
+        type: 'lead_purchase',
+        contractor_id: t.contractor_id,
+        amount: t.price_paid,
+        description: `Lead Purchase: ${t.leads?.customer_name} - ${t.leads?.service_category}`,
+        date: t.purchased_at,
+        contractors: t.contractors,
+        leads: t.leads
+      }))
+    ].sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
+
+    const totalRevenue = allTransactions
+      .filter(t => t.type === 'lead_purchase')
+      .reduce((sum, transaction) => sum + parseFloat(transaction.amount || 0), 0)
 
     return {
       statusCode: 200,
@@ -62,7 +103,7 @@ export const handler = async (event, context) => {
         'Access-Control-Allow-Origin': '*'
       },
       body: JSON.stringify({
-        transactions: transactions || [],
+        transactions: allTransactions || [],
         total_revenue: totalRevenue.toFixed(2)
       })
     }

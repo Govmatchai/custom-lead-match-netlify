@@ -34,8 +34,17 @@ export const handler = async (event, context) => {
   try {
     const { data: leads, error } = await supabase
       .from('leads')
-      .select('*')
-      .in('status', ['valid', 'pending_review', 'invalid', 'duplicate', 'claimed'])
+      .select(`
+        *,
+        contractor_leads (
+          id,
+          contractor_id,
+          status,
+          purchased_at,
+          contractors (business_name, contact_name)
+        )
+      `)
+      .in('status', ['valid', 'pending_review', 'invalid', 'duplicate', 'claimed', 'available', 'purchased', 'expired'])
       .order('created_at', { ascending: false })
       .limit(200)
 

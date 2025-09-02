@@ -34,7 +34,14 @@ export const handler = async (event, context) => {
   try {
     const { data: contractors, error } = await supabase
       .from('contractors')
-      .select('*')
+      .select(`
+        *,
+        contractor_leads (
+          id,
+          status,
+          price_paid
+        )
+      `)
       .order('created_at', { ascending: false })
 
     if (error) {
@@ -49,13 +56,19 @@ export const handler = async (event, context) => {
       }
     }
 
+    const contractorsWithMetrics = contractors?.map(contractor => ({
+      ...contractor,
+      total_leads_purchased: contractor.contractor_leads?.filter(cl => cl.status === 'purchased').length || 0,
+      total_spend: contractor.contractor_leads?.filter(cl => cl.status === 'purchased').reduce((sum, cl) => sum + (cl.price_paid || 0), 0) || 0
+    })) || []
+
     return {
       statusCode: 200,
       headers: {
         'Content-Type': 'application/json',
         'Access-Control-Allow-Origin': '*'
       },
-      body: JSON.stringify(contractors || [])
+      body: JSON.stringify(contractorsWithMetrics)
     }
   } catch (error) {
     console.error('Error:', error)
