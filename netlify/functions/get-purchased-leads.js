@@ -65,9 +65,12 @@ export const handler = async (event, context) => {
     }
 
     const { data: purchasedLeads, error: purchasedError } = await supabase
-      .from('purchased_leads')
+      .from('contractor_leads')
       .select(`
-        *,
+        id,
+        status,
+        created_at,
+        purchased_at,
         leads (
           id,
           customer_name,
@@ -76,10 +79,12 @@ export const handler = async (event, context) => {
           zip_code,
           description,
           created_at,
-          is_archived
+          phone,
+          email
         )
       `)
       .eq('contractor_id', contractor_id)
+      .eq('status', 'purchased')
       .order('purchased_at', { ascending: false })
 
     if (purchasedError) {
@@ -94,7 +99,7 @@ export const handler = async (event, context) => {
       }
     }
 
-    const activePurchasedLeads = purchasedLeads.filter(lead => lead.status === 'active' || !lead.status)
+    const activePurchasedLeads = purchasedLeads.filter(lead => lead.status === 'purchased' && !lead.leads?.is_archived)
     const archivedPurchasedLeads = purchasedLeads.filter(lead => lead.leads?.is_archived)
     const completedLeads = purchasedLeads.filter(lead => lead.status === 'completed')
 
