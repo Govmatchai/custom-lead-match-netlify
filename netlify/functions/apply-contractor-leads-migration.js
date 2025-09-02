@@ -90,7 +90,29 @@ export const handler = async (event, context) => {
       GRANT USAGE, SELECT ON SEQUENCE contractor_leads_id_seq TO service_role;
     `
 
-    const { error } = await supabase.rpc('exec_sql', { sql: schemaSql })
+    const statements = schemaSql.split(';').filter(stmt => stmt.trim().length > 0)
+    
+    for (const statement of statements) {
+      const trimmedStatement = statement.trim()
+      if (trimmedStatement.length === 0) continue
+      
+      console.log('Executing SQL:', trimmedStatement.substring(0, 100) + '...')
+      
+      const { error } = await supabase.rpc('exec', { sql: trimmedStatement })
+      if (error) {
+        console.error('SQL execution error:', error)
+        return {
+          statusCode: 500,
+          headers: corsHeaders,
+          body: JSON.stringify({ 
+            detail: 'Migration failed at statement', 
+            error: error.message,
+            statement: trimmedStatement.substring(0, 200),
+            success: false
+          })
+        }
+      }
+    }
 
     if (error) {
       console.error('❌ Migration error:', error)
