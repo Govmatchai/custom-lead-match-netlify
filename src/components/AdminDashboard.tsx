@@ -150,7 +150,7 @@ const AdminDashboard: React.FC = () => {
 
       const totalLeads = leadsData.length || 0
       const totalContractors = contractorsData.length || 0
-      const totalRevenue = parseFloat(transactionsData.total_revenue || '0')
+      const totalRevenue = parseFloat(String(transactionsData.total_revenue || 0))
       const activeContractors = contractorsData.filter(c => c.wallet_balance > 0).length || 0
 
       setAdminStats({
