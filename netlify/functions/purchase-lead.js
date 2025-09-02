@@ -84,16 +84,28 @@ export const handler = async (event, context) => {
 
     const currentBalance = contractor.wallet_balance || 0
 
-    const { data: lead, error: leadError } = await supabase
-      .from('leads')
-      .select('*')
-      .eq('id', lead_id)
-      .eq('claimed', false)
-      .eq('is_archived', false)
-      .eq('status', 'valid')
+    const { data: contractorLead, error: contractorLeadError } = await supabase
+      .from('contractor_leads')
+      .select(`
+        id,
+        status,
+        leads (
+          id,
+          service_category,
+          zip_code,
+          customer_name,
+          customer_phone,
+          customer_email,
+          description,
+          urgency
+        )
+      `)
+      .eq('contractor_id', contractor_id)
+      .eq('lead_id', lead_id)
+      .eq('status', 'available')
       .single()
 
-    if (leadError || !lead) {
+    if (contractorLeadError || !contractorLead) {
       return {
         statusCode: 404,
         headers: {
@@ -103,6 +115,8 @@ export const handler = async (event, context) => {
         body: JSON.stringify({ success: false, message: 'Lead not available or already claimed' })
       }
     }
+
+    const lead = contractorLead.leads
 
     const { data: categoryPricing, error: pricingError } = await supabase
       .from('category_pricing')
@@ -141,6 +155,39 @@ export const handler = async (event, context) => {
       }
     }
 
+    const { error: updatePurchasedError } = await supabase
+      .from('contractor_leads')
+      .update({ 
+        status: 'purchased',
+        purchased_at: new Date().toISOString()
+      })
+      .eq('contractor_id', contractor_id)
+      .eq('lead_id', lead_id)
+      .eq('status', 'available')
+
+    if (updatePurchasedError) {
+      console.error('Update contractor_leads error:', updatePurchasedError)
+      return {
+        statusCode: 500,
+        headers: {
+          'Content-Type': 'application/json',
+          'Access-Control-Allow-Origin': '*'
+        },
+        body: JSON.stringify({ success: false, message: 'Failed to update contractor_leads for purchase' })
+      }
+    }
+
+    const { error: expireOthersError } = await supabase
+      .from('contractor_leads')
+      .update({ status: 'expired' })
+      .eq('lead_id', lead_id)
+      .neq('contractor_id', contractor_id)
+      .eq('status', 'available')
+
+    if (expireOthersError) {
+      console.error('Failed to expire other contractors entries:', expireOthersError)
+    }
+
     const { data: updatedLead, error: leadUpdateError } = await supabase
       .from('leads')
       .update({
@@ -158,18 +205,6 @@ export const handler = async (event, context) => {
 
     if (leadUpdateError) {
       console.error('Lead update error:', leadUpdateError)
-      return {
-        statusCode: 500,
-        headers: {
-          'Content-Type': 'application/json',
-          'Access-Control-Allow-Origin': '*'
-        },
-        body: JSON.stringify({ 
-          success: false, 
-          message: 'Failed to purchase lead',
-          error: leadUpdateError.message 
-        })
-      }
     }
 
     const { error: walletUpdateError } = await supabase

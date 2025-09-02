@@ -908,6 +908,11 @@ const ContractorDashboard = () => {
                               {lead.description.length > 100 ? lead.description.substring(0, 100) + '...' : lead.description}
                             </p>
                           </div>
+                          <div className="bg-red-50 p-3 rounded border border-red-200 mb-3">
+                            <p className="text-sm text-red-800">
+                              🚨 <strong>This lead is exclusive — once another contractor purchases it, it will disappear.</strong>
+                            </p>
+                          </div>
                           <div className="flex justify-between items-center">
                             <span className="text-sm text-gray-500">
                               Submitted: {new Date(lead.created_at).toLocaleDateString()}
@@ -953,9 +958,14 @@ const ContractorDashboard = () => {
                                           <p>{new Date(selectedLead.created_at).toLocaleString()}</p>
                                         </div>
                                       </div>
-                                      <div className="bg-yellow-50 p-3 rounded border border-yellow-200">
+                                      <div className="bg-yellow-50 p-3 rounded border border-yellow-200 mb-3">
                                         <p className="text-sm text-yellow-800">
                                           🔒 <strong>Contact details will be revealed after purchase.</strong> Customer name, phone, and email will be available once you purchase this lead.
+                                        </p>
+                                      </div>
+                                      <div className="bg-red-50 p-3 rounded border border-red-200">
+                                        <p className="text-sm text-red-800">
+                                          🚨 <strong>This lead is exclusive — once another contractor purchases it, it will disappear.</strong>
                                         </p>
                                       </div>
                                     </div>

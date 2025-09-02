@@ -321,10 +321,43 @@ async function distributeLead(lead) {
     }))
   }, lead.id)
   
+  const contractorLeadsEntries = contractors.map(contractor => ({
+    contractor_id: contractor.id,
+    lead_id: lead.id,
+    status: 'available',
+    created_at: new Date().toISOString()
+  }))
+
+  const { error: insertError } = await supabase
+    .from('contractor_leads')
+    .insert(contractorLeadsEntries)
+
+  if (insertError) {
+    console.error('Error creating contractor_leads entries:', insertError)
+    await logger.error('CONTRACTOR_LEADS_INSERT_FAILED', {
+      leadId: lead.id,
+      contractorCount: contractors.length,
+      error: insertError.message
+    }, lead.id)
+    return
+  }
+
+  console.log(`✅ Created ${contractorLeadsEntries.length} contractor_leads entries for lead ${lead.id}`)
+  
+  await logger.info('CONTRACTOR_LEADS_CREATED', {
+    leadId: lead.id,
+    contractorLeadsCount: contractorLeadsEntries.length,
+    contractors: contractors.map(c => ({
+      id: c.id,
+      businessName: c.business_name,
+      email: c.email
+    }))
+  }, lead.id)
+
   const notificationResults = await notifyContractorsForLead(lead, targetContractors)
   console.log(`📬 Notification results received:`, notificationResults)
   
-  await logger.info('NOTIFICATION RESULTS RECEIVED', {
+  await logger.info('NOTIFICATION_RESULTS_RECEIVED', {
     leadId: lead.id,
     notificationResults
   }, lead.id)

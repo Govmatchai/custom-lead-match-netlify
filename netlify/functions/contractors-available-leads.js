@@ -81,16 +81,34 @@ export const handler = async (event, context) => {
       }
     }
 
-    const { data: availableLeads, error: leadsError } = await supabase
-      .from('leads')
-      .select('*')
-      .eq('claimed', false)
-      .eq('is_archived', false)
-      .eq('status', 'valid')
-      .ilike('service_category', contractor.industry.replace(/_/g, ' '))
-      .ilike('sub_service', contractor.sub_service.replace(/_/g, ' '))
-      .in('zip_code', contractor.zip_codes)
+    const { data: contractorLeadsData, error: leadsError } = await supabase
+      .from('contractor_leads')
+      .select(`
+        id,
+        status,
+        created_at,
+        leads (
+          id,
+          service_category,
+          sub_service,
+          zip_code,
+          description,
+          urgency,
+          created_at,
+          customer_name,
+          customer_phone,
+          customer_email
+        )
+      `)
+      .eq('contractor_id', contractor_id)
+      .eq('status', 'available')
       .order('created_at', { ascending: false })
+
+    const availableLeads = contractorLeadsData?.map(cl => ({
+      ...cl.leads,
+      contractor_lead_id: cl.id,
+      contractor_lead_status: cl.status
+    })) || []
 
     if (leadsError) {
       console.error('Available leads query error:', leadsError)
