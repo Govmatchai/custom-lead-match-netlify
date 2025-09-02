@@ -212,7 +212,7 @@ async function distributeLead(lead) {
     .select('*')
     .eq('industry', contractorIndustry)
     .contains('zip_codes', [lead.zip_code])
-    .gt('lead_credits', 0)
+    .gt('wallet_balance', 0)
 
   if (contractorIndustry === 'home_services' && 
       (lead.service_category === 'HVAC' || lead.service_category === 'hvac' || 
@@ -276,9 +276,10 @@ async function distributeLead(lead) {
            daysSinceActive < 14
   })
   
+  console.log(`📊 Contractor eligibility check: ${eligibleContractors.length}/${contractors.length} eligible for SMS`)
+  
   if (!eligibleContractors.length) {
-    console.log('No eligible contractors found for SMS notifications')
-    return
+    console.log('No eligible contractors found for SMS notifications, but still creating contractor_leads entries')
   }
 
   const { data: limitsConfig } = await supabase
@@ -293,6 +294,9 @@ async function distributeLead(lead) {
                         limits.default_max_contractors || 5
 
   let targetContractors = eligibleContractors.slice(0, maxContractors)
+  
+  console.log(`📧 Creating contractor_leads entries for ALL ${contractors.length} matching contractors`)
+  console.log(`📧 Sending notifications to ${targetContractors.length} eligible contractors`)
 
   const token = require('crypto').randomBytes(16).toString('hex')
   const expiresAt = new Date(Date.now() + 24 * 60 * 60 * 1000)
@@ -364,7 +368,13 @@ async function distributeLead(lead) {
     }))
   }, lead.id)
 
-  const notificationResults = await notifyContractorsForLead(lead, targetContractors)
+  let notificationResults = null
+  if (targetContractors.length > 0) {
+    notificationResults = await notifyContractorsForLead(lead, targetContractors)
+  } else {
+    console.log('⚠️ No eligible contractors for notifications, but contractor_leads entries created')
+    notificationResults = { message: 'No eligible contractors for notifications' }
+  }
   console.log(`📬 Notification results received:`, notificationResults)
   
   await logger.info('NOTIFICATION_RESULTS_RECEIVED', {
