@@ -17,6 +17,16 @@ ALTER TABLE pricing_history ENABLE ROW LEVEL SECURITY;
 CREATE POLICY "Allow all for service role" ON pricing_history FOR ALL USING (auth.role() = 'service_role');
 CREATE POLICY "Allow anonymous read" ON pricing_history FOR SELECT USING (true);
 
+INSERT INTO category_pricing (category, price) VALUES 
+('HVAC', 20.00),
+('Plumbing', 25.00),
+('Electrical', 30.00),
+('Roofing', 35.00),
+('Emergency', 100.00)
+ON CONFLICT (category) DO UPDATE SET 
+  price = EXCLUDED.price,
+  updated_at = NOW();
+
 COMMENT ON TABLE pricing_history IS 'Audit log for all lead pricing changes made by admins';
 COMMENT ON COLUMN pricing_history.admin_id IS 'ID of admin who made the pricing change';
 COMMENT ON COLUMN pricing_history.old_price IS 'Previous price before the change';
