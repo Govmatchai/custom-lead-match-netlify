@@ -63,10 +63,6 @@ export const handler = async (event, context) => {
           .delete()
           .eq('lead_id', leadId)
 
-        await supabase
-          .from('notification_logs')
-          .delete()
-          .eq('lead_id', parseInt(leadId))
 
         await supabase
           .from('validation_metrics')

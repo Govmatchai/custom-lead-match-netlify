@@ -89,14 +89,6 @@ export const handler = async (event, context) => {
       console.error('Error deleting purchased_leads:', purchasedLeadsError)
     }
 
-    const { error: notificationLogsError } = await supabase
-      .from('notification_logs')
-      .delete()
-      .eq('lead_id', parseInt(lead_id))
-
-    if (notificationLogsError) {
-      console.error('Error deleting notification_logs:', notificationLogsError)
-    }
 
     const { error: validationMetricsError } = await supabase
       .from('validation_metrics')
