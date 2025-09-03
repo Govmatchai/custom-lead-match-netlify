@@ -117,6 +117,15 @@ export const handler = async (event, context) => {
       console.error('Error updating validation_metrics:', validationMetricsError)
     }
 
+    const { error: notificationLogsError } = await supabase
+      .from('notification_logs')
+      .delete()
+      .eq('lead_id', lead_id)
+
+    if (notificationLogsError) {
+      console.error('Error deleting notification_logs:', notificationLogsError)
+    }
+
     const { error } = await supabase
       .from('leads')
       .delete()
