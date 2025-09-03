@@ -46,6 +46,49 @@ export const handler = async (event, context) => {
       }
     }
 
+    const { error: contractorLeadsError } = await supabase
+      .from('contractor_leads')
+      .delete()
+      .eq('lead_id', lead_id)
+
+    if (contractorLeadsError) {
+      console.error('Error deleting contractor_leads:', contractorLeadsError)
+      return {
+        statusCode: 500,
+        headers: {
+          'Content-Type': 'application/json',
+          'Access-Control-Allow-Origin': '*'
+        },
+        body: JSON.stringify({ detail: 'Failed to delete contractor_leads entries' })
+      }
+    }
+
+    const { error: transactionsError } = await supabase
+      .from('transactions')
+      .delete()
+      .eq('lead_id', lead_id)
+
+    if (transactionsError) {
+      console.error('Error deleting transactions:', transactionsError)
+      return {
+        statusCode: 500,
+        headers: {
+          'Content-Type': 'application/json',
+          'Access-Control-Allow-Origin': '*'
+        },
+        body: JSON.stringify({ detail: 'Failed to delete transaction entries' })
+      }
+    }
+
+    const { error: purchasedLeadsError } = await supabase
+      .from('purchased_leads')
+      .delete()
+      .eq('lead_id', lead_id)
+
+    if (purchasedLeadsError) {
+      console.error('Error deleting purchased_leads:', purchasedLeadsError)
+    }
+
     const { error } = await supabase
       .from('leads')
       .delete()

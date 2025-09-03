@@ -116,6 +116,7 @@ const AdminDashboard: React.FC = () => {
   const [contractorSearch, setContractorSearch] = useState('')
   
   const [selectedContractors, setSelectedContractors] = useState<string[]>([])
+  const [selectedLeads, setSelectedLeads] = useState<Set<string>>(new Set())
   const [selectAll, setSelectAll] = useState(false)
 
   const handleLogin = async () => {
@@ -369,6 +370,94 @@ const AdminDashboard: React.FC = () => {
       setTimeout(() => setErrorMessage(''), 5000)
     } finally {
       setLoading(false)
+    }
+  }
+
+  const handleDeleteLead = async (leadId: string) => {
+    if (!confirm('Are you sure you want to delete this lead? This action cannot be undone.')) {
+      return
+    }
+
+    setLoading(true)
+    try {
+      const response = await fetch('/.netlify/functions/admin-delete-lead', {
+        method: 'DELETE',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ lead_id: leadId })
+      })
+
+      if (response.ok) {
+        setSuccessMessage('Lead deleted successfully')
+        setTimeout(() => setSuccessMessage(''), 3000)
+        fetchAdminData()
+      } else {
+        setErrorMessage('Failed to delete lead')
+        setTimeout(() => setErrorMessage(''), 3000)
+      }
+    } catch (error) {
+      console.error('Error deleting lead:', error)
+      setErrorMessage('Error deleting lead')
+      setTimeout(() => setErrorMessage(''), 3000)
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  const handleBulkDeleteLeads = async () => {
+    if (selectedLeads.size === 0) {
+      setErrorMessage('Please select leads to delete')
+      setTimeout(() => setErrorMessage(''), 3000)
+      return
+    }
+
+    if (!confirm(`Are you sure you want to delete ${selectedLeads.size} leads? This action cannot be undone.`)) {
+      return
+    }
+
+    setLoading(true)
+    try {
+      const response = await fetch('/.netlify/functions/admin-bulk-delete-leads', {
+        method: 'DELETE',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ lead_ids: Array.from(selectedLeads) })
+      })
+
+      if (response.ok) {
+        const result = await response.json()
+        setSuccessMessage(result.message)
+        setTimeout(() => setSuccessMessage(''), 3000)
+        setSelectedLeads(new Set())
+        fetchAdminData()
+      } else {
+        setErrorMessage('Failed to delete leads')
+        setTimeout(() => setErrorMessage(''), 3000)
+      }
+    } catch (error) {
+      console.error('Error deleting leads:', error)
+      setErrorMessage('Error deleting leads')
+      setTimeout(() => setErrorMessage(''), 3000)
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  const handleSelectLead = (leadId: string) => {
+    setSelectedLeads(prev => {
+      const newSet = new Set(prev)
+      if (newSet.has(leadId)) {
+        newSet.delete(leadId)
+      } else {
+        newSet.add(leadId)
+      }
+      return newSet
+    })
+  }
+
+  const handleSelectAllLeads = () => {
+    if (selectedLeads.size === filteredLeads.length) {
+      setSelectedLeads(new Set())
+    } else {
+      setSelectedLeads(new Set(filteredLeads.map(l => l.id)))
     }
   }
 
@@ -909,6 +998,18 @@ const AdminDashboard: React.FC = () => {
                       <SelectItem value="archived">Archived</SelectItem>
                     </SelectContent>
                   </Select>
+                  {selectedLeads.size > 0 && (
+                    <Button
+                      onClick={handleBulkDeleteLeads}
+                      variant="destructive"
+                      size="sm"
+                      disabled={loading}
+                      className="flex items-center space-x-2"
+                    >
+                      <Trash2 className="h-4 w-4" />
+                      <span>Delete Selected ({selectedLeads.size})</span>
+                    </Button>
+                  )}
                 </div>
                 <Button
                   onClick={() => handleExportCSV(filteredLeads, `leads-${new Date().toISOString().split('T')[0]}.csv`)}
@@ -925,6 +1026,14 @@ const AdminDashboard: React.FC = () => {
                 <table className="min-w-full divide-y divide-gray-200">
                   <thead className="bg-gray-50">
                     <tr>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        <input
+                          type="checkbox"
+                          checked={selectedLeads.size === filteredLeads.length && filteredLeads.length > 0}
+                          onChange={handleSelectAllLeads}
+                          className="rounded border-gray-300"
+                        />
+                      </th>
                       <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                         Customer
                       </th>
@@ -943,11 +1052,22 @@ const AdminDashboard: React.FC = () => {
                       <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                         Assigned Contractors
                       </th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        Actions
+                      </th>
                     </tr>
                   </thead>
                   <tbody className="bg-white divide-y divide-gray-200">
                     {filteredLeads.map((lead) => (
                       <tr key={lead.id}>
+                        <td className="px-6 py-4 whitespace-nowrap">
+                          <input
+                            type="checkbox"
+                            checked={selectedLeads.has(lead.id)}
+                            onChange={() => handleSelectLead(lead.id)}
+                            className="rounded border-gray-300"
+                          />
+                        </td>
                         <td className="px-6 py-4 whitespace-nowrap">
                           <div className="text-sm font-medium text-gray-900">{lead.customer_name}</div>
                           <div className="text-sm text-gray-500">{lead.phone}</div>
@@ -988,6 +1108,18 @@ const AdminDashboard: React.FC = () => {
                               </div>
                             )) || 'No assignments'}
                           </div>
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap">
+                          <Button
+                            onClick={() => handleDeleteLead(lead.id)}
+                            variant="destructive"
+                            size="sm"
+                            disabled={loading}
+                            className="flex items-center space-x-1"
+                          >
+                            <Trash2 className="h-4 w-4" />
+                            <span>Delete</span>
+                          </Button>
                         </td>
                       </tr>
                     ))}
