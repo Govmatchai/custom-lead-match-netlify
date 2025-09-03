@@ -59,9 +59,12 @@ export const handler = async (event, context) => {
           sub_service,
           zip_code,
           description,
-          status: 'valid',
+          status: 'available',
           claimed: false,
-          is_archived: false
+          is_archived: false,
+          validation_email_status: 'skipped',
+          validation_phone_status: 'skipped',
+          validation_zip_status: 'skipped'
         })
         .select()
         .single()
@@ -98,7 +101,7 @@ export const handler = async (event, context) => {
           zip_code: lead.zip_code
         })
         
-        const distributionResponse = await fetch(`${process.env.URL || 'http://localhost:8888'}/.netlify/functions/distribute-leads`, {
+        const distributionResponse = await fetch(`${process.env.URL || 'https://customleadmatch.com'}/.netlify/functions/distribute-leads`, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json'
@@ -147,7 +150,10 @@ export const handler = async (event, context) => {
           sub_service: 'Plumbing',
           zip_code: '12345',
           description: 'Test plumbing lead for QA purposes - kitchen sink repair needed',
-          status: 'valid'
+          status: 'available',
+          validation_email_status: 'skipped',
+          validation_phone_status: 'skipped',
+          validation_zip_status: 'skipped'
         },
         {
           customer_name: 'Test Customer 2',
@@ -157,7 +163,10 @@ export const handler = async (event, context) => {
           sub_service: 'HVAC',
           zip_code: '12346',
           description: 'Test HVAC lead for QA purposes - air conditioning repair needed',
-          status: 'valid'
+          status: 'available',
+          validation_email_status: 'skipped',
+          validation_phone_status: 'skipped',
+          validation_zip_status: 'skipped'
         },
         {
           customer_name: 'Test Customer 3',
@@ -167,7 +176,10 @@ export const handler = async (event, context) => {
           sub_service: 'Personal Injury',
           zip_code: '12345',
           description: 'Test legal lead for QA purposes - car accident case consultation',
-          status: 'valid'
+          status: 'available',
+          validation_email_status: 'skipped',
+          validation_phone_status: 'skipped',
+          validation_zip_status: 'skipped'
         }
       ]
 
