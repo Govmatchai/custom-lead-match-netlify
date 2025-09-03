@@ -126,6 +126,24 @@ export const handler = async (event, context) => {
       console.error('Error deleting notification_logs:', notificationLogsError)
     }
 
+    const { error: smsLogsError } = await supabase
+      .from('sms_send_log')
+      .delete()
+      .eq('lead_id', lead_id)
+
+    if (smsLogsError) {
+      console.error('Error deleting sms_send_log:', smsLogsError)
+    }
+
+    const { error: claimTokensError } = await supabase
+      .from('claim_tokens')
+      .delete()
+      .eq('lead_id', lead_id)
+
+    if (claimTokensError) {
+      console.error('Error deleting claim_tokens:', claimTokensError)
+    }
+
     const { error } = await supabase
       .from('leads')
       .delete()

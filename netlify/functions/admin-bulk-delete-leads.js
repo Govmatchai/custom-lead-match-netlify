@@ -84,6 +84,16 @@ export const handler = async (event, context) => {
           .delete()
           .eq('lead_id', leadId)
 
+        await supabase
+          .from('sms_send_log')
+          .delete()
+          .eq('lead_id', leadId)
+
+        await supabase
+          .from('claim_tokens')
+          .delete()
+          .eq('lead_id', leadId)
+
         const { error } = await supabase
           .from('leads')
           .delete()
