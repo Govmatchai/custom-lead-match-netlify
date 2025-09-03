@@ -6,6 +6,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog'
 import { EditProfileModal } from './EditProfileModal'
 import { Logo } from '@/components/ui/Logo'
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell, LineChart, Line } from 'recharts'
 
 interface Lead {
   id: string
@@ -111,6 +112,7 @@ const ContractorDashboard = () => {
   const [currentPage, setCurrentPage] = useState(1)
   const [totalPages, setTotalPages] = useState(1)
   const [totalRecords, setTotalRecords] = useState(0)
+  const [weeklyReports, setWeeklyReports] = useState<any[]>([])
   const [categoryPricing, setCategoryPricing] = useState<{ [key: string]: number }>({})
   const [smsOptIn, setSmsOptIn] = useState(false)
   const [performanceMetrics, setPerformanceMetrics] = useState(null)
@@ -564,6 +566,18 @@ const ContractorDashboard = () => {
       }
     } catch (error) {
       console.error('Error fetching performance metrics:', error)
+    }
+  }
+
+  const fetchWeeklyReports = async () => {
+    try {
+      const response = await fetch(`/.netlify/functions/contractor-weekly-reports?contractor_id=${contractorId}&limit=12`)
+      if (response.ok) {
+        const data = await response.json()
+        setWeeklyReports(data.reports || [])
+      }
+    } catch (error) {
+      console.error('Error fetching weekly reports:', error)
     }
   }
 
@@ -2317,6 +2331,243 @@ const ContractorDashboard = () => {
               <span className="mr-2">✅</span>
               <span>{successMessage}</span>
             </div>
+          </div>
+        )}
+
+        {activeTab === 'reports' && (
+          <div className="space-y-6">
+            <Card>
+              <CardHeader>
+                <CardTitle>Weekly Performance Trends</CardTitle>
+              </CardHeader>
+              <CardContent>
+                {weeklyReports.length > 0 ? (
+                  <ResponsiveContainer width="100%" height={300}>
+                    <LineChart data={weeklyReports.reverse()}>
+                      <CartesianGrid strokeDasharray="3 3" />
+                      <XAxis dataKey="week_start_formatted" />
+                      <YAxis yAxisId="left" />
+                      <YAxis yAxisId="right" orientation="right" />
+                      <Tooltip />
+                      <Line 
+                        yAxisId="left"
+                        type="monotone" 
+                        dataKey="spend" 
+                        stroke="#2563eb" 
+                        strokeWidth={2}
+                        name="Weekly Spend ($)" 
+                      />
+                      <Line 
+                        yAxisId="right"
+                        type="monotone" 
+                        dataKey="leads_purchased" 
+                        stroke="#10b981" 
+                        strokeWidth={2}
+                        name="Leads Purchased" 
+                      />
+                    </LineChart>
+                  </ResponsiveContainer>
+                ) : (
+                  <p className="text-gray-500 text-center py-8">No weekly reports available yet</p>
+                )}
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader>
+                <CardTitle>Weekly Summary</CardTitle>
+              </CardHeader>
+              <CardContent>
+                {weeklyReports.length > 0 ? (
+                  <div className="space-y-4">
+                    {weeklyReports.slice(0, 5).map((report, index) => (
+                      <div key={index} className="border rounded-lg p-4">
+                        <div className="flex justify-between items-start mb-2">
+                          <div>
+                            <h4 className="font-semibold">Week of {report.week_start_formatted}</h4>
+                            <p className="text-sm text-gray-600">{report.week_start_formatted} - {report.week_end_formatted}</p>
+                          </div>
+                          <div className="text-right">
+                            <p className="font-bold text-blue-600">${report.spend.toFixed(2)} spent</p>
+                            <p className="text-sm text-gray-600">{report.leads_purchased} leads purchased</p>
+                          </div>
+                        </div>
+                        <div className="grid grid-cols-2 gap-4 mt-3">
+                          <div className="text-center p-2 bg-green-50 rounded">
+                            <p className="text-xs text-gray-600">Refunds</p>
+                            <p className="font-semibold text-green-600">${report.refunds.toFixed(2)}</p>
+                          </div>
+                          <div className="text-center p-2 bg-blue-50 rounded">
+                            <p className="text-xs text-gray-600">Wallet Balance</p>
+                            <p className="font-semibold text-blue-600">${report.wallet_balance.toFixed(2)}</p>
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <p className="text-gray-500 text-center py-8">No weekly reports available yet</p>
+                )}
+              </CardContent>
+            </Card>
+          </div>
+        )}
+
+        {activeTab === 'reports' && (
+          <div className="space-y-6">
+            <Card>
+              <CardHeader>
+                <CardTitle>Weekly Performance Trends</CardTitle>
+              </CardHeader>
+              <CardContent>
+                {weeklyReports.length > 0 ? (
+                  <ResponsiveContainer width="100%" height={300}>
+                    <LineChart data={weeklyReports.reverse()}>
+                      <CartesianGrid strokeDasharray="3 3" />
+                      <XAxis dataKey="week_start_formatted" />
+                      <YAxis yAxisId="left" />
+                      <YAxis yAxisId="right" orientation="right" />
+                      <Tooltip />
+                      <Line 
+                        yAxisId="left"
+                        type="monotone" 
+                        dataKey="spend" 
+                        stroke="#2563eb" 
+                        strokeWidth={2}
+                        name="Weekly Spend ($)" 
+                      />
+                      <Line 
+                        yAxisId="right"
+                        type="monotone" 
+                        dataKey="leads_purchased" 
+                        stroke="#10b981" 
+                        strokeWidth={2}
+                        name="Leads Purchased" 
+                      />
+                    </LineChart>
+                  </ResponsiveContainer>
+                ) : (
+                  <p className="text-gray-500 text-center py-8">No weekly reports available yet</p>
+                )}
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader>
+                <CardTitle>Weekly Summary</CardTitle>
+              </CardHeader>
+              <CardContent>
+                {weeklyReports.length > 0 ? (
+                  <div className="space-y-4">
+                    {weeklyReports.slice(0, 5).map((report, index) => (
+                      <div key={index} className="border rounded-lg p-4">
+                        <div className="flex justify-between items-start mb-2">
+                          <div>
+                            <h4 className="font-semibold">Week of {report.week_start_formatted}</h4>
+                            <p className="text-sm text-gray-600">{report.week_start_formatted} - {report.week_end_formatted}</p>
+                          </div>
+                          <div className="text-right">
+                            <p className="font-bold text-blue-600">${report.spend.toFixed(2)} spent</p>
+                            <p className="text-sm text-gray-600">{report.leads_purchased} leads purchased</p>
+                          </div>
+                        </div>
+                        <div className="grid grid-cols-2 gap-4 mt-3">
+                          <div className="text-center p-2 bg-green-50 rounded">
+                            <p className="text-xs text-gray-600">Refunds</p>
+                            <p className="font-semibold text-green-600">${report.refunds.toFixed(2)}</p>
+                          </div>
+                          <div className="text-center p-2 bg-blue-50 rounded">
+                            <p className="text-xs text-gray-600">Wallet Balance</p>
+                            <p className="font-semibold text-blue-600">${report.wallet_balance.toFixed(2)}</p>
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <p className="text-gray-500 text-center py-8">No weekly reports available yet</p>
+                )}
+              </CardContent>
+            </Card>
+          </div>
+        )}
+
+        {activeTab === 'reports' && (
+          <div className="space-y-6">
+            <Card>
+              <CardHeader>
+                <CardTitle>Weekly Performance Trends</CardTitle>
+              </CardHeader>
+              <CardContent>
+                {weeklyReports.length > 0 ? (
+                  <ResponsiveContainer width="100%" height={300}>
+                    <LineChart data={weeklyReports.reverse()}>
+                      <CartesianGrid strokeDasharray="3 3" />
+                      <XAxis dataKey="week_start_formatted" />
+                      <YAxis yAxisId="left" />
+                      <YAxis yAxisId="right" orientation="right" />
+                      <Tooltip />
+                      <Line 
+                        yAxisId="left"
+                        type="monotone" 
+                        dataKey="spend" 
+                        stroke="#2563eb" 
+                        strokeWidth={2}
+                        name="Weekly Spend ($)" 
+                      />
+                      <Line 
+                        yAxisId="right"
+                        type="monotone" 
+                        dataKey="leads_purchased" 
+                        stroke="#10b981" 
+                        strokeWidth={2}
+                        name="Leads Purchased" 
+                      />
+                    </LineChart>
+                  </ResponsiveContainer>
+                ) : (
+                  <p className="text-gray-500 text-center py-8">No weekly reports available yet</p>
+                )}
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader>
+                <CardTitle>Weekly Summary</CardTitle>
+              </CardHeader>
+              <CardContent>
+                {weeklyReports.length > 0 ? (
+                  <div className="space-y-4">
+                    {weeklyReports.slice(0, 5).map((report, index) => (
+                      <div key={index} className="border rounded-lg p-4">
+                        <div className="flex justify-between items-start mb-2">
+                          <div>
+                            <h4 className="font-semibold">Week of {report.week_start_formatted}</h4>
+                            <p className="text-sm text-gray-600">{report.week_start_formatted} - {report.week_end_formatted}</p>
+                          </div>
+                          <div className="text-right">
+                            <p className="font-bold text-blue-600">${report.spend.toFixed(2)} spent</p>
+                            <p className="text-sm text-gray-600">{report.leads_purchased} leads purchased</p>
+                          </div>
+                        </div>
+                        <div className="grid grid-cols-2 gap-4 mt-3">
+                          <div className="text-center p-2 bg-green-50 rounded">
+                            <p className="text-xs text-gray-600">Refunds</p>
+                            <p className="font-semibold text-green-600">${report.refunds.toFixed(2)}</p>
+                          </div>
+                          <div className="text-center p-2 bg-blue-50 rounded">
+                            <p className="text-xs text-gray-600">Wallet Balance</p>
+                            <p className="font-semibold text-blue-600">${report.wallet_balance.toFixed(2)}</p>
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <p className="text-gray-500 text-center py-8">No weekly reports available yet</p>
+                )}
+              </CardContent>
+            </Card>
           </div>
         )}
 

@@ -73,7 +73,7 @@ interface PricingSettings {
 const AdminDashboard: React.FC = () => {
   const [isLoggedIn, setIsLoggedIn] = useState(false)
   const [password, setPassword] = useState('')
-  const [activeTab, setActiveTab] = useState<'stats' | 'contractors' | 'leads' | 'transactions' | 'pricing' | 'utilities'>('stats')
+  const [activeTab, setActiveTab] = useState<'stats' | 'contractors' | 'leads' | 'transactions' | 'pricing' | 'utilities' | 'refunds'>('stats')
   const [loading, setLoading] = useState(false)
   const [errorMessage, setErrorMessage] = useState('')
   const [successMessage, setSuccessMessage] = useState('')
@@ -108,6 +108,8 @@ const AdminDashboard: React.FC = () => {
   const [categoryPrices, setCategoryPrices] = useState<{ [key: string]: string }>({})
   const [leadPricing, setLeadPricing] = useState<Record<string, number>>({})
   const [pricingHistory, setPricingHistory] = useState<any[]>([])
+  const [refundRequests, setRefundRequests] = useState<any[]>([])
+  const [processingRefund, setProcessingRefund] = useState<string | null>(null)
   
   const categories = ['HVAC', 'Plumbing', 'Electrical', 'home_services', 'insurance', 'legal', 'real_estate', 'finance', 'healthcare', 'automotive']
   
@@ -519,6 +521,45 @@ const AdminDashboard: React.FC = () => {
     }
   }
 
+  const fetchRefundRequests = async () => {
+    try {
+      const response = await fetch('/.netlify/functions/admin-refund-management')
+      if (response.ok) {
+        const data = await response.json()
+        setRefundRequests(data || [])
+      }
+    } catch (error) {
+      console.error('Error fetching refund requests:', error)
+    }
+  }
+
+  const handleRefundAction = async (refundRequestId: string, action: 'approve' | 'reject', adminNotes?: string) => {
+    setProcessingRefund(refundRequestId)
+    try {
+      const response = await fetch('/.netlify/functions/admin-refund-management', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          refund_request_id: refundRequestId,
+          action,
+          admin_notes: adminNotes || ''
+        })
+      })
+
+      if (response.ok) {
+        await fetchRefundRequests()
+        setSuccessMessage(`Refund request ${action}d successfully`)
+        setTimeout(() => setSuccessMessage(''), 3000)
+      } else {
+        setErrorMessage(`Failed to ${action} refund request`)
+      }
+    } catch (error) {
+      setErrorMessage(`Error processing refund request`)
+    } finally {
+      setProcessingRefund(null)
+    }
+  }
+
   const updateLeadPricing = async (category: string, leadType: string, newPrice: number) => {
     setLoading(true)
     try {
@@ -701,6 +742,16 @@ const AdminDashboard: React.FC = () => {
                 }`}
               >
                 Admin Utilities
+              </button>
+              <button
+                onClick={() => setActiveTab('refunds')}
+                className={`py-2 px-1 border-b-2 font-medium text-sm ${
+                  activeTab === 'refunds'
+                    ? 'border-blue-500 text-blue-600'
+                    : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                }`}
+              >
+                Refund Queue
               </button>
             </nav>
           </div>
@@ -1404,6 +1455,168 @@ const AdminDashboard: React.FC = () => {
               </CardContent>
             </Card>
           </div>
+        )}
+
+        {activeTab === 'refunds' && (
+          <Card>
+            <CardHeader>
+              <CardTitle>Refund Queue</CardTitle>
+            </CardHeader>
+            <CardContent>
+              {refundRequests.length > 0 ? (
+                <div className="space-y-4">
+                  {refundRequests.map((request: any) => (
+                    <div key={request.id} className="border rounded-lg p-4">
+                      <div className="flex justify-between items-start mb-3">
+                        <div>
+                          <h4 className="font-semibold">{request.contractors?.business_name}</h4>
+                          <p className="text-sm text-gray-600">{request.contractors?.email}</p>
+                          <p className="text-sm text-gray-600">
+                            Lead: {request.leads?.customer_name} - {request.leads?.service_category} ({request.leads?.zip_code})
+                          </p>
+                        </div>
+                        <div className="text-right">
+                          <p className="font-bold text-red-600">${request.amount}</p>
+                          <span className={`px-2 py-1 rounded text-xs ${
+                            request.status === 'pending' ? 'bg-yellow-100 text-yellow-800' :
+                            request.status === 'approved' ? 'bg-green-100 text-green-800' :
+                            'bg-red-100 text-red-800'
+                          }`}>
+                            {request.status}
+                          </span>
+                        </div>
+                      </div>
+                      
+                      <div className="mb-3">
+                        <p className="text-sm font-medium text-gray-700">Reason:</p>
+                        <p className="text-sm text-gray-600">{request.reason}</p>
+                      </div>
+                      
+                      <div className="text-xs text-gray-500 mb-3">
+                        Requested: {new Date(request.requested_at).toLocaleString()}
+                      </div>
+
+                      {request.status === 'pending' && (
+                        <div className="flex space-x-2">
+                          <Button
+                            size="sm"
+                            onClick={() => handleRefundAction(request.id, 'approve')}
+                            disabled={processingRefund === request.id}
+                            className="bg-green-600 hover:bg-green-700"
+                          >
+                            {processingRefund === request.id ? 'Processing...' : 'Approve'}
+                          </Button>
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            onClick={() => handleRefundAction(request.id, 'reject')}
+                            disabled={processingRefund === request.id}
+                            className="border-red-300 text-red-600 hover:bg-red-50"
+                          >
+                            {processingRefund === request.id ? 'Processing...' : 'Reject'}
+                          </Button>
+                        </div>
+                      )}
+
+                      {request.status !== 'pending' && (
+                        <div className="text-xs text-gray-500">
+                          Processed: {new Date(request.processed_at).toLocaleString()}
+                          {request.admin_notes && (
+                            <div className="mt-1">
+                              <span className="font-medium">Admin Notes:</span> {request.admin_notes}
+                            </div>
+                          )}
+                        </div>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <p className="text-gray-500 text-center py-8">No refund requests</p>
+              )}
+            </CardContent>
+          </Card>
+        )}
+
+        {activeTab === 'refunds' && (
+          <Card>
+            <CardHeader>
+              <CardTitle>Refund Queue</CardTitle>
+            </CardHeader>
+            <CardContent>
+              {refundRequests.length > 0 ? (
+                <div className="space-y-4">
+                  {refundRequests.map((request: any) => (
+                    <div key={request.id} className="border rounded-lg p-4">
+                      <div className="flex justify-between items-start mb-3">
+                        <div>
+                          <h4 className="font-semibold">{request.contractors?.business_name}</h4>
+                          <p className="text-sm text-gray-600">{request.contractors?.email}</p>
+                          <p className="text-sm text-gray-600">
+                            Lead: {request.leads?.customer_name} - {request.leads?.service_category} ({request.leads?.zip_code})
+                          </p>
+                        </div>
+                        <div className="text-right">
+                          <p className="font-bold text-red-600">${request.amount}</p>
+                          <span className={`px-2 py-1 rounded text-xs ${
+                            request.status === 'pending' ? 'bg-yellow-100 text-yellow-800' :
+                            request.status === 'approved' ? 'bg-green-100 text-green-800' :
+                            'bg-red-100 text-red-800'
+                          }`}>
+                            {request.status}
+                          </span>
+                        </div>
+                      </div>
+                      
+                      <div className="mb-3">
+                        <p className="text-sm font-medium text-gray-700">Reason:</p>
+                        <p className="text-sm text-gray-600">{request.reason}</p>
+                      </div>
+                      
+                      <div className="text-xs text-gray-500 mb-3">
+                        Requested: {new Date(request.requested_at).toLocaleString()}
+                      </div>
+
+                      {request.status === 'pending' && (
+                        <div className="flex space-x-2">
+                          <Button
+                            size="sm"
+                            onClick={() => handleRefundAction(request.id, 'approve')}
+                            disabled={processingRefund === request.id}
+                            className="bg-green-600 hover:bg-green-700"
+                          >
+                            {processingRefund === request.id ? 'Processing...' : 'Approve'}
+                          </Button>
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            onClick={() => handleRefundAction(request.id, 'reject')}
+                            disabled={processingRefund === request.id}
+                            className="border-red-300 text-red-600 hover:bg-red-50"
+                          >
+                            {processingRefund === request.id ? 'Processing...' : 'Reject'}
+                          </Button>
+                        </div>
+                      )}
+
+                      {request.status !== 'pending' && (
+                        <div className="text-xs text-gray-500">
+                          Processed: {new Date(request.processed_at).toLocaleString()}
+                          {request.admin_notes && (
+                            <div className="mt-1">
+                              <span className="font-medium">Admin Notes:</span> {request.admin_notes}
+                            </div>
+                          )}
+                        </div>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <p className="text-gray-500 text-center py-8">No refund requests</p>
+              )}
+            </CardContent>
+          </Card>
         )}
       </div>
     </div>

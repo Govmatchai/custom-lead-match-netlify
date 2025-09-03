@@ -1,9 +1,100 @@
 import { createClient } from '@supabase/supabase-js'
+import twilio from 'twilio'
 
 const supabase = createClient(
   process.env.SUPABASE_URL,
   process.env.SUPABASE_SERVICE_KEY
 )
+
+let twilioClient = null
+try {
+  if (process.env.TWILIO_ACCOUNT_SID && process.env.TWILIO_ACCOUNT_SID.startsWith('AC')) {
+    twilioClient = twilio(process.env.TWILIO_ACCOUNT_SID, process.env.TWILIO_AUTH_TOKEN)
+  }
+} catch (error) {
+  console.log('Twilio not initialized (likely local dev environment)')
+}
+
+const verifyEmailWithNeverBounce = async (email) => {
+  if (!process.env.NEVERBOUNCE_API_KEY || process.env.NEVERBOUNCE_API_KEY === 'your_neverbounce_api_key') {
+    return { valid: true, status: 'skipped', reason: 'API key not configured' }
+  }
+  
+  try {
+    const response = await fetch(`https://api.neverbounce.com/v4/single/check?key=${process.env.NEVERBOUNCE_API_KEY}&email=${encodeURIComponent(email)}`)
+    const data = await response.json()
+    
+    if (data.status === 'success') {
+      return { 
+        valid: data.result === 'valid', 
+        status: data.result,
+        reason: data.flags?.join(', ') || 'NeverBounce validation'
+      }
+    } else {
+      return { valid: true, status: 'unknown', reason: 'NeverBounce API error - accepting lead' }
+    }
+  } catch (error) {
+    console.error('NeverBounce API error:', error)
+    return { valid: true, status: 'unknown', reason: 'NeverBounce API unavailable - accepting lead' }
+  }
+}
+
+const verifyPhoneWithTwilio = async (phone) => {
+  if (!twilioClient) {
+    return { valid: true, status: 'skipped', reason: 'Twilio not configured' }
+  }
+  
+  try {
+    const phoneNumber = await twilioClient.lookups.v1.phoneNumbers(phone).fetch()
+    return { 
+      valid: true, 
+      status: 'valid', 
+      reason: 'Twilio validation passed',
+      carrier: phoneNumber.carrier?.name || 'unknown'
+    }
+  } catch (error) {
+    console.error('Twilio phone validation error:', error)
+    if (error.code === 20404) {
+      return { 
+        valid: false, 
+        status: 'invalid', 
+        reason: 'Phone number is invalid'
+      }
+    } else {
+      return { 
+        valid: true, 
+        status: 'unknown', 
+        reason: 'Twilio API unavailable - accepting lead'
+      }
+    }
+  }
+}
+
+const verifyZipWithUSPS = async (zipCode) => {
+  if (!process.env.USPS_API_KEY || process.env.USPS_API_KEY === 'your_usps_api_key') {
+    return { valid: true, status: 'skipped', reason: 'USPS API key not configured' }
+  }
+  
+  try {
+    const zip5 = zipCode.toString().trim().substring(0, 5)
+    const response = await fetch(`https://api.usps.com/addresses/v3/address?streetAddress=&city=&state=&ZIPCode=${zip5}`, {
+      headers: {
+        'Authorization': `Bearer ${process.env.USPS_API_KEY}`,
+        'Content-Type': 'application/json'
+      }
+    })
+    
+    if (response.ok) {
+      const data = await response.json()
+      return { valid: true, status: 'valid', reason: 'USPS validation passed' }
+    } else {
+      return { valid: false, status: 'invalid', reason: 'USPS validation failed - invalid ZIP code' }
+    }
+  } catch (error) {
+    console.error('USPS ZIP validation error:', error)
+    return { valid: true, status: 'unknown', reason: 'USPS API unavailable - accepting lead' }
+  }
+}
 
 async function ensureNotificationLogsTable() {
   try {
@@ -173,6 +264,67 @@ export const handler = async (event, context) => {
     
     await logger.log('INFO', 'VALIDATION COMPLETED', { status, validationFlags })
 
+    const emailVerification = await verifyEmailWithNeverBounce(email)
+    const phoneVerification = await verifyPhoneWithTwilio(phone)
+    const zipVerification = await verifyZipWithUSPS(zip_code)
+
+    await logger.log('INFO', 'EXTERNAL API VERIFICATION', {
+      email: emailVerification,
+      phone: phoneVerification,
+      zip: zipVerification
+    })
+
+    if (!emailVerification.valid && emailVerification.status === 'invalid') {
+      await logger.log('ERROR', 'LEAD REJECTED - INVALID EMAIL', {
+        email,
+        reason: emailVerification.reason
+      })
+      
+      return {
+        statusCode: 400,
+        headers: corsHeaders,
+        body: JSON.stringify({
+          success: false,
+          message: 'Email address is invalid or undeliverable.',
+          validation_error: 'email'
+        })
+      }
+    }
+
+    if (!phoneVerification.valid && phoneVerification.status === 'invalid') {
+      await logger.log('ERROR', 'LEAD REJECTED - INVALID PHONE', {
+        phone,
+        reason: phoneVerification.reason
+      })
+      
+      return {
+        statusCode: 400,
+        headers: corsHeaders,
+        body: JSON.stringify({
+          success: false,
+          message: 'Phone number is invalid or disconnected.',
+          validation_error: 'phone'
+        })
+      }
+    }
+
+    if (!zipVerification.valid && zipVerification.status === 'invalid') {
+      await logger.log('ERROR', 'LEAD REJECTED - INVALID ZIP', {
+        zip_code,
+        reason: zipVerification.reason
+      })
+      
+      return {
+        statusCode: 400,
+        headers: corsHeaders,
+        body: JSON.stringify({
+          success: false,
+          message: 'ZIP code is invalid.',
+          validation_error: 'zip'
+        })
+      }
+    }
+
     const urgencyToLeadType = {
       'Standard': 'standard',
       'Premium': 'premium', 
@@ -206,6 +358,9 @@ export const handler = async (event, context) => {
         ip_address: clientIP,
         status: 'available',
         validation_flags: validationFlags,
+        validation_email_status: emailVerification.status,
+        validation_phone_status: phoneVerification.status,
+        validation_zip_status: zipVerification.status,
         claimed: false
       }])
       .select()

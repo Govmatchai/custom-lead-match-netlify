@@ -60,7 +60,9 @@ export async function notifyContractorsForLead(lead, targetContractors) {
       } else if (walletBalance >= 20.00) {
         console.log(`📧📱 Sending wallet funded notifications to ${contractor.email}`)
         await sendWalletFundedNotifications(contractor, lead);
-        results.sms_sent++;
+        if (contractor.sms_opt_in && contractor.phone && twilioClient) {
+          results.sms_sent++;
+        }
         results.emails_sent++;
         console.log(`✅ Wallet funded notifications sent to ${contractor.email}`)
       } else {
@@ -81,67 +83,66 @@ export async function notifyContractorsForLead(lead, targetContractors) {
 }
 
 async function sendWalletFundedNotifications(contractor, lead) {
-  const smsMessage = `🚨 New Lead Alert! A customer in your area needs ${lead.sub_service}. Log in now to claim before it's gone: https://customleadmatch.com/dashboard`;
-  
-  let formattedPhone = contractor.phone.replace(/\D/g, '');
-  if (formattedPhone.length === 10) {
-    formattedPhone = '+1' + formattedPhone;
-  } else if (formattedPhone.length === 11 && formattedPhone.startsWith('1')) {
-    formattedPhone = '+' + formattedPhone;
-  }
+  if (contractor.sms_opt_in && contractor.phone && twilioClient) {
+    const smsMessage = `🚨 New Lead: ${lead.service_category} - ${lead.urgency || 'Standard'}
+ZIP: ${lead.zip_code}
+Price: $${lead.price}
+Log in to claim: https://customleadmatch.com/dashboard`;
+    
+    let formattedPhone = contractor.phone.replace(/\D/g, '');
+    if (formattedPhone.length === 10) {
+      formattedPhone = '+1' + formattedPhone;
+    } else if (formattedPhone.length === 11 && formattedPhone.startsWith('1')) {
+      formattedPhone = '+' + formattedPhone;
+    }
 
-  try {
-    console.log(`📱 Attempting to send SMS to ${formattedPhone} for contractor ${contractor.id}`);
+    try {
+      console.log(`📱 Attempting to send SMS to ${formattedPhone} for contractor ${contractor.id}`);
+      
+      if (formattedPhone.includes('555') && process.env.NODE_ENV !== 'production') {
+        console.log(`⚠️ Skipping SMS to test number ${formattedPhone} in development`);
+      } else {
+        const smsResult = await twilioClient.messages.create({
+          body: smsMessage,
+          from: process.env.TWILIO_PHONE_NUMBER,
+          to: formattedPhone
+        });
+        console.log(`✅ SMS sent successfully to ${formattedPhone}:`, smsResult.sid);
     
-    if (formattedPhone.includes('555') && process.env.NODE_ENV !== 'production') {
-      console.log(`⚠️ Skipping SMS to test number ${formattedPhone} in development`);
-      return;
+        await supabase
+          .from('sms_send_log')
+          .insert({
+            contractor_id: contractor.id,
+            lead_id: lead.id,
+            phone_number: formattedPhone,
+            message_content: smsMessage,
+            category: lead.service_category,
+            sub_category: lead.sub_service,
+            location: lead.zip_code,
+            cost_cents: 79,
+            status: 'sent',
+            twilio_sid: smsResult.sid
+          });
+      }
+    } catch (smsError) {
+      console.error(`❌ SMS failed for ${formattedPhone}:`, smsError.message);
+      console.log(`📧 Continuing with email notification for contractor ${contractor.id}`);
+      
+      await supabase
+        .from('sms_send_log')
+        .insert({
+          contractor_id: contractor.id,
+          lead_id: lead.id,
+          phone_number: formattedPhone,
+          message_content: smsMessage,
+          category: lead.service_category,
+          sub_category: lead.sub_service,
+          location: lead.zip_code,
+          cost_cents: 0,
+          status: 'failed',
+          error_message: smsError.message
+        });
     }
-    
-    if (!twilioClient) {
-      console.log(`⚠️ Twilio not configured, skipping SMS to ${formattedPhone}`);
-      return;
-    }
-    
-    const smsResult = await twilioClient.messages.create({
-      body: smsMessage,
-      from: process.env.TWILIO_PHONE_NUMBER,
-      to: formattedPhone
-    });
-    console.log(`✅ SMS sent successfully to ${formattedPhone}:`, smsResult.sid);
-    
-    await supabase
-      .from('sms_send_log')
-      .insert({
-        contractor_id: contractor.id,
-        lead_id: lead.id,
-        phone_number: formattedPhone,
-        message_content: smsMessage,
-        category: lead.service_category,
-        sub_category: lead.sub_service,
-        location: lead.zip_code,
-        cost_cents: 79,
-        status: 'sent',
-        twilio_sid: smsResult.sid
-      });
-  } catch (smsError) {
-    console.error(`❌ SMS failed for ${formattedPhone}:`, smsError.message);
-    console.log(`📧 Continuing with email notification for contractor ${contractor.id}`);
-    
-    await supabase
-      .from('sms_send_log')
-      .insert({
-        contractor_id: contractor.id,
-        lead_id: lead.id,
-        phone_number: formattedPhone,
-        message_content: smsMessage,
-        category: lead.service_category,
-        sub_category: lead.sub_service,
-        location: lead.zip_code,
-        cost_cents: 0,
-        status: 'failed',
-        error_message: smsError.message
-      });
   }
 
   const emailSubject = '🚨 New Lead Available – Claim It Before Another Contractor Does!';
