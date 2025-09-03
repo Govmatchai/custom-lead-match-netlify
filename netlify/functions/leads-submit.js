@@ -142,7 +142,7 @@ export const handler = async (event, context) => {
 
   try {
     const data = JSON.parse(event.body)
-    const { customer_name, service_category, sub_service, zip_code, phone, email, description } = data
+    const { customer_name, service_category, sub_service, zip_code, phone, email, description, urgency = 'Standard' } = data
     
     let clientIP = event.headers['x-forwarded-for'] || event.headers['x-real-ip'] || 'unknown'
     if (clientIP !== 'unknown' && clientIP.includes(',')) {
@@ -173,18 +173,38 @@ export const handler = async (event, context) => {
     
     await logger.log('INFO', 'VALIDATION COMPLETED', { status, validationFlags })
 
+    const urgencyToLeadType = {
+      'Standard': 'standard',
+      'Premium': 'premium', 
+      'Emergency': 'emergency'
+    }
+    const lead_type = urgencyToLeadType[urgency] || 'standard'
+    
+    const { data: pricingData, error: pricingError } = await supabase
+      .from('lead_pricing')
+      .select('price')
+      .eq('category', service_category)
+      .eq('lead_type', lead_type)
+      .single()
+    
+    const leadPrice = pricingData ? parseFloat(pricingData.price) : 20.00
+
     const { data: lead, error: leadError } = await supabase
       .from('leads')
       .insert([{
         customer_name,
+        contact_name: customer_name,
         service_category,
         sub_service,
         zip_code: validationFlags.zip_code_formatted || zip_code,
         phone: validationFlags.phone_formatted || phone,
         email,
         description,
+        urgency,
+        lead_type,
+        price: leadPrice,
         ip_address: clientIP,
-        status,
+        status: 'available',
         validation_flags: validationFlags,
         claimed: false
       }])

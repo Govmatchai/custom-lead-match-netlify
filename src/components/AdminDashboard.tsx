@@ -106,6 +106,10 @@ const AdminDashboard: React.FC = () => {
   
   const [pricing, setPricing] = useState<PricingSettings | null>(null)
   const [categoryPrices, setCategoryPrices] = useState<{ [key: string]: string }>({})
+  const [leadPricing, setLeadPricing] = useState<Record<string, number>>({})
+  const [pricingHistory, setPricingHistory] = useState<any[]>([])
+  
+  const categories = ['HVAC', 'Plumbing', 'Electrical', 'home_services', 'insurance', 'legal', 'real_estate', 'finance', 'healthcare', 'automotive']
   
   const [leadSearch, setLeadSearch] = useState('')
   const [leadStatusFilter, setLeadStatusFilter] = useState('all')
@@ -138,6 +142,9 @@ const AdminDashboard: React.FC = () => {
         fetch('/.netlify/functions/admin-transactions'),
         fetch('/.netlify/functions/admin-pricing')
       ])
+
+      fetchLeadPricing()
+      fetchPricingHistory()
 
       let contractorsData = []
       let leadsData = []
@@ -392,6 +399,61 @@ const AdminDashboard: React.FC = () => {
       console.error('Failed to update pricing:', error)
       setErrorMessage('Failed to update pricing')
       setTimeout(() => setErrorMessage(''), 3000)
+    }
+  }
+
+  const fetchLeadPricing = async () => {
+    try {
+      const response = await fetch('/.netlify/functions/admin-lead-pricing')
+      if (response.ok) {
+        const data = await response.json()
+        const pricingMap = data.reduce((acc: Record<string, number>, item: any) => {
+          acc[`${item.category}_${item.lead_type}`] = parseFloat(item.price)
+          return acc
+        }, {})
+        setLeadPricing(pricingMap)
+      }
+    } catch (error) {
+      console.error('Error fetching lead pricing:', error)
+    }
+  }
+
+  const fetchPricingHistory = async () => {
+    try {
+      const response = await fetch('/.netlify/functions/admin-pricing-history')
+      if (response.ok) {
+        const data = await response.json()
+        setPricingHistory(data.slice(0, 10))
+      }
+    } catch (error) {
+      console.error('Error fetching pricing history:', error)
+    }
+  }
+
+  const updateLeadPricing = async (category: string, leadType: string, newPrice: number) => {
+    setLoading(true)
+    try {
+      const response = await fetch('/.netlify/functions/admin-lead-pricing', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ category, lead_type: leadType, price: newPrice })
+      })
+
+      if (response.ok) {
+        setLeadPricing(prev => ({ ...prev, [`${category}_${leadType}`]: newPrice }))
+        setSuccessMessage(`Updated ${category} ${leadType} pricing to $${newPrice}`)
+        setTimeout(() => setSuccessMessage(''), 3000)
+        fetchPricingHistory()
+      } else {
+        setErrorMessage('Failed to update lead pricing')
+        setTimeout(() => setErrorMessage(''), 3000)
+      }
+    } catch (error) {
+      console.error('Error updating lead pricing:', error)
+      setErrorMessage('Error updating lead pricing')
+      setTimeout(() => setErrorMessage(''), 3000)
+    } finally {
+      setLoading(false)
     }
   }
 
@@ -1034,66 +1096,89 @@ const AdminDashboard: React.FC = () => {
           </Card>
         )}
 
-        {activeTab === 'pricing' && pricing && (
+        {activeTab === 'pricing' && (
           <Card>
             <CardHeader>
-              <CardTitle>Lead Pricing Management</CardTitle>
+              <CardTitle>Lead Pricing Matrix</CardTitle>
               <CardDescription>
-                Set different prices for each lead category. Changes apply immediately to all future leads.
+                Set different prices for each lead category and urgency type. Changes apply immediately to all future leads.
               </CardDescription>
             </CardHeader>
             <CardContent>
-              <div className="space-y-6">
-                <div className="bg-blue-50 p-4 rounded-lg">
-                  <h4 className="font-semibold mb-2">Current Category Pricing</h4>
-                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                    {Object.entries(pricing.category_pricing).map(([category, price]) => (
-                      <div key={category} className="bg-white p-3 rounded border">
-                        <div className="font-medium text-sm text-gray-700 capitalize">
-                          {category.replace('_', ' ')}
-                        </div>
-                        <div className="text-lg font-bold text-blue-600">
-                          ${(price as number).toFixed(2)}
-                        </div>
-                      </div>
+              <div className="overflow-x-auto">
+                <table className="min-w-full border-collapse border border-gray-300">
+                  <thead>
+                    <tr className="bg-gray-50">
+                      <th className="border border-gray-300 px-4 py-2 text-left">Category</th>
+                      <th className="border border-gray-300 px-4 py-2 text-center">Standard</th>
+                      <th className="border border-gray-300 px-4 py-2 text-center">Premium</th>
+                      <th className="border border-gray-300 px-4 py-2 text-center">Emergency</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {categories.map((category) => (
+                      <tr key={category}>
+                        <td className="border border-gray-300 px-4 py-2 font-medium">{category}</td>
+                        {['standard', 'premium', 'emergency'].map((leadType) => (
+                          <td key={leadType} className="border border-gray-300 px-4 py-2">
+                            <div className="flex items-center space-x-2">
+                              <span className="text-sm">$</span>
+                              <Input
+                                type="number"
+                                value={leadPricing[`${category}_${leadType}`] || ''}
+                                onChange={(e) => setLeadPricing(prev => ({
+                                  ...prev,
+                                  [`${category}_${leadType}`]: parseFloat(e.target.value) || 0
+                                }))}
+                                className="w-20 px-2 py-1 border border-gray-300 rounded text-sm"
+                                step="0.01"
+                                min="0"
+                              />
+                              <Button
+                                onClick={() => updateLeadPricing(category, leadType, leadPricing[`${category}_${leadType}`])}
+                                size="sm"
+                                disabled={loading}
+                              >
+                                Save
+                              </Button>
+                            </div>
+                          </td>
+                        ))}
+                      </tr>
                     ))}
-                  </div>
-                </div>
-                
-                <div className="space-y-4">
-                  <h4 className="font-semibold">Update Category Pricing</h4>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    {pricing.categories.map((category) => (
-                      <div key={category} className="border rounded-lg p-4">
-                        <label className="block text-sm font-medium mb-2 capitalize">
-                          {category.replace('_', ' ')} Lead Price
-                        </label>
-                        <div className="flex gap-2">
-                          <Input
-                            type="number"
-                            step="0.01"
-                            min="0"
-                            value={categoryPrices[category] || ''}
-                            onChange={(e) => setCategoryPrices({
-                              ...categoryPrices,
-                              [category]: e.target.value
-                            })}
-                            placeholder="Enter price"
-                          />
-                          <Button 
-                            onClick={() => handleUpdateCategoryPricing(category)}
-                            size="sm"
-                            disabled={loading}
-                          >
-                            <DollarSign className="w-4 h-4 mr-1" />
-                            Update
-                          </Button>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                </div>
+                  </tbody>
+                </table>
               </div>
+              
+              {pricingHistory.length > 0 && (
+                <div className="mt-6">
+                  <h4 className="text-md font-semibold mb-3">Recent Pricing Changes</h4>
+                  <div className="max-h-64 overflow-y-auto">
+                    <table className="min-w-full text-sm">
+                      <thead className="bg-gray-50">
+                        <tr>
+                          <th className="px-3 py-2 text-left">Category</th>
+                          <th className="px-3 py-2 text-left">Type</th>
+                          <th className="px-3 py-2 text-left">Old Price</th>
+                          <th className="px-3 py-2 text-left">New Price</th>
+                          <th className="px-3 py-2 text-left">Date</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {pricingHistory.map((change, index) => (
+                          <tr key={index} className="border-t">
+                            <td className="px-3 py-2">{change.category}</td>
+                            <td className="px-3 py-2 capitalize">{change.lead_type}</td>
+                            <td className="px-3 py-2">${change.old_price || 'N/A'}</td>
+                            <td className="px-3 py-2">${change.new_price}</td>
+                            <td className="px-3 py-2">{new Date(change.timestamp).toLocaleDateString()}</td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              )}
             </CardContent>
           </Card>
         )}

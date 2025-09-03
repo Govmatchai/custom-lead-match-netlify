@@ -117,13 +117,7 @@ export const handler = async (event, context) => {
 
     const lead = contractorLead.leads
 
-    const { data: categoryPricing, error: pricingError } = await supabase
-      .from('category_pricing')
-      .select('price')
-      .eq('category', lead.service_category)
-      .single()
-
-    const leadPrice = categoryPricing ? parseFloat(categoryPricing.price) : 20.00
+    const leadPrice = parseFloat(lead.price) || 20.00
 
     if (currentBalance < leadPrice) {
       return {

@@ -22,7 +22,8 @@ export const LeadForm: React.FC<LeadFormProps> = ({ industry, defaultSubService,
     zip_code: '',
     phone: '',
     email: '',
-    description: ''
+    description: '',
+    urgency: 'Standard'
   })
 
   const [isSubmitting, setIsSubmitting] = useState(false)
@@ -86,7 +87,8 @@ export const LeadForm: React.FC<LeadFormProps> = ({ industry, defaultSubService,
             zip_code: '',
             phone: '',
             email: '',
-            description: ''
+            description: '',
+            urgency: 'Standard'
           })
         }
       } else {
@@ -208,6 +210,33 @@ export const LeadForm: React.FC<LeadFormProps> = ({ industry, defaultSubService,
             onSubServiceChange={handleSubServiceChange}
             required={true}
           />
+
+          <div>
+            <Label>Service Urgency *</Label>
+            <div className="grid grid-cols-3 gap-4 mt-2">
+              {['Standard', 'Premium', 'Emergency'].map((urgencyLevel) => (
+                <label key={urgencyLevel} className="flex items-center space-x-2 cursor-pointer">
+                  <input
+                    type="radio"
+                    name="urgency"
+                    value={urgencyLevel}
+                    checked={formData.urgency === urgencyLevel}
+                    onChange={(e) => handleInputChange('urgency', e.target.value)}
+                    className="text-blue-600"
+                  />
+                  <span className={`text-sm font-medium ${
+                    urgencyLevel === 'Emergency' ? 'text-red-600' :
+                    urgencyLevel === 'Premium' ? 'text-yellow-600' : 'text-blue-600'
+                  }`}>
+                    {urgencyLevel}
+                  </span>
+                </label>
+              ))}
+            </div>
+            <p className="text-xs text-gray-500 mt-1">
+              Standard: Regular service • Premium: Priority service • Emergency: Immediate response
+            </p>
+          </div>
 
           <div>
             <Label htmlFor="description">Project Description *</Label>
