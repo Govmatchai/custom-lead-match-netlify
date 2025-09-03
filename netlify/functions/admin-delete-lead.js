@@ -46,6 +46,24 @@ export const handler = async (event, context) => {
       }
     }
 
+    const { error: leadSalesError } = await supabase
+      .from('lead_sales')
+      .delete()
+      .eq('lead_id', lead_id)
+
+    if (leadSalesError) {
+      console.error('Error deleting lead_sales:', leadSalesError)
+    }
+
+    const { error: refundRequestsError } = await supabase
+      .from('refund_requests')
+      .delete()
+      .eq('lead_id', lead_id)
+
+    if (refundRequestsError) {
+      console.error('Error deleting refund_requests:', refundRequestsError)
+    }
+
     const { error: contractorLeadsError } = await supabase
       .from('contractor_leads')
       .delete()

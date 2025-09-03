@@ -49,6 +49,16 @@ export const handler = async (event, context) => {
     const deletePromises = lead_ids.map(async (leadId) => {
       try {
         await supabase
+          .from('lead_sales')
+          .delete()
+          .eq('lead_id', leadId)
+
+        await supabase
+          .from('refund_requests')
+          .delete()
+          .eq('lead_id', leadId)
+
+        await supabase
           .from('contractor_leads')
           .delete()
           .eq('lead_id', leadId)
