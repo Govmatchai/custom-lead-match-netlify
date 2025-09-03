@@ -68,11 +68,11 @@ export const handler = async (event, context) => {
               .delete()
               .eq('lead_id', leadId)
             
-            if (error && !error.message.includes('does not exist')) {
+            if (error && !(error.message.includes('does not exist') || (error.message.includes('relation') && error.message.includes('does not exist')))) {
               console.error(`Error deleting from ${tableName}:`, error)
             }
           } catch (tableError) {
-            if (!tableError.message || !tableError.message.includes('does not exist')) {
+            if (!tableError.message || !(tableError.message.includes('does not exist') || (tableError.message.includes('relation') && tableError.message.includes('does not exist')))) {
               console.error(`Unexpected error deleting from ${tableName}:`, tableError)
             }
           }
@@ -84,11 +84,11 @@ export const handler = async (event, context) => {
             .update({ lead_id: null })
             .eq('lead_id', leadId)
           
-          if (validationError && !validationError.message.includes('does not exist')) {
+          if (validationError && !(validationError.message.includes('does not exist') || (validationError.message.includes('relation') && validationError.message.includes('does not exist')))) {
             console.error('Error updating validation_metrics:', validationError)
           }
         } catch (validationTableError) {
-          if (!validationTableError.message || !validationTableError.message.includes('does not exist')) {
+          if (!validationTableError.message || !(validationTableError.message.includes('does not exist') || (validationTableError.message.includes('relation') && validationTableError.message.includes('does not exist')))) {
             console.error('Unexpected error updating validation_metrics:', validationTableError)
           }
         }

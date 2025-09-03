@@ -56,7 +56,7 @@ export const handler = async (event, context) => {
         .eq('lead_id', lead_id)
 
       if (leadSalesError) {
-        if (leadSalesError.message.includes('does not exist')) {
+        if (leadSalesError.message.includes('does not exist') || leadSalesError.message.includes('relation') && leadSalesError.message.includes('does not exist')) {
           console.log('Step 1 skipped: lead_sales table does not exist in production')
         } else {
           console.error('Error deleting lead_sales:', leadSalesError)
@@ -77,7 +77,7 @@ export const handler = async (event, context) => {
         console.log('Step 1 completed: lead_sales deletion successful')
       }
     } catch (error) {
-      if (error.message && error.message.includes('does not exist')) {
+      if (error.message && (error.message.includes('does not exist') || (error.message.includes('relation') && error.message.includes('does not exist')))) {
         console.log('Step 1 skipped: lead_sales table does not exist in production')
       } else {
         console.error('Unexpected error in lead_sales deletion:', error)
@@ -104,7 +104,7 @@ export const handler = async (event, context) => {
         .eq('lead_id', lead_id)
 
       if (refundRequestsError) {
-        if (refundRequestsError.message.includes('does not exist')) {
+        if (refundRequestsError.message.includes('does not exist') || (refundRequestsError.message.includes('relation') && refundRequestsError.message.includes('does not exist'))) {
           console.log('Step 2 skipped: refund_requests table does not exist in production')
         } else {
           console.error('Error deleting refund_requests:', refundRequestsError)
@@ -125,7 +125,7 @@ export const handler = async (event, context) => {
         console.log('Step 2 completed: refund_requests deletion successful')
       }
     } catch (error) {
-      if (error.message && error.message.includes('does not exist')) {
+      if (error.message && (error.message.includes('does not exist') || (error.message.includes('relation') && error.message.includes('does not exist')))) {
         console.log('Step 2 skipped: refund_requests table does not exist in production')
       } else {
         console.error('Unexpected error in refund_requests deletion:', error)
@@ -152,7 +152,7 @@ export const handler = async (event, context) => {
         .eq('lead_id', lead_id)
 
       if (contractorLeadsError) {
-        if (contractorLeadsError.message.includes('does not exist')) {
+        if (contractorLeadsError.message.includes('does not exist') || (contractorLeadsError.message.includes('relation') && contractorLeadsError.message.includes('does not exist'))) {
           console.log('Step 3 skipped: contractor_leads table does not exist in production')
         } else {
           console.error('Error deleting contractor_leads:', contractorLeadsError)
@@ -173,7 +173,7 @@ export const handler = async (event, context) => {
         console.log('Step 3 completed: contractor_leads deletion successful')
       }
     } catch (error) {
-      if (error.message && error.message.includes('does not exist')) {
+      if (error.message && (error.message.includes('does not exist') || (error.message.includes('relation') && error.message.includes('does not exist')))) {
         console.log('Step 3 skipped: contractor_leads table does not exist in production')
       } else {
         console.error('Unexpected error in contractor_leads deletion:', error)
@@ -200,7 +200,7 @@ export const handler = async (event, context) => {
         .eq('lead_id', lead_id)
 
       if (transactionsError) {
-        if (transactionsError.message.includes('does not exist')) {
+        if (transactionsError.message.includes('does not exist') || (transactionsError.message.includes('relation') && transactionsError.message.includes('does not exist'))) {
           console.log('Step 4 skipped: transactions table does not exist in production')
         } else {
           console.error('Error deleting transactions:', transactionsError)
@@ -221,7 +221,7 @@ export const handler = async (event, context) => {
         console.log('Step 4 completed: transactions deletion successful')
       }
     } catch (error) {
-      if (error.message && error.message.includes('does not exist')) {
+      if (error.message && (error.message.includes('does not exist') || (error.message.includes('relation') && error.message.includes('does not exist')))) {
         console.log('Step 4 skipped: transactions table does not exist in production')
       } else {
         console.error('Unexpected error in transactions deletion:', error)
@@ -248,7 +248,7 @@ export const handler = async (event, context) => {
         .eq('lead_id', lead_id)
 
       if (purchasedLeadsError) {
-        if (purchasedLeadsError.message.includes('does not exist')) {
+        if (purchasedLeadsError.message.includes('does not exist') || (purchasedLeadsError.message.includes('relation') && purchasedLeadsError.message.includes('does not exist'))) {
           console.log('Step 5 skipped: purchased_leads table does not exist in production')
         } else {
           console.error('Error deleting purchased_leads:', purchasedLeadsError)
@@ -269,7 +269,7 @@ export const handler = async (event, context) => {
         console.log('Step 5 completed: purchased_leads deletion successful')
       }
     } catch (error) {
-      if (error.message && error.message.includes('does not exist')) {
+      if (error.message && (error.message.includes('does not exist') || (error.message.includes('relation') && error.message.includes('does not exist')))) {
         console.log('Step 5 skipped: purchased_leads table does not exist in production')
       } else {
         console.error('Unexpected error in purchased_leads deletion:', error)
@@ -297,7 +297,7 @@ export const handler = async (event, context) => {
         .eq('lead_id', lead_id)
 
       if (validationMetricsError) {
-        if (validationMetricsError.message.includes('does not exist')) {
+        if (validationMetricsError.message.includes('does not exist') || (validationMetricsError.message.includes('relation') && validationMetricsError.message.includes('does not exist'))) {
           console.log('Step 6 skipped: validation_metrics table does not exist in production')
         } else {
           console.error('Error updating validation_metrics:', validationMetricsError)
@@ -318,7 +318,7 @@ export const handler = async (event, context) => {
         console.log('Step 6 completed: validation_metrics update successful')
       }
     } catch (error) {
-      if (error.message && error.message.includes('does not exist')) {
+      if (error.message && (error.message.includes('does not exist') || (error.message.includes('relation') && error.message.includes('does not exist')))) {
         console.log('Step 6 skipped: validation_metrics table does not exist in production')
       } else {
         console.error('Unexpected error in validation_metrics update:', error)
@@ -345,7 +345,7 @@ export const handler = async (event, context) => {
         .eq('lead_id', lead_id)
 
       if (notificationLogsError) {
-        if (notificationLogsError.message.includes('does not exist')) {
+        if (notificationLogsError.message.includes('does not exist') || (notificationLogsError.message.includes('relation') && notificationLogsError.message.includes('does not exist'))) {
           console.log('Step 7 skipped: notification_logs table does not exist in production')
         } else {
           console.error('Error deleting notification_logs:', notificationLogsError)
@@ -366,7 +366,7 @@ export const handler = async (event, context) => {
         console.log('Step 7 completed: notification_logs deletion successful')
       }
     } catch (error) {
-      if (error.message && error.message.includes('does not exist')) {
+      if (error.message && (error.message.includes('does not exist') || (error.message.includes('relation') && error.message.includes('does not exist')))) {
         console.log('Step 7 skipped: notification_logs table does not exist in production')
       } else {
         console.error('Unexpected error in notification_logs deletion:', error)
@@ -393,7 +393,7 @@ export const handler = async (event, context) => {
         .eq('lead_id', lead_id)
 
       if (smsLogsError) {
-        if (smsLogsError.message.includes('does not exist')) {
+        if (smsLogsError.message.includes('does not exist') || (smsLogsError.message.includes('relation') && smsLogsError.message.includes('does not exist'))) {
           console.log('Step 8 skipped: sms_send_log table does not exist in production')
         } else {
           console.error('Error deleting sms_send_log:', smsLogsError)
@@ -414,7 +414,7 @@ export const handler = async (event, context) => {
         console.log('Step 8 completed: sms_send_log deletion successful')
       }
     } catch (error) {
-      if (error.message && error.message.includes('does not exist')) {
+      if (error.message && (error.message.includes('does not exist') || (error.message.includes('relation') && error.message.includes('does not exist')))) {
         console.log('Step 8 skipped: sms_send_log table does not exist in production')
       } else {
         console.error('Unexpected error in sms_send_log deletion:', error)
@@ -441,7 +441,7 @@ export const handler = async (event, context) => {
         .eq('lead_id', lead_id)
 
       if (claimTokensError) {
-        if (claimTokensError.message.includes('does not exist')) {
+        if (claimTokensError.message.includes('does not exist') || (claimTokensError.message.includes('relation') && claimTokensError.message.includes('does not exist'))) {
           console.log('Step 9 skipped: claim_tokens table does not exist in production')
         } else {
           console.error('Error deleting claim_tokens:', claimTokensError)
@@ -462,7 +462,7 @@ export const handler = async (event, context) => {
         console.log('Step 9 completed: claim_tokens deletion successful')
       }
     } catch (error) {
-      if (error.message && error.message.includes('does not exist')) {
+      if (error.message && (error.message.includes('does not exist') || (error.message.includes('relation') && error.message.includes('does not exist')))) {
         console.log('Step 9 skipped: claim_tokens table does not exist in production')
       } else {
         console.error('Unexpected error in claim_tokens deletion:', error)
@@ -489,7 +489,7 @@ export const handler = async (event, context) => {
         .eq('lead_id', lead_id)
 
       if (leadScoreEventsError) {
-        if (leadScoreEventsError.message.includes('does not exist')) {
+        if (leadScoreEventsError.message.includes('does not exist') || (leadScoreEventsError.message.includes('relation') && leadScoreEventsError.message.includes('does not exist'))) {
           console.log('Step 10 skipped: lead_score_events table does not exist in production')
         } else {
           console.error('Error deleting lead_score_events:', leadScoreEventsError)
@@ -510,7 +510,7 @@ export const handler = async (event, context) => {
         console.log('Step 10 completed: lead_score_events deletion successful')
       }
     } catch (error) {
-      if (error.message && error.message.includes('does not exist')) {
+      if (error.message && (error.message.includes('does not exist') || (error.message.includes('relation') && error.message.includes('does not exist')))) {
         console.log('Step 10 skipped: lead_score_events table does not exist in production')
       } else {
         console.error('Unexpected error in lead_score_events deletion:', error)
@@ -537,7 +537,7 @@ export const handler = async (event, context) => {
         .eq('lead_id', lead_id)
 
       if (contractorNotificationsError) {
-        if (contractorNotificationsError.message.includes('does not exist')) {
+        if (contractorNotificationsError.message.includes('does not exist') || (contractorNotificationsError.message.includes('relation') && contractorNotificationsError.message.includes('does not exist'))) {
           console.log('Step 11 skipped: contractor_notifications table does not exist in production')
         } else {
           console.error('Error deleting contractor_notifications:', contractorNotificationsError)
@@ -558,7 +558,7 @@ export const handler = async (event, context) => {
         console.log('Step 11 completed: contractor_notifications deletion successful')
       }
     } catch (error) {
-      if (error.message && error.message.includes('does not exist')) {
+      if (error.message && (error.message.includes('does not exist') || (error.message.includes('relation') && error.message.includes('does not exist')))) {
         console.log('Step 11 skipped: contractor_notifications table does not exist in production')
       } else {
         console.error('Unexpected error in contractor_notifications deletion:', error)
