@@ -95,7 +95,7 @@ const ContractorDashboard = () => {
   const [loading, setLoading] = useState(true)
   const [errorMessage, setErrorMessage] = useState('')
   const [purchasing, setPurchasing] = useState(false)
-  const [activeTab, setActiveTab] = useState('available')
+  const [activeTab, setActiveTab] = useState('dashboard')
   const [fundAmount, setFundAmount] = useState('')
   const [fundAmountError, setFundAmountError] = useState('')
   const [purchasingLead, setPurchasingLead] = useState<string | null>(null)
@@ -113,6 +113,17 @@ const ContractorDashboard = () => {
   const [totalRecords, setTotalRecords] = useState(0)
   const [categoryPricing, setCategoryPricing] = useState<{ [key: string]: number }>({})
   const [smsOptIn, setSmsOptIn] = useState(false)
+  const [performanceMetrics, setPerformanceMetrics] = useState(null)
+  const [gamificationData, setGamificationData] = useState(null)
+  const [autoReloadSettings, setAutoReloadSettings] = useState({
+    auto_reload_enabled: false,
+    auto_reload_threshold: 20.00,
+    auto_reload_amount: 100.00
+  })
+  const [statusUpdating, setStatusUpdating] = useState(null)
+  const [jobValueInput, setJobValueInput] = useState('')
+  const [refundReason, setRefundReason] = useState('')
+  const [submittingRefund, setSubmittingRefund] = useState(null)
 
   useEffect(() => {
     console.log('ContractorDashboard useEffect triggered')
@@ -289,6 +300,9 @@ const ContractorDashboard = () => {
       console.error('fetchDashboardData error:', error)
       setErrorMessage('Network error. Please try again.')
     } finally {
+      fetchPerformanceMetrics()
+      fetchGamificationData()
+      
       console.log('Setting loading to false')
       setLoading(false)
     }
@@ -309,8 +323,8 @@ const ContractorDashboard = () => {
       return
     }
     
-    if (amount < 20) {
-      setFundAmountError('Minimum funding amount is $20')
+    if (amount < 100) {
+      setFundAmountError('Minimum funding amount is $100')
       return
     }
     
@@ -541,6 +555,108 @@ const ContractorDashboard = () => {
     })
   }
 
+  const fetchPerformanceMetrics = async () => {
+    try {
+      const response = await fetch(`/.netlify/functions/contractor-performance-metrics?contractor_id=${contractorId}&days=30`)
+      if (response.ok) {
+        const data = await response.json()
+        setPerformanceMetrics(data)
+      }
+    } catch (error) {
+      console.error('Error fetching performance metrics:', error)
+    }
+  }
+
+  const fetchGamificationData = async () => {
+    try {
+      const response = await fetch(`/.netlify/functions/gamification-scoring?contractor_id=${contractorId}`)
+      if (response.ok) {
+        const data = await response.json()
+        setGamificationData(data.gamification)
+      }
+    } catch (error) {
+      console.error('Error fetching gamification data:', error)
+    }
+  }
+
+  const handleStatusUpdate = async (contractorLeadId: string, status: string, jobValue: string | null = null) => {
+    setStatusUpdating(contractorLeadId)
+    try {
+      const sessionToken = localStorage.getItem('contractor_session_token')
+      const response = await fetch('/.netlify/functions/update-lead-status', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          contractor_lead_id: contractorLeadId,
+          status,
+          job_value: jobValue,
+          session_token: sessionToken
+        })
+      })
+
+      if (response.ok) {
+        fetchDashboardData()
+        setJobValueInput('')
+      }
+    } catch (error) {
+      console.error('Error updating status:', error)
+    } finally {
+      setStatusUpdating(null)
+    }
+  }
+
+  const handleRefundRequest = async (contractorLeadId: string) => {
+    if (!refundReason.trim()) {
+      alert('Please provide a reason for the refund request')
+      return
+    }
+
+    setSubmittingRefund(contractorLeadId)
+    try {
+      const sessionToken = localStorage.getItem('contractor_session_token')
+      const response = await fetch('/.netlify/functions/submit-refund-request', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          contractor_lead_id: contractorLeadId,
+          reason: refundReason,
+          session_token: sessionToken
+        })
+      })
+
+      if (response.ok) {
+        alert('Refund request submitted successfully')
+        fetchDashboardData()
+        setRefundReason('')
+      }
+    } catch (error) {
+      console.error('Error submitting refund request:', error)
+    } finally {
+      setSubmittingRefund(null)
+    }
+  }
+
+  const handleAutoReloadUpdate = async (settings: any) => {
+    try {
+      const sessionToken = localStorage.getItem('contractor_session_token')
+      const response = await fetch('/.netlify/functions/auto-reload-settings', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          contractor_id: contractorId,
+          session_token: sessionToken,
+          ...settings
+        })
+      })
+
+      if (response.ok) {
+        fetchDashboardData()
+      }
+    } catch (error) {
+      console.error('Error updating auto-reload settings:', error)
+    }
+  }
+
   const fetchPurchaseHistory = async (page = 1) => {
     const sessionToken = localStorage.getItem('contractor_session_token')
     
@@ -618,10 +734,557 @@ const ContractorDashboard = () => {
               <p className="text-gray-600">Welcome back, {contractor.contact_name}</p>
             </div>
           </div>
-          <Button onClick={handleLogout} variant="outline">
-            Logout
-          </Button>
+          <div className="flex items-center space-x-4">
+            {gamificationData && (
+              <div className="flex items-center space-x-2">
+                {gamificationData.top_performer_badge && (
+                  <div className="flex items-center bg-yellow-100 text-yellow-800 px-2 py-1 rounded-full text-xs">
+                    <span className="mr-1">🏆</span>
+                    Top Performer
+                  </div>
+                )}
+                {gamificationData.current_streak > 0 && (
+                  <div className="flex items-center bg-orange-100 text-orange-800 px-2 py-1 rounded-full text-xs">
+                    <span className="mr-1">⚡</span>
+                    {gamificationData.current_streak} Day Streak
+                  </div>
+                )}
+              </div>
+            )}
+            <Button onClick={handleLogout} variant="outline">
+              Logout
+            </Button>
+          </div>
         </div>
+
+        <div className="border-b border-gray-200 mb-8">
+          <nav className="-mb-px flex space-x-8">
+            <button
+              onClick={() => setActiveTab('dashboard')}
+              className={`py-2 px-1 border-b-2 font-medium text-sm ${
+                activeTab === 'dashboard'
+                  ? 'border-blue-500 text-blue-600'
+                  : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+              }`}
+            >
+              Dashboard
+            </button>
+            <button
+              onClick={() => setActiveTab('available')}
+              className={`py-2 px-1 border-b-2 font-medium text-sm ${
+                activeTab === 'available'
+                  ? 'border-blue-500 text-blue-600'
+                  : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+              }`}
+            >
+              Available Leads ({total_available})
+            </button>
+            <button
+              onClick={() => setActiveTab('purchased')}
+              className={`py-2 px-1 border-b-2 font-medium text-sm ${
+                activeTab === 'purchased'
+                  ? 'border-blue-500 text-blue-600'
+                  : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+              }`}
+            >
+              Purchased Leads ({total_purchased})
+            </button>
+            <button
+              onClick={() => setActiveTab('completed')}
+              className={`py-2 px-1 border-b-2 font-medium text-sm ${
+                activeTab === 'completed'
+                  ? 'border-blue-500 text-blue-600'
+                  : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+              }`}
+            >
+              Completed Leads ({total_completed})
+            </button>
+            <button
+              onClick={() => setActiveTab('archived')}
+              className={`py-2 px-1 border-b-2 font-medium text-sm ${
+                activeTab === 'archived'
+                  ? 'border-blue-500 text-blue-600'
+                  : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+              }`}
+            >
+              Archived Leads ({total_archived + total_archived_purchased})
+            </button>
+            <button
+              onClick={() => setActiveTab('wallet')}
+              className={`py-2 px-1 border-b-2 font-medium text-sm ${
+                activeTab === 'wallet'
+                  ? 'border-blue-500 text-blue-600'
+                  : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+              }`}
+            >
+              Wallet
+            </button>
+            <button
+              onClick={() => setActiveTab('reports')}
+              className={`py-2 px-1 border-b-2 font-medium text-sm ${
+                activeTab === 'reports'
+                  ? 'border-blue-500 text-blue-600'
+                  : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+              }`}
+            >
+              Reports
+            </button>
+            <button
+              onClick={() => setActiveTab('settings')}
+              className={`py-2 px-1 border-b-2 font-medium text-sm ${
+                activeTab === 'settings'
+                  ? 'border-blue-500 text-blue-600'
+                  : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+              }`}
+            >
+              Settings
+            </button>
+          </nav>
+        </div>
+
+        {activeTab === 'dashboard' && (
+          <div className="space-y-6">
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <CreditCard className="h-5 w-5" />
+                  Wallet Overview
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                  <div>
+                    <div className="text-3xl font-bold text-green-600">${dashboardData.wallet_balance}</div>
+                    <div className="text-sm text-gray-500">Current Balance</div>
+                    <div className="w-full bg-gray-200 rounded-full h-2 mt-2">
+                      <div 
+                        className="bg-green-600 h-2 rounded-full" 
+                        style={{ width: `${Math.min(100, (parseFloat(dashboardData.wallet_balance) / 100) * 100)}%` }}
+                      ></div>
+                    </div>
+                  </div>
+                  <div>
+                    <Button 
+                      onClick={() => setActiveTab('wallet')}
+                      className="w-full bg-blue-600 hover:bg-blue-700"
+                    >
+                      Add Funds ($100 min)
+                    </Button>
+                    <div className="mt-2 text-xs text-gray-500">
+                      Auto-reload: {autoReloadSettings.auto_reload_enabled ? 'Enabled' : 'Disabled'}
+                    </div>
+                  </div>
+                  <div>
+                    <div className="text-sm font-medium">Recent Transactions</div>
+                    <div className="text-xs text-gray-500 mt-1">
+                      View full history in Wallet tab
+                    </div>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+              <Card>
+                <CardContent className="p-6">
+                  <div className="flex items-center">
+                    <div className="flex-shrink-0">
+                      <ShoppingCart className="h-8 w-8 text-blue-600" />
+                    </div>
+                    <div className="ml-4">
+                      <div className="text-2xl font-bold text-gray-900">
+                        {performanceMetrics?.metrics.leads_purchased || 0}
+                      </div>
+                      <div className="text-sm text-gray-500">Leads Purchased (30d)</div>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+
+              <Card>
+                <CardContent className="p-6">
+                  <div className="flex items-center">
+                    <div className="flex-shrink-0">
+                      <CreditCard className="h-8 w-8 text-green-600" />
+                    </div>
+                    <div className="ml-4">
+                      <div className="text-2xl font-bold text-gray-900">
+                        ${performanceMetrics?.metrics.total_spend?.toFixed(2) || '0.00'}
+                      </div>
+                      <div className="text-sm text-gray-500">Total Spend (30d)</div>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+
+              <Card>
+                <CardContent className="p-6">
+                  <div className="flex items-center">
+                    <div className="flex-shrink-0">
+                      <MapPin className="h-8 w-8 text-purple-600" />
+                    </div>
+                    <div className="ml-4">
+                      <div className="text-2xl font-bold text-gray-900">
+                        {performanceMetrics?.metrics.close_rate || 0}%
+                      </div>
+                      <div className="text-sm text-gray-500">Close Rate</div>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+
+              <Card>
+                <CardContent className="p-6">
+                  <div className="flex items-center">
+                    <div className="flex-shrink-0">
+                      <Calendar className="h-8 w-8 text-orange-600" />
+                    </div>
+                    <div className="ml-4">
+                      <div className="text-2xl font-bold text-gray-900">
+                        {performanceMetrics?.metrics.roi_ratio || 0}:1
+                      </div>
+                      <div className="text-sm text-gray-500">ROI Ratio</div>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+
+            {performanceMetrics?.daily_data && (
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <Calendar className="h-5 w-5" />
+                    30-Day Performance
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="h-64 flex items-end justify-between space-x-1">
+                    {performanceMetrics.daily_data.slice(-7).map((day: any, index: number) => (
+                      <div key={index} className="flex flex-col items-center flex-1">
+                        <div className="w-full bg-gray-200 rounded-t" style={{ height: '200px', position: 'relative' }}>
+                          <div 
+                            className="bg-blue-500 rounded-t absolute bottom-0 w-full"
+                            style={{ height: `${(day.leads_purchased / Math.max(...performanceMetrics.daily_data.map((d: any) => d.leads_purchased), 1)) * 100}%` }}
+                          ></div>
+                          <div 
+                            className="bg-green-500 rounded-t absolute bottom-0 w-full opacity-70"
+                            style={{ height: `${(day.leads_booked / Math.max(...performanceMetrics.daily_data.map((d: any) => d.leads_booked), 1)) * 100}%` }}
+                          ></div>
+                        </div>
+                        <div className="text-xs text-gray-500 mt-1">
+                          {new Date(day.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                  <div className="flex justify-center space-x-4 mt-4 text-sm">
+                    <div className="flex items-center">
+                      <div className="w-3 h-3 bg-blue-500 rounded mr-2"></div>
+                      Purchased
+                    </div>
+                    <div className="flex items-center">
+                      <div className="w-3 h-3 bg-green-500 rounded mr-2"></div>
+                      Booked
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            )}
+
+            {gamificationData && (
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <User className="h-5 w-5" />
+                    Performance Achievements
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    <div className="text-center">
+                      <div className={`text-3xl font-bold ${gamificationData.response_time_score >= 80 ? 'text-green-600' : 'text-yellow-600'}`}>
+                        {gamificationData.response_time_score}
+                      </div>
+                      <div className="text-sm text-gray-500">Response Score</div>
+                      <div className="text-xs text-gray-400">
+                        Avg: {gamificationData.avg_response_time}min
+                      </div>
+                    </div>
+                    <div className="text-center">
+                      <div className="text-3xl font-bold text-orange-600">
+                        {gamificationData.current_streak}
+                      </div>
+                      <div className="text-sm text-gray-500">Current Streak</div>
+                      <div className="text-xs text-gray-400">
+                        Best: {gamificationData.best_streak} days
+                      </div>
+                    </div>
+                    <div className="text-center">
+                      <div className={`text-3xl font-bold ${gamificationData.total_roi >= 4 ? 'text-green-600' : 'text-blue-600'}`}>
+                        {gamificationData.total_roi}:1
+                      </div>
+                      <div className="text-sm text-gray-500">Total ROI</div>
+                      <div className="text-xs text-gray-400">
+                        {gamificationData.completed_leads}/{gamificationData.total_leads} completed
+                      </div>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            )}
+          </div>
+        )}
+
+        {activeTab === 'wallet' && (
+          <div className="space-y-6">
+            <Card>
+              <CardHeader>
+                <CardTitle>Fund Wallet</CardTitle>
+                <CardDescription>Add funds to your wallet balance for purchasing leads</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-4">
+                  <div className="bg-blue-50 p-4 rounded-lg">
+                    <h4 className="font-semibold mb-2">Lead Pricing</h4>
+                    <p className="text-sm text-gray-600">Lead prices vary based on industry and service type.</p>
+                    <p className="text-sm text-gray-600 mt-1">Only pay when you claim a lead</p>
+                  </div>
+                  <div>
+                    <label htmlFor="fundAmount" className="block text-sm font-medium text-gray-700 mb-2">
+                      Amount to Add (minimum $100)
+                    </label>
+                    <div className="relative">
+                      <span className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500">$</span>
+                      <input
+                        id="fundAmount"
+                        type="number"
+                        min="100"
+                        step="1"
+                        value={fundAmount}
+                        onChange={(e) => setFundAmount(e.target.value)}
+                        className="w-full pl-8 pr-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                        placeholder="100"
+                      />
+                    </div>
+                    {fundAmountError && (
+                      <p className="text-red-600 text-sm mt-1">{fundAmountError}</p>
+                    )}
+                  </div>
+                  <Button 
+                    onClick={handleFundWallet}
+                    disabled={purchasing || !fundAmount || parseFloat(fundAmount) < 100}
+                    className="w-full"
+                  >
+                    {purchasing ? 'Processing...' : `Add $${fundAmount || '0'} to Wallet`}
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader>
+                <CardTitle>Auto-Reload Settings</CardTitle>
+                <CardDescription>Automatically add funds when your balance gets low</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-4">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="font-medium">Enable Auto-Reload</p>
+                      <p className="text-sm text-gray-600">Automatically fund wallet when balance is low</p>
+                    </div>
+                    <input
+                      type="checkbox"
+                      checked={autoReloadSettings.auto_reload_enabled}
+                      onChange={(e) => handleAutoReloadUpdate({ auto_reload_enabled: e.target.checked })}
+                      className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+                    />
+                  </div>
+                  
+                  {autoReloadSettings.auto_reload_enabled && (
+                    <>
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-2">
+                          Reload when balance falls below
+                        </label>
+                        <div className="relative">
+                          <span className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500">$</span>
+                          <input
+                            type="number"
+                            min="10"
+                            max="500"
+                            value={autoReloadSettings.auto_reload_threshold}
+                            onChange={(e) => handleAutoReloadUpdate({ auto_reload_threshold: parseFloat(e.target.value) })}
+                            className="w-full pl-8 pr-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                          />
+                        </div>
+                      </div>
+                      
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-2">
+                          Reload amount
+                        </label>
+                        <div className="relative">
+                          <span className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500">$</span>
+                          <input
+                            type="number"
+                            min="100"
+                            max="1000"
+                            value={autoReloadSettings.auto_reload_amount}
+                            onChange={(e) => handleAutoReloadUpdate({ auto_reload_amount: parseFloat(e.target.value) })}
+                            className="w-full pl-8 pr-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                          />
+                        </div>
+                      </div>
+                    </>
+                  )}
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+        )}
+
+        {activeTab === 'reports' && (
+          <div className="space-y-6">
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Calendar className="h-5 w-5" />
+                  ROI Calculator
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                {performanceMetrics && (
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    <div className="text-center">
+                      <div className="text-3xl font-bold text-blue-600">
+                        ${performanceMetrics.metrics.total_spend.toFixed(2)}
+                      </div>
+                      <div className="text-sm text-gray-500">Total Spend (30d)</div>
+                    </div>
+                    <div className="text-center">
+                      <div className="text-3xl font-bold text-green-600">
+                        ${performanceMetrics.metrics.total_revenue.toFixed(2)}
+                      </div>
+                      <div className="text-sm text-gray-500">Total Revenue (30d)</div>
+                    </div>
+                    <div className="text-center">
+                      <div className={`text-3xl font-bold ${performanceMetrics.metrics.roi_ratio >= 4 ? 'text-green-600' : 'text-orange-600'}`}>
+                        {performanceMetrics.metrics.roi_ratio}:1
+                      </div>
+                      <div className="text-sm text-gray-500">ROI Ratio</div>
+                    </div>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Phone className="h-5 w-5" />
+                  Response Time Tracker
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                {performanceMetrics && (
+                  <div className="text-center">
+                    <div className={`text-3xl font-bold ${performanceMetrics.metrics.avg_response_time <= 5 ? 'text-green-600' : 'text-yellow-600'}`}>
+                      {performanceMetrics.metrics.avg_response_time} min
+                    </div>
+                    <div className="text-sm text-gray-500">Average Response Time</div>
+                    <div className="mt-2 text-xs text-gray-400">
+                      {performanceMetrics.metrics.avg_response_time <= 5 ? '🏆 Excellent response time!' : 'Try to respond within 5 minutes for best results'}
+                    </div>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          </div>
+        )}
+
+        {activeTab === 'settings' && (
+          <div className="space-y-6">
+            <Card>
+              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                <div>
+                  <CardTitle>Business Information</CardTitle>
+                  <CardDescription>Your registered business details</CardDescription>
+                </div>
+                <Button 
+                  variant="outline" 
+                  size="sm"
+                  onClick={() => setIsEditProfileOpen(true)}
+                  className="flex items-center space-x-1"
+                >
+                  <Edit className="w-4 h-4" />
+                  <span>Edit Profile</span>
+                </Button>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="flex items-center space-x-2">
+                  <Building className="w-4 h-4 text-gray-500" />
+                  <span className="font-medium">Business:</span>
+                  <span>{contractor.business_name}</span>
+                </div>
+                <div className="flex items-center space-x-2">
+                  <User className="w-4 h-4 text-gray-500" />
+                  <span className="font-medium">Contact:</span>
+                  <span>{contractor.contact_name}</span>
+                </div>
+                <div className="flex items-center space-x-2">
+                  <Phone className="w-4 h-4 text-gray-500" />
+                  <span className="font-medium">Phone:</span>
+                  <span>{contractor.phone}</span>
+                </div>
+                <div>
+                  <span className="font-medium">Industry:</span>
+                  <span className="ml-2">{contractor.industry} - {contractor.sub_service}</span>
+                </div>
+                <div>
+                  <span className="font-medium">Service Areas:</span>
+                  <div className="mt-1 flex flex-wrap gap-1">
+                    {contractor.zip_codes.map((zip: string, index: number) => (
+                      <span key={index} className="inline-block bg-blue-100 text-blue-800 text-xs px-2 py-1 rounded">
+                        {zip}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <MessageSquare className="h-5 w-5" />
+                  SMS Notifications
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="font-medium">Receive SMS updates</p>
+                    <p className="text-sm text-gray-600">Get notified about new leads and updates via SMS</p>
+                  </div>
+                  <div className="flex items-center">
+                    <input
+                      type="checkbox"
+                      id="sms-toggle"
+                      checked={smsOptIn}
+                      onChange={handleSmsToggle}
+                      className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+                    />
+                    <label htmlFor="sms-toggle" className="ml-2 text-sm font-medium text-gray-700">
+                      {smsOptIn ? 'Enabled' : 'Disabled'}
+                    </label>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+        )}
 
         <div className="grid grid-cols-1 lg:grid-cols-4 gap-6 mb-8">
           <Card>
@@ -889,8 +1552,21 @@ const ContractorDashboard = () => {
                       console.log(`Lead ${lead.id}: price=${leadPrice}, wallet=${walletBalance}, canPurchase=${canPurchase}`)
                       
                       return (
-                        <div key={lead.id} className="border rounded-lg p-4 bg-green-50">
-                          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-3">
+                        <div key={lead.id} className="border rounded-lg p-4 bg-green-50 relative">
+                          <div className="absolute top-2 right-2 flex space-x-2">
+                            <span className={`px-2 py-1 rounded-full text-xs font-medium ${
+                              leadPrice >= 100 ? 'bg-red-100 text-red-800' :
+                              leadPrice >= 35 ? 'bg-yellow-100 text-yellow-800' :
+                              'bg-blue-100 text-blue-800'
+                            }`}>
+                              {leadPrice >= 100 ? 'Emergency' : leadPrice >= 35 ? 'Premium' : 'Standard'}
+                            </span>
+                            <span className="bg-green-100 text-green-800 px-2 py-1 rounded-full text-xs font-medium">
+                              Exclusive
+                            </span>
+                          </div>
+
+                          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-3 mt-6">
                             <div className="flex items-center space-x-2">
                               <User className="w-4 h-4 text-gray-500" />
                               <span className="font-medium">Customer:</span>
@@ -911,7 +1587,28 @@ const ContractorDashboard = () => {
                             <div className="flex items-center space-x-2">
                               <CreditCard className="w-4 h-4 text-gray-500" />
                               <span className="font-medium">Cost:</span>
-                              <span className="font-bold text-blue-600">💸 ${leadPrice.toFixed(2)}</span>
+                              <span className={`font-bold ${
+                                leadPrice >= 100 ? 'text-red-600' :
+                                leadPrice >= 35 ? 'text-yellow-600' :
+                                'text-blue-600'
+                              }`}>
+                                ${leadPrice.toFixed(2)}
+                              </span>
+                            </div>
+                          </div>
+
+                          <div className="flex items-center space-x-2 mb-3">
+                            <span className="text-sm font-medium">Verified:</span>
+                            <div className="flex space-x-1">
+                              <span className="bg-green-100 text-green-800 px-2 py-1 rounded text-xs">
+                                ✅ Phone
+                              </span>
+                              <span className="bg-green-100 text-green-800 px-2 py-1 rounded text-xs">
+                                ✅ Email
+                              </span>
+                              <span className="bg-green-100 text-green-800 px-2 py-1 rounded text-xs">
+                                ✅ ZIP
+                              </span>
                             </div>
                           </div>
                           <div className="mb-3">

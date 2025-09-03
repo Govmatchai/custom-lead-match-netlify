@@ -72,6 +72,12 @@ export const handler = async (event, context) => {
         }
       }
 
+      const { data: oldPricing } = await supabase
+        .from('category_pricing')
+        .select('price')
+        .eq('category', category)
+        .single()
+
       const { error } = await supabase
         .from('category_pricing')
         .upsert({
@@ -92,6 +98,20 @@ export const handler = async (event, context) => {
           },
           body: JSON.stringify({ detail: 'Failed to update pricing' })
         }
+      }
+
+      try {
+        await supabase
+          .from('pricing_history')
+          .insert({
+            admin_id: 'admin',
+            category,
+            old_price: oldPricing?.price || null,
+            new_price: parseFloat(price),
+            notes: `Price updated from admin dashboard`
+          })
+      } catch (auditError) {
+        console.error('Failed to log pricing change:', auditError)
       }
 
       return {
