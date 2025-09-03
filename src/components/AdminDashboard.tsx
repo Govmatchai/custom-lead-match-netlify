@@ -1183,69 +1183,6 @@ const AdminDashboard: React.FC = () => {
           </Card>
         )}
 
-        {activeTab === 'pricing' && pricing && (
-          <Card>
-            <CardHeader>
-              <CardTitle>Lead Pricing Management</CardTitle>
-              <CardDescription>
-                Set different prices for each lead category. Changes apply immediately to all future leads.
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-6">
-                <div className="bg-blue-50 p-4 rounded-lg">
-                  <h4 className="font-semibold mb-2">Current Category Pricing</h4>
-                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                    {Object.entries(pricing.category_pricing).map(([category, price]) => (
-                      <div key={category} className="bg-white p-3 rounded border">
-                        <div className="font-medium text-sm text-gray-700 capitalize">
-                          {category.replace('_', ' ')}
-                        </div>
-                        <div className="text-lg font-bold text-blue-600">
-                          ${price.toFixed(2)}
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-                
-                <div className="space-y-4">
-                  <h4 className="font-semibold">Update Category Pricing</h4>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    {pricing.categories.map((category) => (
-                      <div key={category} className="border rounded-lg p-4">
-                        <label className="block text-sm font-medium mb-2 capitalize">
-                          {category.replace('_', ' ')} Lead Price
-                        </label>
-                        <div className="flex gap-2">
-                          <Input
-                            type="number"
-                            step="0.01"
-                            min="0"
-                            value={categoryPrices[category] || ''}
-                            onChange={(e) => setCategoryPrices({
-                              ...categoryPrices,
-                              [category]: e.target.value
-                            })}
-                            placeholder="Enter price"
-                          />
-                          <Button 
-                            onClick={() => handleUpdateCategoryPricing(category)}
-                            size="sm"
-                            disabled={loading}
-                          >
-                            <DollarSign className="w-4 h-4 mr-1" />
-                            Update
-                          </Button>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        )}
 
         {activeTab === 'utilities' && (
           <div className="space-y-6">
