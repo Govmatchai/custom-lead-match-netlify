@@ -92,7 +92,7 @@ export const handler = async (event, context) => {
     const { error: notificationLogsError } = await supabase
       .from('notification_logs')
       .delete()
-      .eq('lead_id', lead_id)
+      .eq('lead_id', parseInt(lead_id))
 
     if (notificationLogsError) {
       console.error('Error deleting notification_logs:', notificationLogsError)
