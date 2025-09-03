@@ -48,61 +48,50 @@ export const handler = async (event, context) => {
 
     const deletePromises = lead_ids.map(async (leadId) => {
       try {
-        await supabase
-          .from('lead_sales')
-          .delete()
-          .eq('lead_id', leadId)
+        const tablesToDelete = [
+          'lead_sales',
+          'refund_requests', 
+          'contractor_leads',
+          'transactions',
+          'purchased_leads',
+          'notification_logs',
+          'sms_send_log',
+          'claim_tokens',
+          'lead_score_events',
+          'contractor_notifications'
+        ]
 
-        await supabase
-          .from('refund_requests')
-          .delete()
-          .eq('lead_id', leadId)
+        for (const tableName of tablesToDelete) {
+          try {
+            const { error } = await supabase
+              .from(tableName)
+              .delete()
+              .eq('lead_id', leadId)
+            
+            if (error && !error.message.includes('does not exist')) {
+              console.error(`Error deleting from ${tableName}:`, error)
+            }
+          } catch (tableError) {
+            if (!tableError.message || !tableError.message.includes('does not exist')) {
+              console.error(`Unexpected error deleting from ${tableName}:`, tableError)
+            }
+          }
+        }
 
-        await supabase
-          .from('contractor_leads')
-          .delete()
-          .eq('lead_id', leadId)
-
-        await supabase
-          .from('transactions')
-          .delete()
-          .eq('lead_id', leadId)
-
-        await supabase
-          .from('purchased_leads')
-          .delete()
-          .eq('lead_id', leadId)
-
-
-        await supabase
-          .from('validation_metrics')
-          .update({ lead_id: null })
-          .eq('lead_id', leadId)
-
-        await supabase
-          .from('notification_logs')
-          .delete()
-          .eq('lead_id', leadId)
-
-        await supabase
-          .from('sms_send_log')
-          .delete()
-          .eq('lead_id', leadId)
-
-        await supabase
-          .from('claim_tokens')
-          .delete()
-          .eq('lead_id', leadId)
-
-        await supabase
-          .from('lead_score_events')
-          .delete()
-          .eq('lead_id', leadId)
-
-        await supabase
-          .from('contractor_notifications')
-          .delete()
-          .eq('lead_id', leadId)
+        try {
+          const { error: validationError } = await supabase
+            .from('validation_metrics')
+            .update({ lead_id: null })
+            .eq('lead_id', leadId)
+          
+          if (validationError && !validationError.message.includes('does not exist')) {
+            console.error('Error updating validation_metrics:', validationError)
+          }
+        } catch (validationTableError) {
+          if (!validationTableError.message || !validationTableError.message.includes('does not exist')) {
+            console.error('Unexpected error updating validation_metrics:', validationTableError)
+          }
+        }
 
         const { error } = await supabase
           .from('leads')
