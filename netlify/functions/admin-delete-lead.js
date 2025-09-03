@@ -144,6 +144,24 @@ export const handler = async (event, context) => {
       console.error('Error deleting claim_tokens:', claimTokensError)
     }
 
+    const { error: leadScoreEventsError } = await supabase
+      .from('lead_score_events')
+      .delete()
+      .eq('lead_id', lead_id)
+
+    if (leadScoreEventsError) {
+      console.error('Error deleting lead_score_events:', leadScoreEventsError)
+    }
+
+    const { error: contractorNotificationsError } = await supabase
+      .from('contractor_notifications')
+      .delete()
+      .eq('lead_id', lead_id)
+
+    if (contractorNotificationsError) {
+      console.error('Error deleting contractor_notifications:', contractorNotificationsError)
+    }
+
     const { error } = await supabase
       .from('leads')
       .delete()
