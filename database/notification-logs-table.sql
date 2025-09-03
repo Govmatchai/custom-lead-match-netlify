@@ -5,8 +5,8 @@ CREATE TABLE IF NOT EXISTS notification_logs (
   message TEXT NOT NULL,
   context JSONB DEFAULT '{}',
   function_name VARCHAR(100),
-  lead_id INTEGER REFERENCES leads(id),
-  contractor_id INTEGER REFERENCES contractors(id),
+  lead_id UUID REFERENCES leads(id),
+  contractor_id UUID REFERENCES contractors(id),
   email VARCHAR(255),
   created_at TIMESTAMPTZ DEFAULT NOW()
 );
