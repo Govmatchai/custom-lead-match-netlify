@@ -65,10 +65,15 @@ interface AdminStats {
   activeContractors: number
 }
 
+interface PricingSettings {
+  category_pricing: { [key: string]: number }
+  categories: string[]
+}
+
 const AdminDashboard: React.FC = () => {
   const [isLoggedIn, setIsLoggedIn] = useState(false)
   const [password, setPassword] = useState('')
-  const [activeTab, setActiveTab] = useState('stats')
+  const [activeTab, setActiveTab] = useState<'stats' | 'contractors' | 'leads' | 'transactions' | 'pricing' | 'utilities'>('stats')
   const [loading, setLoading] = useState(false)
   const [errorMessage, setErrorMessage] = useState('')
   const [successMessage, setSuccessMessage] = useState('')
@@ -99,6 +104,9 @@ const AdminDashboard: React.FC = () => {
     notes: ''
   })
   
+  const [pricing, setPricing] = useState<PricingSettings | null>(null)
+  const [categoryPrices, setCategoryPrices] = useState<{ [key: string]: string }>({})
+  
   const [leadSearch, setLeadSearch] = useState('')
   const [leadStatusFilter, setLeadStatusFilter] = useState('all')
   const [contractorSearch, setContractorSearch] = useState('')
@@ -122,11 +130,13 @@ const AdminDashboard: React.FC = () => {
       const [
         contractorsResponse,
         leadsResponse,
-        transactionsResponse
+        transactionsResponse,
+        pricingResponse
       ] = await Promise.all([
         fetch('/.netlify/functions/admin-contractors'),
         fetch('/.netlify/functions/admin-leads'),
-        fetch('/.netlify/functions/admin-transactions')
+        fetch('/.netlify/functions/admin-transactions'),
+        fetch('/.netlify/functions/admin-pricing')
       ])
 
       let contractorsData = []
@@ -146,6 +156,16 @@ const AdminDashboard: React.FC = () => {
       if (transactionsResponse.ok) {
         transactionsData = await transactionsResponse.json()
         setTransactions(transactionsData.transactions || [])
+      }
+
+      if (pricingResponse.ok) {
+        const pricingData = await pricingResponse.json()
+        setPricing(pricingData)
+        const initialPrices: { [key: string]: string } = {}
+        Object.entries(pricingData.category_pricing).forEach(([category, price]) => {
+          initialPrices[category] = (price as number).toString()
+        })
+        setCategoryPrices(initialPrices)
       }
 
       const totalLeads = leadsData.length || 0
@@ -345,6 +365,36 @@ const AdminDashboard: React.FC = () => {
     }
   }
 
+  const handleUpdateCategoryPricing = async (category: string) => {
+    try {
+      const price = parseFloat(categoryPrices[category])
+      if (isNaN(price) || price < 0) {
+        setErrorMessage('Please enter a valid price')
+        setTimeout(() => setErrorMessage(''), 3000)
+        return
+      }
+
+      const response = await fetch('/.netlify/functions/admin-pricing', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ category, price })
+      })
+      
+      if (response.ok) {
+        fetchAdminData()
+        setSuccessMessage(`${category} pricing updated successfully`)
+        setTimeout(() => setSuccessMessage(''), 3000)
+      } else {
+        setErrorMessage('Failed to update pricing')
+        setTimeout(() => setErrorMessage(''), 3000)
+      }
+    } catch (error) {
+      console.error('Failed to update pricing:', error)
+      setErrorMessage('Failed to update pricing')
+      setTimeout(() => setErrorMessage(''), 3000)
+    }
+  }
+
   const filteredLeads = leads.filter(lead => {
     const matchesSearch = !leadSearch || 
       lead.customer_name.toLowerCase().includes(leadSearch.toLowerCase()) ||
@@ -480,6 +530,16 @@ const AdminDashboard: React.FC = () => {
                 }`}
               >
                 Transaction Logs
+              </button>
+              <button
+                onClick={() => setActiveTab('pricing')}
+                className={`py-2 px-1 border-b-2 font-medium text-sm ${
+                  activeTab === 'pricing'
+                    ? 'border-blue-500 text-blue-600'
+                    : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                }`}
+              >
+                Lead Pricing
               </button>
               <button
                 onClick={() => setActiveTab('utilities')}
@@ -969,6 +1029,70 @@ const AdminDashboard: React.FC = () => {
                     )}
                   </tbody>
                 </table>
+              </div>
+            </CardContent>
+          </Card>
+        )}
+
+        {activeTab === 'pricing' && pricing && (
+          <Card>
+            <CardHeader>
+              <CardTitle>Lead Pricing Management</CardTitle>
+              <CardDescription>
+                Set different prices for each lead category. Changes apply immediately to all future leads.
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-6">
+                <div className="bg-blue-50 p-4 rounded-lg">
+                  <h4 className="font-semibold mb-2">Current Category Pricing</h4>
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                    {Object.entries(pricing.category_pricing).map(([category, price]) => (
+                      <div key={category} className="bg-white p-3 rounded border">
+                        <div className="font-medium text-sm text-gray-700 capitalize">
+                          {category.replace('_', ' ')}
+                        </div>
+                        <div className="text-lg font-bold text-blue-600">
+                          ${(price as number).toFixed(2)}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+                
+                <div className="space-y-4">
+                  <h4 className="font-semibold">Update Category Pricing</h4>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    {pricing.categories.map((category) => (
+                      <div key={category} className="border rounded-lg p-4">
+                        <label className="block text-sm font-medium mb-2 capitalize">
+                          {category.replace('_', ' ')} Lead Price
+                        </label>
+                        <div className="flex gap-2">
+                          <Input
+                            type="number"
+                            step="0.01"
+                            min="0"
+                            value={categoryPrices[category] || ''}
+                            onChange={(e) => setCategoryPrices({
+                              ...categoryPrices,
+                              [category]: e.target.value
+                            })}
+                            placeholder="Enter price"
+                          />
+                          <Button 
+                            onClick={() => handleUpdateCategoryPricing(category)}
+                            size="sm"
+                            disabled={loading}
+                          >
+                            <DollarSign className="w-4 h-4 mr-1" />
+                            Update
+                          </Button>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
               </div>
             </CardContent>
           </Card>
