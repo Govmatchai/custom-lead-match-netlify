@@ -55,6 +55,13 @@ export const PrivacyPolicy = () => {
               </div>
 
               <div>
+                <h2 className="text-xl font-semibold mb-3">Contractor SMS Notifications</h2>
+                <p>
+                  When you register as a contractor with Custom Lead Match, you may choose to receive SMS text messages about new lead opportunities. By opting in, you agree to receive recurring text messages from Custom Lead Match at the phone number you provide. Message frequency varies based on available leads. Message and data rates may apply. Mobile numbers are used only to send these notifications and will not be sold or shared with third parties for their own marketing purposes. You can opt out of SMS notifications at any time by replying STOP to any message. For support, reply HELP or contact us at support@customleadmatch.com.
+                </p>
+              </div>
+
+              <div>
                 <h2 className="text-xl font-semibold mb-3">Contact</h2>
                 <p>
                   If you have questions about this policy, please email us at: support@customleadmatch.com

@@ -64,6 +64,19 @@ export const TermsOfService = () => {
               </div>
 
               <div>
+                <h2 className="text-xl font-semibold mb-3">SMS Terms for Contractors</h2>
+                <p>
+                  Custom Lead Match offers optional SMS notifications for contractors who wish to receive alerts about new lead opportunities. By opting in, you consent to receive recurring SMS messages at the phone number you provide. Message frequency varies depending on lead availability. Message and data rates may apply.
+                </p>
+                <p>
+                  You can opt out of receiving SMS messages at any time by replying STOP to any message. After you opt out, you will no longer receive text notifications. If you reply HELP, you will receive instructions for contacting support.
+                </p>
+                <p>
+                  These SMS notifications are not a condition of purchasing leads or using the platform. For assistance, contact support@customleadmatch.com.
+                </p>
+              </div>
+
+              <div>
                 <h2 className="text-xl font-semibold mb-3">Contact</h2>
                 <p>
                   support@customleadmatch.com

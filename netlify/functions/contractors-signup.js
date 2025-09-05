@@ -2,6 +2,7 @@ import { createClient } from '@supabase/supabase-js'
 import bcryptjs from 'bcryptjs'
 import { randomBytes } from 'crypto'
 import dotenv from 'dotenv'
+import twilio from 'twilio'
 
 dotenv.config({ path: '../../.env' })
 
@@ -9,6 +10,11 @@ const supabase = createClient(
   process.env.SUPABASE_URL,
   process.env.SUPABASE_SERVICE_KEY
 )
+
+let twilioClient = null
+if (process.env.TWILIO_ACCOUNT_SID && process.env.TWILIO_AUTH_TOKEN) {
+  twilioClient = twilio(process.env.TWILIO_ACCOUNT_SID, process.env.TWILIO_AUTH_TOKEN)
+}
 
 exports.handler = async (event, context) => {
 
@@ -155,6 +161,29 @@ exports.handler = async (event, context) => {
       }
     } catch (emailError) {
       console.error('Welcome email fetch error:', emailError)
+    }
+
+    if (sms_opt_in && twilioClient && phone) {
+      try {
+        let formattedPhone = phone.replace(/\D/g, '')
+        if (formattedPhone.length === 10) {
+          formattedPhone = '+1' + formattedPhone
+        } else if (formattedPhone.length === 11 && formattedPhone.startsWith('1')) {
+          formattedPhone = '+' + formattedPhone
+        }
+
+        const confirmationMessage = "CLM: You're subscribed to Contractor Lead Alerts. Msg freq varies. Msg&data rates may apply. Reply STOP to opt out, HELP for help. Support: support@customleadmatch.com"
+        
+        await twilioClient.messages.create({
+          body: confirmationMessage,
+          from: process.env.TWILIO_PHONE_NUMBER,
+          to: formattedPhone
+        })
+        
+        console.log(`✅ Opt-in confirmation SMS sent to ${formattedPhone}`)
+      } catch (smsError) {
+        console.error('Failed to send opt-in confirmation SMS:', smsError)
+      }
     }
 
     return {
