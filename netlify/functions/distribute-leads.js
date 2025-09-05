@@ -382,7 +382,7 @@ async function distributeLead(lead) {
     }))
   }, lead.id)
   
-  const contractorLeadsEntries = contractors.map(contractor => ({
+  const contractorLeadsEntries = targetContractors.map(contractor => ({
     contractor_id: contractor.id,
     lead_id: lead.id,
     status: 'available',
@@ -397,7 +397,7 @@ async function distributeLead(lead) {
     console.error('Error creating contractor_leads entries:', insertError)
     await logger.error('CONTRACTOR_LEADS_INSERT_FAILED', {
       leadId: lead.id,
-      contractorCount: contractors.length,
+      contractorCount: targetContractors.length,
       error: insertError.message
     }, lead.id)
     return
@@ -408,7 +408,7 @@ async function distributeLead(lead) {
   await logger.info('CONTRACTOR_LEADS_CREATED', {
     leadId: lead.id,
     contractorLeadsCount: contractorLeadsEntries.length,
-    contractors: contractors.map(c => ({
+    contractors: targetContractors.map(c => ({
       id: c.id,
       businessName: c.business_name,
       email: c.email
