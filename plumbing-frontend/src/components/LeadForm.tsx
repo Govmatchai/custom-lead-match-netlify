@@ -70,7 +70,7 @@ export function LeadForm() {
     setSubmitError(null);
 
     try {
-      const apiUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000';
+      const apiUrl = import.meta.env.VITE_API_BASE_URL || 'https://www.customleadmatch.com';
       const response = await fetch(`${apiUrl}/.netlify/functions/leads-submit`, {
         method: 'POST',
         headers: {
