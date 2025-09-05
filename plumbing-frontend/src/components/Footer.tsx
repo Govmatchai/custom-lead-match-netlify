@@ -46,9 +46,8 @@ export function Footer() {
               © 2024 TrustedPlumbing. All rights reserved.
             </div>
             <div className="flex space-x-6 text-blue-200 text-sm mt-4 md:mt-0">
-              <a href="#" className="hover:text-white">Privacy Policy</a>
-              <a href="#" className="hover:text-white">Terms of Service</a>
-              <a href="#" className="hover:text-white">License Info</a>
+              <a href="https://yourtrustedheatingandcooling.com/privacy-policy" className="hover:text-white">Privacy Policy</a>
+              <a href="https://yourtrustedheatingandcooling.com/terms-of-service" className="hover:text-white">Terms of Service</a>
             </div>
           </div>
         </div>
