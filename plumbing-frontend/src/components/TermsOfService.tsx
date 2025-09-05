@@ -12,68 +12,59 @@ export function TermsOfService() {
           
           <div className="space-y-8 text-gray-700 leading-relaxed">
             <p>
-              These Terms of Service (&quot;Terms&quot;) govern your use of Custom Lead Match (&quot;CLM&quot;, &quot;we&quot;, &quot;our&quot;, or &quot;us&quot;). 
-              By using our website, contractor dashboard, or services, you agree to these Terms.
+              These Terms of Service (&quot;Terms&quot;) apply to homeowners and users who submit service requests through Custom Lead Match (&quot;CLM&quot;, &quot;we&quot;, &quot;our&quot;, or &quot;us&quot;). By submitting your information on our landing page, you agree to these Terms.
             </p>
 
             <section>
-              <h2 className="text-2xl font-semibold text-blue-900 mb-4">1. Services</h2>
-              <p>
-                CLM provides an online platform that connects homeowners seeking services with contractors. 
-                Contractors purchase leads on a per-lead basis. All leads are exclusive (sold to one contractor only).
-              </p>
-            </section>
-
-            <section>
-              <h2 className="text-2xl font-semibold text-blue-900 mb-4">2. Contractor Responsibilities</h2>
+              <h2 className="text-2xl font-semibold text-blue-900 mb-4">1. Our Role</h2>
               <ul className="list-disc pl-6 space-y-2">
-                <li>Contractors must provide accurate business information during signup.</li>
-                <li>Contractors are responsible for maintaining sufficient wallet funds to purchase leads.</li>
-                <li>Contractors are solely responsible for following up with leads and providing services.</li>
-                <li>CLM is not liable for work performed between contractors and homeowners.</li>
+                <li>CLM is a <strong>lead generation platform only</strong>.</li>
+                <li>We do not provide plumbing or home services.</li>
+                <li>We connect your request with contractors who may contact you directly.</li>
               </ul>
             </section>
 
             <section>
-              <h2 className="text-2xl font-semibold text-blue-900 mb-4">3. Lead Quality &amp; Refunds</h2>
+              <h2 className="text-2xl font-semibold text-blue-900 mb-4">2. No Guarantees</h2>
               <ul className="list-disc pl-6 space-y-2">
-                <li>All leads are verified for phone, email, and ZIP before delivery.</li>
-                <li>Refunds are provided only for invalid leads (wrong contact info, not a real homeowner).</li>
-                <li>Refunds are issued as wallet credits only.</li>
+                <li>We do not guarantee that a contractor will contact you, perform work, or provide services at a specific price or quality.</li>
+                <li>We are not liable for delays, damages, or unsatisfactory services provided by contractors.</li>
               </ul>
             </section>
 
             <section>
-              <h2 className="text-2xl font-semibold text-blue-900 mb-4">4. Payments</h2>
+              <h2 className="text-2xl font-semibold text-blue-900 mb-4">3. Contractor Independence</h2>
               <ul className="list-disc pl-6 space-y-2">
-                <li>Contractors pre-pay into wallets via Stripe.</li>
-                <li>Lead costs vary based on category and urgency (Standard, Premium, Emergency).</li>
-                <li>No refunds are provided for purchased valid leads.</li>
+                <li>Contractors are independent businesses, not employees or agents of CLM.</li>
+                <li>Any agreements, warranties, or disputes are solely between you and the contractor.</li>
               </ul>
             </section>
 
             <section>
-              <h2 className="text-2xl font-semibold text-blue-900 mb-4">5. Liability Disclaimer</h2>
+              <h2 className="text-2xl font-semibold text-blue-900 mb-4">4. Limitation of Liability</h2>
+              <p>To the fullest extent permitted by law:</p>
               <ul className="list-disc pl-6 space-y-2">
-                <li>CLM is a lead generation platform only.</li>
-                <li>We do not guarantee job outcomes, contractor performance, or homeowner payments.</li>
-                <li>CLM is not liable for damages, losses, or disputes arising from contractor-homeowner relationships.</li>
+                <li>CLM is not liable for property damage, personal injury, or financial loss resulting from contractor services.</li>
+                <li>CLM is not responsible for miscommunications, cancellations, or failures by contractors.</li>
               </ul>
             </section>
 
             <section>
-              <h2 className="text-2xl font-semibold text-blue-900 mb-4">6. Termination</h2>
-              <p>We reserve the right to suspend or terminate contractor accounts for fraud, abuse, or non-compliance.</p>
+              <h2 className="text-2xl font-semibold text-blue-900 mb-4">5. Your Responsibilities</h2>
+              <ul className="list-disc pl-6 space-y-2">
+                <li>You agree to provide accurate information when submitting a service request.</li>
+                <li>You are responsible for evaluating and choosing whether to hire a contractor who contacts you.</li>
+              </ul>
             </section>
 
             <section>
-              <h2 className="text-2xl font-semibold text-blue-900 mb-4">7. Governing Law</h2>
-              <p>These Terms are governed by the laws of the State of Florida, without regard to conflict of laws.</p>
+              <h2 className="text-2xl font-semibold text-blue-900 mb-4">6. Governing Law</h2>
+              <p>These Terms are governed by the laws of the State of Florida.</p>
             </section>
 
             <section>
-              <h2 className="text-2xl font-semibold text-blue-900 mb-4">8. Contact</h2>
-              <p><strong>support@govmatchai.com</strong></p>
+              <h2 className="text-2xl font-semibold text-blue-900 mb-4">7. Contact</h2>
+              <p>For questions, email us at: <strong>support@customleadmatch.com</strong></p>
             </section>
           </div>
         </div>

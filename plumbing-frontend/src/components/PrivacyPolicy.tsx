@@ -12,69 +12,68 @@ export function PrivacyPolicy() {
           
           <div className="space-y-8 text-gray-700 leading-relaxed">
             <p>
-              At Custom Lead Match (&quot;CLM&quot;, &quot;we&quot;, &quot;our&quot;, or &quot;us&quot;), we respect and protect your privacy. 
-              This Privacy Policy explains how we collect, use, and safeguard your information when you use 
-              our services, including our contractor marketplace and homeowner lead request platform.
+              At Custom Lead Match (&quot;CLM&quot;, &quot;we&quot;, &quot;our&quot;, or &quot;us&quot;), we value and protect the privacy of homeowners and users who submit service requests through our landing pages. This Privacy Policy explains how we collect, use, and safeguard your personal information.
             </p>
 
             <section>
               <h2 className="text-2xl font-semibold text-blue-900 mb-4">1. Information We Collect</h2>
+              <p>When you request plumbing or home services through our site, we may collect:</p>
               <ul className="list-disc pl-6 space-y-2">
-                <li><strong>Personal Information:</strong> name, email, phone number, ZIP code, and payment details.</li>
-                <li><strong>Business Information:</strong> contractor company name, trade category, service area.</li>
-                <li><strong>Technical Information:</strong> IP address, browser type, device info, cookies.</li>
+                <li><strong>Personal Information:</strong> name, phone number, email address, ZIP code, and service details.</li>
+                <li><strong>Technical Information:</strong> browser type, IP address, and device data.</li>
               </ul>
             </section>
 
             <section>
               <h2 className="text-2xl font-semibold text-blue-900 mb-4">2. How We Use Information</h2>
+              <p>We use the information you provide to:</p>
               <ul className="list-disc pl-6 space-y-2">
-                <li>To verify lead submissions (phone, email, postal code).</li>
-                <li>To deliver and distribute leads to contractors.</li>
-                <li>To process payments and manage contractor wallets.</li>
-                <li>To send important notifications (lead alerts, account updates).</li>
-                <li>To improve our platform performance and security.</li>
+                <li>Match your request with a qualified contractor in your area.</li>
+                <li>Send you confirmations and updates regarding your service request.</li>
+                <li>Improve and secure our platform.</li>
               </ul>
             </section>
 
             <section>
-              <h2 className="text-2xl font-semibold text-blue-900 mb-4">3. Information Sharing</h2>
+              <h2 className="text-2xl font-semibold text-blue-900 mb-4">3. Sharing Information</h2>
               <ul className="list-disc pl-6 space-y-2">
-                <li>Leads submitted are shared only with eligible contractors.</li>
-                <li>We do not sell personal data to third parties.</li>
-                <li>We may share limited data with trusted service providers (e.g., payment processors, verification services).</li>
+                <li>Your information is shared only with contractors eligible to service your request.</li>
+                <li>We do not sell or rent your personal data to third parties.</li>
+                <li>Contractors who receive your information are independent businesses, not employees or agents of CLM.</li>
               </ul>
             </section>
 
             <section>
-              <h2 className="text-2xl font-semibold text-blue-900 mb-4">4. Data Retention</h2>
-              <ul className="list-disc pl-6 space-y-2">
-                <li>Lead data is retained as long as required for business purposes.</li>
-                <li>Contractors may request account closure and deletion of data (except data required by law).</li>
-              </ul>
+              <h2 className="text-2xl font-semibold text-blue-900 mb-4">4. Data Protection</h2>
+              <p>We use encryption, secure servers, and industry-standard safeguards to protect your personal information.</p>
             </section>
 
             <section>
-              <h2 className="text-2xl font-semibold text-blue-900 mb-4">5. Security</h2>
-              <p>We use encryption, access controls, and industry-standard safeguards to protect your data.</p>
+              <h2 className="text-2xl font-semibold text-blue-900 mb-4">5. Liability</h2>
+              <p>By submitting your information, you understand and agree:</p>
+              <ul className="list-disc pl-6 space-y-2">
+                <li>CLM is <strong>not responsible for the quality, pricing, or outcome</strong> of services performed by contractors.</li>
+                <li>CLM only connects you with independent service providers.</li>
+                <li>All work, agreements, and payments are solely between you and the contractor.</li>
+              </ul>
             </section>
 
             <section>
               <h2 className="text-2xl font-semibold text-blue-900 mb-4">6. Your Rights</h2>
               <ul className="list-disc pl-6 space-y-2">
-                <li>You may request a copy or deletion of your personal data by contacting <strong>support@govmatchai.com</strong>.</li>
-                <li>You may opt out of marketing communications at any time.</li>
+                <li>You may request deletion of your personal information at any time by contacting <strong>support@customleadmatch.com</strong>.</li>
+                <li>You may also opt out of marketing emails by clicking unsubscribe.</li>
               </ul>
             </section>
 
             <section>
-              <h2 className="text-2xl font-semibold text-blue-900 mb-4">7. Changes</h2>
-              <p>We may update this policy periodically. Updates will be posted with a new effective date.</p>
+              <h2 className="text-2xl font-semibold text-blue-900 mb-4">7. Updates</h2>
+              <p>We may revise this Privacy Policy. Updates will be posted here with a new effective date.</p>
             </section>
 
             <section>
               <h2 className="text-2xl font-semibold text-blue-900 mb-4">8. Contact</h2>
-              <p>If you have questions, contact us at: <strong>support@govmatchai.com</strong></p>
+              <p>For questions or concerns, contact: <strong>support@customleadmatch.com</strong></p>
             </section>
           </div>
         </div>
