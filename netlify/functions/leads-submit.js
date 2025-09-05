@@ -391,7 +391,7 @@ export const handler = async (event, context) => {
       }, lead.id)
       
       try {
-        const distributeResponse = await fetch(`${process.env.URL || 'https://customleadmatch.netlify.app'}/.netlify/functions/distribute-leads`, {
+        const distributeResponse = await fetch(`${process.env.URL || 'https://www.customleadmatch.com'}/.netlify/functions/distribute-leads`, {
           method: 'POST',
           headers: { 
             'Content-Type': 'application/json',
