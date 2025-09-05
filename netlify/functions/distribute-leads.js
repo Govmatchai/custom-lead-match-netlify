@@ -40,24 +40,51 @@ export const handler = async (event, context) => {
     const { lead_id, force_distribute } = requestBody
 
     if (lead_id) {
+      console.log(`🔍 Looking for lead with ID: ${lead_id}`)
       const { data: lead, error: leadError } = await supabase
         .from('leads')
         .select('*')
         .eq('id', lead_id)
         .single()
 
+      console.log(`📋 Lead query result:`, { lead: lead ? { id: lead.id, status: lead.status, distributed: lead.distributed } : null, error: leadError?.message })
+
       if (leadError || !lead) {
+        console.log(`❌ Lead not found: ${leadError?.message || 'No lead returned'}`)
+        
+        const { data: allLeads, error: allLeadsError } = await supabase
+          .from('leads')
+          .select('id, status, distributed, created_at')
+          .order('created_at', { ascending: false })
+          .limit(5)
+        
+        console.log(`🔍 Recent leads in database:`, allLeads)
+        
         return {
           statusCode: 404,
           headers: {
             'Content-Type': 'application/json',
             'Access-Control-Allow-Origin': '*'
           },
-          body: JSON.stringify({ error: 'Lead not found' })
+          body: JSON.stringify({ 
+            error: 'Lead not found', 
+            lead_id, 
+            error_details: leadError?.message,
+            recent_leads: allLeads?.map(l => ({ id: l.id, status: l.status, distributed: l.distributed })) || []
+          })
         }
       }
 
-      if (lead.status === 'valid' && (!lead.distributed || force_distribute)) {
+      console.log(`🔍 Lead status check: status=${lead.status}, distributed=${lead.distributed}, force_distribute=${force_distribute}`)
+      await logger.info('LEAD_STATUS_CHECK', {
+        leadId: lead.id,
+        status: lead.status,
+        distributed: lead.distributed,
+        force_distribute
+      }, lead.id)
+      
+      if ((lead.status === 'valid' || lead.status === 'available') && (!lead.distributed || force_distribute)) {
+        console.log(`✅ Lead ${lead.id} meets criteria for distribution`)
         await distributeLead(lead)
         
         await supabase
@@ -84,6 +111,23 @@ export const handler = async (event, context) => {
             debug_logs: logger.getLogsAsString()
           })
         }
+      } else {
+        console.log(`❌ Lead ${lead.id} does NOT meet criteria: status=${lead.status}, distributed=${lead.distributed}, force_distribute=${force_distribute}`)
+        return {
+          statusCode: 200,
+          headers: {
+            'Content-Type': 'application/json',
+            'Access-Control-Allow-Origin': '*'
+          },
+          body: JSON.stringify({
+            message: `Lead ${lead_id} does not meet distribution criteria`,
+            lead_status: lead.status,
+            lead_distributed: lead.distributed,
+            force_distribute,
+            leads_processed: 0,
+            leads_distributed: 0
+          })
+        }
       }
     }
 
@@ -97,7 +141,7 @@ export const handler = async (event, context) => {
     const { data: leadsToDistribute, error } = await supabase
       .from('leads')
       .select('*')
-      .eq('status', 'valid')
+      .in('status', ['valid', 'available'])
       .eq('distributed', false)
 
     if (error) {
