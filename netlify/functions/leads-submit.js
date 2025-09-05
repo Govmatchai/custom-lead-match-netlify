@@ -384,7 +384,7 @@ export const handler = async (event, context) => {
     }
 
     if (lead && status === 'valid') {
-      await logger.log('INFO', 'LEAD CREATED SUCCESSFULLY', {
+      await logger.log('INFO', 'Lead created and queued for distribution', {
         leadId: lead.id,
         status,
         validationFlags

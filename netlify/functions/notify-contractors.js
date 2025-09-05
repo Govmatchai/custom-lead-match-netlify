@@ -161,6 +161,7 @@ Log in to claim: https://customleadmatch.com/dashboard`;
     </div>
   `;
 
+  console.log(`📧 Notification email queued for contractor ${contractor.email}`)
   await logger.info('CALLING SENDGRID FOR WALLET FUNDED', {
     to: contractor.email,
     subject: emailSubject,
@@ -193,6 +194,7 @@ async function sendNoFundsEmail(contractor, lead) {
     </div>
   `;
 
+  console.log(`📧 Notification email queued for contractor ${contractor.email}`)
   await logger.info('CALLING SENDGRID FOR NO FUNDS', {
     to: contractor.email,
     subject: emailSubject,
@@ -224,6 +226,7 @@ async function sendInactiveContractorEmail(contractor, lead) {
     </div>
   `;
 
+  console.log(`📧 Notification email queued for contractor ${contractor.email}`)
   await logger.info('CALLING SENDGRID FOR INACTIVE', {
     to: contractor.email,
     subject: emailSubject,

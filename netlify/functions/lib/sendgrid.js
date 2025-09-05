@@ -57,14 +57,14 @@ export async function sendEmail(to, subject, html) {
   
   try {
     const result = await sgMail.send(msg);
-    console.log(`✅ Email sent successfully to ${to}`)
+    console.log(`✅ SendGrid response 202 - Email sent successfully to ${to}`)
     await logger.info('SENDGRID SUCCESS', {
       statusCode: result[0]?.statusCode,
       messageId: result[0]?.headers?.['x-message-id']
     }, null, null, to)
     return { success: true, statusCode: result[0]?.statusCode };
   } catch (error) {
-    console.error(`❌ Email failed to ${to}:`, error.message)
+    console.error(`❌ SendGrid response ${error.code || 'ERROR'} - Email failed to ${to}:`, error.message)
     await logger.error('SENDGRID ERROR', {
       message: error.message,
       responseBody: error.response?.body,

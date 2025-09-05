@@ -370,6 +370,7 @@ async function distributeLead(lead) {
 
   let notificationResults = null
   if (targetContractors.length > 0) {
+    console.log(`📊 Contractors matched (${targetContractors.length} contractors)`)
     notificationResults = await notifyContractorsForLead(lead, targetContractors)
   } else {
     console.log('⚠️ No eligible contractors for notifications, but contractor_leads entries created')
