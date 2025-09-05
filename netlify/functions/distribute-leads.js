@@ -219,6 +219,9 @@ async function distributeLead(lead) {
        contractorSubService?.includes('hvac') || contractorSubService?.includes('air conditioning') || 
        contractorSubService?.includes('heating'))) {
     contractorQuery = contractorQuery.eq('sub_service', 'hvac')
+  } else if (contractorIndustry === 'home_services' && 
+             (lead.service_category === 'Plumbing' || lead.service_category === 'plumbing')) {
+    contractorQuery = contractorQuery.eq('sub_service', 'plumbing')
   } else {
     contractorQuery = contractorQuery.eq('sub_service', contractorSubService)
   }
