@@ -4,7 +4,156 @@
     <meta charset="UTF-8" />
     <link rel="icon" type="image/png" href="/favicon.png" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Custom Lead Match</title>
+    
+    <!-- SEO Meta Tags -->
+    <title>Custom Lead Match - Premium Contractor Leads | HVAC, Plumbing, Electrical</title>
+    <meta name="description" content="Get exclusive, high-quality contractor leads for HVAC, plumbing, and electrical services. No competition, no subscriptions - pay only for leads you want. Join thousands of contractors growing their business." />
+    <meta name="keywords" content="contractor leads, HVAC leads, plumbing leads, electrical leads, home service leads, contractor marketing, lead generation" />
+    <meta name="robots" content="index, follow" />
+    <link rel="canonical" href="https://customleadmatch.com/" />
+    
+    <!-- Open Graph Meta Tags -->
+    <meta property="og:title" content="Custom Lead Match - Premium Contractor Leads | HVAC, Plumbing, Electrical" />
+    <meta property="og:description" content="Get exclusive, high-quality contractor leads for HVAC, plumbing, and electrical services. No competition, no subscriptions - pay only for leads you want." />
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content="https://customleadmatch.com/" />
+    <meta property="og:image" content="https://customleadmatch.com/og-image.png" />
+    
+    <!-- Twitter Card Meta Tags -->
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="Custom Lead Match - Premium Contractor Leads" />
+    <meta name="twitter:description" content="Get exclusive, high-quality contractor leads for HVAC, plumbing, and electrical services. No competition, no subscriptions." />
+    <meta name="twitter:image" content="https://customleadmatch.com/og-image.png" />
+    
+    <!-- Organization Schema Markup -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "Organization",
+      "@id": "https://customleadmatch.com/#organization",
+      "name": "Custom Lead Match",
+      "description": "Premium lead generation platform connecting homeowners with qualified HVAC, plumbing, and electrical contractors.",
+      "url": "https://customleadmatch.com/",
+      "logo": "https://customleadmatch.com/logo.png",
+      "contactPoint": {
+        "@type": "ContactPoint",
+        "contactType": "customer service",
+        "email": "support@customleadmatch.com"
+      },
+      "sameAs": [
+        "https://www.facebook.com/customleadmatch",
+        "https://www.linkedin.com/company/customleadmatch"
+      ],
+      "foundingDate": "2024",
+      "numberOfEmployees": "10-50",
+      "address": {
+        "@type": "PostalAddress",
+        "addressCountry": "US"
+      },
+      "serviceArea": {
+        "@type": "Country",
+        "name": "United States"
+      },
+      "hasOfferCatalog": {
+        "@type": "OfferCatalog",
+        "name": "Contractor Lead Services",
+        "itemListElement": [
+          {
+            "@type": "Offer",
+            "itemOffered": {
+              "@type": "Service",
+              "@id": "https://customleadmatch.com/#hvac-leads",
+              "name": "HVAC Contractor Leads",
+              "description": "High-quality leads for heating, ventilation, and air conditioning contractors"
+            }
+          },
+          {
+            "@type": "Offer",
+            "itemOffered": {
+              "@type": "Service",
+              "@id": "https://customleadmatch.com/#plumbing-leads",
+              "name": "Plumbing Contractor Leads",
+              "description": "Exclusive plumbing leads for licensed plumbing contractors"
+            }
+          },
+          {
+            "@type": "Offer",
+            "itemOffered": {
+              "@type": "Service",
+              "@id": "https://customleadmatch.com/#electrical-leads",
+              "name": "Electrical Contractor Leads",
+              "description": "Quality electrical contractor leads for licensed electricians"
+            }
+          }
+        ]
+      }
+    }
+    </script>
+    
+    <!-- FAQ Schema Markup -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "FAQPage",
+      "mainEntity": [
+        {
+          "@type": "Question",
+          "name": "How does Custom Lead Match work for contractors?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Contractors sign up, set their service areas and preferences, then receive exclusive leads directly. You only pay for leads you want to pursue - no subscriptions or competition with other contractors."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "What types of contractor leads are available?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "We provide high-quality leads for HVAC contractors, plumbing contractors, and electrical contractors across the United States."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Are the contractor leads exclusive?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Yes, each lead is sent to only one contractor in your service area. No competition or shared leads - you get direct access to ready-to-hire customers."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "How much do contractor leads cost?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Pricing varies by lead type and location. You only pay for leads you choose to pursue, with no monthly subscriptions or hidden fees."
+          }
+        }
+      ]
+    }
+    </script>
+    
+    <!-- Google Analytics 4 -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-XXXXXXXXXX"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+      gtag('config', 'G-XXXXXXXXXX');
+      
+      // Conversion tracking for contractor signups
+      function trackContractorSignup() {
+        gtag('event', 'contractor_signup', {
+          event_category: 'engagement',
+          event_label: 'contractor_registration'
+        });
+      }
+      
+      // Make tracking function available globally
+      window.trackContractorSignup = trackContractorSignup;
+    </script>
+    
+    <!-- Google Search Console -->
+    <meta name="google-site-verification" content="XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX" />
   </head>
   <body>
     <div id="root"></div>

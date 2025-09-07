@@ -105,6 +105,8 @@ const ContractorSignup = () => {
         style={{
           backgroundImage: `linear-gradient(rgba(59, 130, 246, 0.8), rgba(99, 102, 241, 0.8)), url('https://images.unsplash.com/photo-1581578731548-c64695cc6952?ixlib=rb-4.0.3&auto=format&fit=crop&w=2070&q=80')`
         }}
+        role="img"
+        aria-label="Professional contractors working on HVAC, plumbing, and electrical services - representing quality home service professionals"
       >
         <div className="container mx-auto px-4 py-20 text-center text-white relative z-10">
           <div className="max-w-4xl mx-auto">
