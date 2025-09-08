@@ -261,12 +261,12 @@ export const SignupForm = ({ prefilledData }: SignupFormProps) => {
                   className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 mt-0.5"
                 />
                 <label htmlFor="sms_opt_in" className="text-sm leading-relaxed">
-                  I agree to receive lead alert text messages from Custom Lead Match. Msg frequency varies. Msg & data rates may apply. Reply STOP to opt out, HELP for help. See our{' '}
-                  <a href="https://customleadmatch.com/privacy-policy" className="text-blue-600 hover:underline">
+                  I agree to receive lead alert text messages from Custom Lead Match. Message frequency varies. Msg & data rates may apply. Reply STOP to opt out, HELP for help. See our{' '}
+                  <a href="https://www.customleadmatch.com/privacy-policy" className="text-blue-600 hover:underline">
                     Privacy Policy
                   </a>{' '}
                   and{' '}
-                  <a href="https://customleadmatch.com/terms" className="text-blue-600 hover:underline">
+                  <a href="https://www.customleadmatch.com/terms-of-service" className="text-blue-600 hover:underline">
                     Terms
                   </a>
                   .

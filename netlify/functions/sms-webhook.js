@@ -60,7 +60,7 @@ exports.handler = async (event, context) => {
 
     if (messageBody === 'HELP') {
       await twilioClient.messages.create({
-        body: "CLM: We send lead alerts to subscribed contractors. Msg freq varies. Msg&data rates may apply. Support: support@customleadmatch.com",
+        body: "CLM: We send lead alerts to subscribed contractors. Msg frequency varies. Msg&data rates may apply. Support: support@customleadmatch.com",
         from: process.env.TWILIO_PHONE_NUMBER,
         to: from
       })

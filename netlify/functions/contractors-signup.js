@@ -172,7 +172,7 @@ exports.handler = async (event, context) => {
           formattedPhone = '+' + formattedPhone
         }
 
-        const confirmationMessage = "CLM: You're subscribed to Contractor Lead Alerts. Msg freq varies. Msg&data rates may apply. Reply STOP to opt out, HELP for help. Support: support@customleadmatch.com"
+        const confirmationMessage = "CLM: You're subscribed to Contractor Lead Alerts. Msg frequency varies. Msg&data rates may apply. Reply STOP to opt out, HELP for help. Support: support@customleadmatch.com"
         
         await twilioClient.messages.create({
           body: confirmationMessage,
