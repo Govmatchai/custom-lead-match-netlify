@@ -252,17 +252,25 @@ export const SignupForm = ({ prefilledData }: SignupFormProps) => {
                 </p>
               </div>
 
-              <div className="flex items-center space-x-2">
+              <div className="flex items-start space-x-2">
                 <input
                   type="checkbox"
                   id="sms_opt_in"
                   checked={formData.sms_opt_in}
                   onChange={(e) => handleInputChange('sms_opt_in', e.target.checked)}
-                  className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500"
+                  className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 mt-0.5"
                 />
-                <Label htmlFor="sms_opt_in" className="text-sm">
-                  Yes, send me SMS alerts for new leads
-                </Label>
+                <label htmlFor="sms_opt_in" className="text-sm leading-relaxed">
+                  I agree to receive lead alert text messages from Custom Lead Match. Message frequency varies. Msg & data rates may apply. Reply STOP to opt out, HELP for help. See our{' '}
+                  <a href="https://www.customleadmatch.com/privacy-policy" className="text-blue-600 hover:underline">
+                    Privacy Policy
+                  </a>{' '}
+                  and{' '}
+                  <a href="https://www.customleadmatch.com/terms-of-service" className="text-blue-600 hover:underline">
+                    Terms
+                  </a>
+                  .
+                </label>
               </div>
 
               <Button 

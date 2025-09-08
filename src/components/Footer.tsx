@@ -32,8 +32,24 @@ export const Footer = () => {
             </div>
           </div>
         </div>
-        <div className="border-t border-gray-700 mt-8 pt-8 text-center text-gray-400">
-          <p>&copy; 2024 Custom Lead Match. All rights reserved.</p>
+        <div className="border-t border-gray-700 mt-8 pt-8">
+          <div className="text-center text-gray-400 mb-6">
+            <p>&copy; 2024 Custom Lead Match. All rights reserved.</p>
+          </div>
+          
+          {/* SEO Content Block */}
+          <div className="bg-gray-800 rounded-lg p-6 text-sm text-gray-300 leading-relaxed">
+            <h3 className="text-white font-semibold mb-3">Premium Contractor Lead Generation Services</h3>
+            <p className="mb-3">
+              Custom Lead Match is the leading platform for <strong>contractor leads</strong>, specializing in connecting qualified <strong>HVAC contractors</strong>, <strong>plumbing contractors</strong>, and <strong>electrical contractors</strong> with ready-to-hire homeowners across the United States. Our exclusive lead generation system ensures you receive high-quality <strong>home service leads</strong> without competition from other contractors.
+            </p>
+            <p className="mb-3">
+              Whether you're looking for <strong>HVAC leads</strong> for heating and cooling installations, <strong>plumbing leads</strong> for emergency repairs and installations, or <strong>electrical leads</strong> for residential and commercial projects, our platform delivers verified, exclusive opportunities directly to your dashboard. Join thousands of successful contractors who have grown their businesses with our premium <strong>contractor marketing</strong> solution.
+            </p>
+            <p>
+              Our pay-per-lead model means no monthly subscriptions, no shared leads, and no wasted marketing spend. Focus on what you do best - providing quality home services - while we handle generating your next customer. Start receiving exclusive <strong>contractor leads</strong> in your service area today.
+            </p>
+          </div>
         </div>
       </div>
     </footer>
