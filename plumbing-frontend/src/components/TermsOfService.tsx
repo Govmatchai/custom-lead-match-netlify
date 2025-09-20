@@ -12,7 +12,7 @@ export function TermsOfService() {
           
           <div className="space-y-8 text-gray-700 leading-relaxed">
             <p>
-              These Terms of Service (&quot;Terms&quot;) apply to homeowners and users who submit service requests through Custom Lead Match (&quot;CLM&quot;, &quot;we&quot;, &quot;our&quot;, or &quot;us&quot;). By submitting your information on our landing page, you agree to these Terms.
+              These Terms of Service (&quot;Terms&quot;) apply to homeowners and users who submit service requests through CLM (&quot;CLM&quot;, &quot;we&quot;, &quot;our&quot;, or &quot;us&quot;). By submitting your information on our landing page, you agree to these Terms.
             </p>
 
             <section>

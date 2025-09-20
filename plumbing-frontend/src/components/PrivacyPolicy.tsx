@@ -12,7 +12,7 @@ export function PrivacyPolicy() {
           
           <div className="space-y-8 text-gray-700 leading-relaxed">
             <p>
-              At Custom Lead Match (&quot;CLM&quot;, &quot;we&quot;, &quot;our&quot;, or &quot;us&quot;), we value and protect the privacy of homeowners and users who submit service requests through our landing pages. This Privacy Policy explains how we collect, use, and safeguard your personal information.
+              At CLM (&quot;CLM&quot;, &quot;we&quot;, &quot;our&quot;, or &quot;us&quot;), we value and protect the privacy of homeowners and users who submit service requests through our landing pages. This Privacy Policy explains how we collect, use, and safeguard your personal information.
             </p>
 
             <section>
