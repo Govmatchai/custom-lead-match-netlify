@@ -1,10 +1,18 @@
 import { createClient } from '@supabase/supabase-js'
 import twilio from 'twilio'
+import { checkRateLimit } from './lib/rate-limiter.js'
 
-const supabase = createClient(
-  process.env.SUPABASE_URL,
-  process.env.SUPABASE_SERVICE_KEY
-)
+let supabase = null
+
+function getSupabaseClient() {
+  if (!supabase && process.env.SUPABASE_URL && process.env.SUPABASE_SERVICE_KEY) {
+    supabase = createClient(
+      process.env.SUPABASE_URL,
+      process.env.SUPABASE_SERVICE_KEY
+    )
+  }
+  return supabase
+}
 
 let twilioClient = null
 try {
@@ -232,12 +240,35 @@ export const handler = async (event, context) => {
   }
 
   try {
+    const clientIP = event.headers['x-forwarded-for'] || event.headers['x-real-ip'] || 'unknown'
+    
+    const rateLimitCheck = await checkRateLimit(clientIP, 'submit')
+    if (!rateLimitCheck.allowed) {
+      return {
+        statusCode: 429,
+        headers: corsHeaders,
+        body: JSON.stringify({ 
+          success: false, 
+          message: rateLimitCheck.error 
+        })
+      }
+    }
+
+    const supabaseClient = getSupabaseClient()
+    if (!supabaseClient) {
+      return {
+        statusCode: 500,
+        headers: corsHeaders,
+        body: JSON.stringify({ success: false, message: 'Database not available' })
+      }
+    }
+
     const data = JSON.parse(event.body)
     const { customer_name, service_category, sub_service, zip_code, phone, email, description, urgency = 'Standard' } = data
     
-    let clientIP = event.headers['x-forwarded-for'] || event.headers['x-real-ip'] || 'unknown'
-    if (clientIP !== 'unknown' && clientIP.includes(',')) {
-      clientIP = clientIP.split(',')[0].trim()
+    let processedClientIP = clientIP
+    if (processedClientIP !== 'unknown' && processedClientIP.includes(',')) {
+      processedClientIP = processedClientIP.split(',')[0].trim()
     }
 
     await logger.log('INFO', 'LEAD SUBMISSION STARTED', {
@@ -332,7 +363,7 @@ export const handler = async (event, context) => {
     }
     const lead_type = urgencyToLeadType[urgency] || 'standard'
     
-    const { data: pricingData, error: pricingError } = await supabase
+    const { data: pricingData, error: pricingError } = await supabaseClient
       .from('lead_pricing')
       .select('price')
       .eq('category', service_category)
@@ -341,7 +372,7 @@ export const handler = async (event, context) => {
     
     const leadPrice = pricingData ? parseFloat(pricingData.price) : 20.00
 
-    const { data: lead, error: leadError } = await supabase
+    const { data: lead, error: leadError } = await supabaseClient
       .from('leads')
       .insert([{
         customer_name,

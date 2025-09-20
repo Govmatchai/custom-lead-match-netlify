@@ -2,13 +2,23 @@ import { createClient } from '@supabase/supabase-js'
 import bcryptjs from 'bcryptjs'
 import { randomBytes } from 'crypto'
 import dotenv from 'dotenv'
+import { checkRateLimit } from './lib/rate-limiter.js'
+import { generateTokens } from './lib/jwt-auth.js'
+import { verify2FA, verifyBackupCode } from './lib/two-factor-auth.js'
 
 dotenv.config({ path: '../../.env' })
 
-const supabase = createClient(
-  process.env.SUPABASE_URL,
-  process.env.SUPABASE_SERVICE_KEY
-)
+let supabase = null
+
+function getSupabaseClient() {
+  if (!supabase && process.env.SUPABASE_URL && process.env.SUPABASE_SERVICE_KEY) {
+    supabase = createClient(
+      process.env.SUPABASE_URL,
+      process.env.SUPABASE_SERVICE_KEY
+    )
+  }
+  return supabase
+}
 
 export const handler = async (event, context) => {
   if (event.httpMethod === 'OPTIONS') {
@@ -34,7 +44,26 @@ export const handler = async (event, context) => {
   }
 
   try {
-    const { username, password } = JSON.parse(event.body)
+    const clientIP = event.headers['x-forwarded-for'] || event.headers['x-real-ip'] || 'unknown'
+    const userAgent = event.headers['user-agent'] || 'unknown'
+    
+    const rateLimitCheck = await checkRateLimit(clientIP, 'login')
+    if (!rateLimitCheck.allowed) {
+      return {
+        statusCode: 429,
+        headers: {
+          'Content-Type': 'application/json',
+          'Access-Control-Allow-Origin': '*',
+          'Retry-After': rateLimitCheck.retryAfter.toString()
+        },
+        body: JSON.stringify({ 
+          success: false, 
+          message: rateLimitCheck.error 
+        })
+      }
+    }
+
+    const { username, password, twoFactorToken, backupCode } = JSON.parse(event.body)
 
     if (!username || !password) {
       return {
@@ -47,7 +76,19 @@ export const handler = async (event, context) => {
       }
     }
 
-    const { data: contractor, error: contractorError } = await supabase
+    const supabaseClient = getSupabaseClient()
+    if (!supabaseClient) {
+      return {
+        statusCode: 500,
+        headers: {
+          'Content-Type': 'application/json',
+          'Access-Control-Allow-Origin': '*'
+        },
+        body: JSON.stringify({ success: false, message: 'Database not available' })
+      }
+    }
+
+    const { data: contractor, error: contractorError } = await supabaseClient
       .from('contractors')
       .select('*')
       .eq('username', username)
@@ -77,28 +118,51 @@ export const handler = async (event, context) => {
       }
     }
 
-    const sessionToken = randomBytes(32).toString('hex')
-    const expiresAt = new Date(Date.now() + 24 * 60 * 60 * 1000)
+    const { data: twoFA } = await supabaseClient
+      .from('contractor_2fa')
+      .select('*')
+      .eq('contractor_id', contractor.id)
+      .single()
 
-    const { error: sessionError } = await supabase
-      .from('contractor_sessions')
-      .insert({
-        contractor_id: contractor.id,
-        session_token: sessionToken,
-        expires_at: expiresAt.toISOString()
-      })
+    if (twoFA && twoFA.enabled) {
+      if (!twoFactorToken && !backupCode) {
+        return {
+          statusCode: 200,
+          headers: {
+            'Content-Type': 'application/json',
+            'Access-Control-Allow-Origin': '*'
+          },
+          body: JSON.stringify({
+            success: false,
+            requires2FA: true,
+            message: 'Two-factor authentication required'
+          })
+        }
+      }
 
-    if (sessionError) {
-      console.error('Error creating session:', sessionError)
-      return {
-        statusCode: 500,
-        headers: {
-          'Content-Type': 'application/json',
-          'Access-Control-Allow-Origin': '*'
-        },
-        body: JSON.stringify({ success: false, message: 'Failed to create session' })
+      let twoFAValid = false
+      
+      if (twoFactorToken) {
+        const verification = await verify2FA(contractor.id, twoFactorToken)
+        twoFAValid = verification.valid
+      } else if (backupCode) {
+        const verification = await verifyBackupCode(contractor.id, backupCode)
+        twoFAValid = verification.valid
+      }
+
+      if (!twoFAValid) {
+        return {
+          statusCode: 401,
+          headers: {
+            'Content-Type': 'application/json',
+            'Access-Control-Allow-Origin': '*'
+          },
+          body: JSON.stringify({ success: false, message: 'Invalid two-factor authentication code' })
+        }
       }
     }
+
+    const { accessToken, refreshToken } = await generateTokens(contractor.id, clientIP, userAgent)
 
     return {
       statusCode: 200,
@@ -109,7 +173,9 @@ export const handler = async (event, context) => {
       body: JSON.stringify({
         success: true,
         contractor_id: contractor.id,
-        session_token: sessionToken,
+        access_token: accessToken,
+        refresh_token: refreshToken,
+        session_token: accessToken,
         redirect_url: `/contractor/${contractor.id}`
       })
     }

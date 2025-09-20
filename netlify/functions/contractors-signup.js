@@ -3,13 +3,21 @@ import bcryptjs from 'bcryptjs'
 import { randomBytes } from 'crypto'
 import dotenv from 'dotenv'
 import twilio from 'twilio'
+import { checkRateLimit } from './lib/rate-limiter.js'
 
 dotenv.config({ path: '../../.env' })
 
-const supabase = createClient(
-  process.env.SUPABASE_URL,
-  process.env.SUPABASE_SERVICE_KEY
-)
+let supabase = null
+
+function getSupabaseClient() {
+  if (!supabase && process.env.SUPABASE_URL && process.env.SUPABASE_SERVICE_KEY) {
+    supabase = createClient(
+      process.env.SUPABASE_URL,
+      process.env.SUPABASE_SERVICE_KEY
+    )
+  }
+  return supabase
+}
 
 let twilioClient = null
 if (process.env.TWILIO_ACCOUNT_SID && process.env.TWILIO_AUTH_TOKEN) {
@@ -41,6 +49,24 @@ exports.handler = async (event, context) => {
   }
 
   try {
+    const clientIP = event.headers['x-forwarded-for'] || event.headers['x-real-ip'] || 'unknown'
+    
+    const rateLimitCheck = await checkRateLimit(clientIP, 'signup')
+    if (!rateLimitCheck.allowed) {
+      return {
+        statusCode: 429,
+        headers: {
+          'Content-Type': 'application/json',
+          'Access-Control-Allow-Origin': '*',
+          'Retry-After': rateLimitCheck.retryAfter.toString()
+        },
+        body: JSON.stringify({ 
+          success: false, 
+          message: rateLimitCheck.error 
+        })
+      }
+    }
+
     const { business_name, contact_name, email, phone, username, password, industry, sub_service, zip_codes, sms_opt_in } = JSON.parse(event.body)
 
     if (!business_name || !contact_name || !email || !phone || !username || !password || !industry || !sub_service || !zip_codes) {
@@ -59,8 +85,20 @@ exports.handler = async (event, context) => {
 
     const zipCodesArray = zip_codes.split(',').map(zip => zip.trim()).filter(zip => zip.length > 0)
 
+    const supabaseClient = getSupabaseClient()
+    if (!supabaseClient) {
+      return {
+        statusCode: 500,
+        headers: {
+          'Content-Type': 'application/json',
+          'Access-Control-Allow-Origin': '*'
+        },
+        body: JSON.stringify({ success: false, message: 'Database not available' })
+      }
+    }
+
     console.log('Attempting contractors table insert...')
-    const { data: contractor, error } = await supabase
+    const { data: contractor, error } = await supabaseClient
       .from('contractors')
       .insert({
         business_name,
@@ -119,7 +157,7 @@ exports.handler = async (event, context) => {
     const sessionToken = randomBytes(32).toString('hex')
     const expiresAt = new Date(Date.now() + 24 * 60 * 60 * 1000)
 
-    const { error: sessionError } = await supabase
+    const { error: sessionError } = await supabaseClient
       .from('contractor_sessions')
       .insert({
         contractor_id: contractor.id,

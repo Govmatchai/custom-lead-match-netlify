@@ -1,4 +1,6 @@
 import { createClient } from '@supabase/supabase-js'
+import bcryptjs from 'bcryptjs'
+import { checkRateLimit } from './lib/rate-limiter.js'
 import dotenv from 'dotenv'
 
 dotenv.config({ path: '../../.env' })
@@ -32,59 +34,71 @@ export const handler = async (event, context) => {
   }
 
   try {
+    const clientIP = event.headers['x-forwarded-for'] || event.headers['x-real-ip'] || 'unknown'
+    
+    const rateLimitCheck = await checkRateLimit(clientIP, 'admin_login')
+    if (!rateLimitCheck.allowed) {
+      return {
+        statusCode: 429,
+        headers: {
+          'Content-Type': 'application/json',
+          'Access-Control-Allow-Origin': '*',
+          'Retry-After': rateLimitCheck.retryAfter.toString()
+        },
+        body: JSON.stringify({ 
+          success: false, 
+          message: rateLimitCheck.error 
+        })
+      }
+    }
+
     const data = JSON.parse(event.body)
-    const { password, email } = data
+    const { email, password, twoFactorToken, backupCode } = data
 
-    if (email) {
-      const { data: admin, error } = await supabase
-        .from('admin_users')
-        .select('*')
-        .eq('email', email)
-        .single()
-
-      if (error || !admin) {
-        return {
-          statusCode: 401,
-          headers: {
-            'Content-Type': 'application/json',
-            'Access-Control-Allow-Origin': '*'
-          },
-          body: JSON.stringify({ success: false, message: 'Invalid credentials' })
-        }
-      }
-
-      const adminPassword = process.env.ADMIN_PASSWORD || 'admin123'
-      if (password === adminPassword) {
-        return {
-          statusCode: 200,
-          headers: {
-            'Content-Type': 'application/json',
-            'Access-Control-Allow-Origin': '*'
-          },
-          body: JSON.stringify({ success: true, message: 'Authentication successful' })
-        }
-      }
-    } else {
-      const adminPassword = process.env.ADMIN_PASSWORD || 'admin123'
-      if (password === adminPassword) {
-        return {
-        statusCode: 200,
+    if (!email || !password) {
+      return {
+        statusCode: 400,
         headers: {
           'Content-Type': 'application/json',
           'Access-Control-Allow-Origin': '*'
         },
-        body: JSON.stringify({ success: true, message: 'Authentication successful' })
-        }
+        body: JSON.stringify({ success: false, message: 'Email and password are required' })
+      }
+    }
+
+    const adminPassword = process.env.ADMIN_PASSWORD
+    const adminEmail = process.env.ADMIN_EMAIL || 'admin@customleadmatch.com'
+    
+    if (!adminPassword) {
+      console.error('ADMIN_PASSWORD environment variable not set')
+      return {
+        statusCode: 500,
+        headers: {
+          'Content-Type': 'application/json',
+          'Access-Control-Allow-Origin': '*'
+        },
+        body: JSON.stringify({ detail: 'Server configuration error' })
+      }
+    }
+
+    if (email !== adminEmail || password !== adminPassword) {
+      return {
+        statusCode: 401,
+        headers: {
+          'Content-Type': 'application/json',
+          'Access-Control-Allow-Origin': '*'
+        },
+        body: JSON.stringify({ success: false, message: 'Invalid credentials' })
       }
     }
 
     return {
-      statusCode: 401,
+      statusCode: 200,
       headers: {
         'Content-Type': 'application/json',
         'Access-Control-Allow-Origin': '*'
       },
-      body: JSON.stringify({ success: false, message: 'Invalid password' })
+      body: JSON.stringify({ success: true, message: 'Authentication successful' })
     }
   } catch (error) {
     console.error('Error:', error)
