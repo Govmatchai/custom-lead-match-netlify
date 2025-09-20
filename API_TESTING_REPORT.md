@@ -62,24 +62,24 @@ Set these in Netlify Dashboard → Site Settings → Environment Variables:
 ```env
 # Database (Required for all functions)
 SUPABASE_URL=https://your-project.supabase.co
-SUPABASE_ANON_KEY=your_anon_key
-SUPABASE_SERVICE_KEY=your_service_key
+SUPABASE_ANON_KEY=********
+SUPABASE_SERVICE_KEY=********
 
 # SMS Notifications
 TWILIO_ACCOUNT_SID=your_account_sid
 TWILIO_AUTH_TOKEN=your_auth_token
-TWILIO_PHONE_NUMBER=+13157844568
+TWILIO_PHONE_NUMBER=+1XXXXXXXXXX
 
 # Payment Processing
-STRIPE_SECRET_KEY=your_stripe_secret
-STRIPE_PUBLISHABLE_KEY=your_stripe_public
-STRIPE_WEBHOOK_SECRET=your_webhook_secret
+STRIPE_SECRET_KEY=********
+STRIPE_PUBLISHABLE_KEY=pk_test_********
+STRIPE_WEBHOOK_SECRET=********
 
 # Admin Authentication
-ADMIN_PASSWORD=your_secure_password
+ADMIN_PASSWORD=********
 
 # Email (Optional)
-SENDGRID_API_KEY=your_sendgrid_key
+SENDGRID_API_KEY=********
 ```
 
 ### 2. Function Dependencies
@@ -153,7 +153,7 @@ curl https://contractor-lead-generator-ljxlx5jg.devinapps.com/.netlify/functions
 # Admin auth (requires ADMIN_PASSWORD)
 curl -X POST https://contractor-lead-generator-ljxlx5jg.devinapps.com/.netlify/functions/admin-auth \
   -H "Content-Type: application/json" \
-  -d '{"password":"your_admin_password"}'
+  -d '{"password":"********"}'
 
 # Contractor signup (requires database)
 curl -X POST https://contractor-lead-generator-ljxlx5jg.devinapps.com/.netlify/functions/contractors-signup \
